@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Navigating Care — Japan Healthcare Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:        #2A7F7F;
+      --teal-dark:   #1f6060;
+      --teal-light:  #e8f4f4;
+      --amber:       #E8A838;
+      --amber-light: #fdf3e0;
+      --white:       #F8F9FA;
+      --charcoal:    #2D2D2D;
+      --gray:        #6B7280;
+      --gray-light:  #e5e7eb;
+      --border:      #d1e8e8;
+      --red:         #dc2626;
+      --red-light:   #fee2e2;
+      --green:       #388e3c;
+      --green-light: #e8f5e9;
+      --orange:      #ea580c;
+      --orange-light:#fff0e8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--charcoal);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 64px;
+    }
+
+    .nav-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.15rem;
+      color: var(--teal);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 4px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--gray);
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover { background: var(--teal-light); color: var(--teal); }
+    .nav-links a.active { background: var(--teal-light); color: var(--teal); }
+    .nav-cta { background: var(--red) !important; color: #fff !important; border-radius: 8px !important; padding: 8px 18px !important; }
+    .nav-cta:hover { opacity: 0.9; }
+
+    /* ── PAGE HEADER ── */
+    .page-header-wrap {
+      background: linear-gradient(135deg, #f0fafa 0%, #fdf8f0 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-header {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 56px 48px 48px;
+    }
+
+    .page-tag {
+      display: inline-block;
+      background: var(--teal-light);
+      color: var(--teal);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.5rem;
+      line-height: 1.15;
+      color: var(--charcoal);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .page-header p {
+      font-size: 1rem;
+      color: var(--gray);
+      line-height: 1.7;
+      max-width: 580px;
+    }
+
+    /* ── SUB NAV ── */
+    .sub-nav {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-light);
+      position: sticky;
+      top: 64px;
+      z-index: 90;
+    }
+
+    .sub-nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+    }
+
+    .sub-nav a {
+      text-decoration: none;
+      color: var(--gray);
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 16px 20px;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .sub-nav a:hover { color: var(--teal); }
+    .sub-nav a.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+    /* ── SECTION LAYOUT ── */
+    .section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 64px 48px;
+    }
+
+    .section + .section { padding-top: 0; }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--gray-light);
+      margin: 0 48px;
+      max-width: 1200px;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.9rem;
+      color: var(--charcoal);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-sub {
+      color: var(--gray);
+      font-size: 0.925rem;
+      max-width: 560px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    /* ── URGENCY FLOWCHART ── */
+    .flowchart-start {
+      background: var(--charcoal);
+      color: #fff;
+      border-radius: 14px;
+      padding: 20px 28px;
+      text-align: center;
+      max-width: 340px;
+      margin: 0 auto 32px;
+    }
+
+    .flowchart-start p {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+
+    .flowchart-start h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+    }
+
+    .flowchart-questions {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .flow-question {
+      border: 1.5px solid var(--gray-light);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .flow-question.active { border-color: var(--teal); }
+
+    .flow-q-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 22px;
+      cursor: pointer;
+      background: #fff;
+      transition: background 0.15s;
+    }
+
+    .flow-q-header:hover { background: var(--teal-light); }
+
+    .flow-q-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--teal-light);
+      color: var(--teal);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .flow-q-text {
+      font-size: 0.925rem;
+      font-weight: 600;
+      color: var(--charcoal);
+      flex: 1;
+    }
+
+    .flow-chevron {
+      color: var(--gray);
+      transition: transform 0.2s;
+    }
+
+    .flow-question.active .flow-chevron { transform: rotate(180deg); }
+
+    .flow-answers {
+      display: none;
+      padding: 0 22px 18px;
+      gap: 10px;
+      flex-direction: column;
+    }
+
+    .flow-question.active .flow-answers { display: flex; }
+
+    .flow-answer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1.5px solid transparent;
+    }
+
+    .flow-answer:hover { border-color: var(--gray-light); }
+
+    .flow-answer-text { font-size: 0.875rem; color: var(--charcoal); }
+
+    .flow-result {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 100px;
+    }
+
+    .result-er { background: var(--red-light); color: var(--red); }
+    .result-urgent { background: var(--orange-light); color: var(--orange); }
+    .result-clinic { background: var(--teal-light); color: var(--teal); }
+    .result-health { background: var(--green-light); color: var(--green); }
+    .result-home { background: var(--gray-light); color: var(--gray); }
+
+    /* outcome legend */
+    .outcome-legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--gray);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── SYMPTOM TO SPECIALIST ── */
+    .symptom-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .symptom-card {
+      background: #fff;
+      border: 1px solid var(--gray-light);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .symptom-card:hover {
+      border-color: var(--teal);
+      box-shadow: 0 4px 16px rgba(42,127,127,0.08);
+    }
+
+    .symptom-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .symptom-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .symptom-card h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .symptom-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .symptom-list li {
+      font-size: 0.8rem;
+      color: var(--gray);
+      padding-left: 14px;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .symptom-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 7px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .specialist-tag {
+      display: inline-block;
+      margin-top: 12px;
+      background: var(--teal-light);
+      color: var(--teal);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+
+    /* ── EMERGENCY REFERENCE ── */
+    .emergency-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .emergency-card {
+      border-radius: 14px;
+      padding: 24px;
+    }
+
+    .emergency-card.red { background: var(--red-light); border: 1.5px solid #fca5a5; }
+    .emergency-card.teal { background: var(--teal-light); border: 1.5px solid var(--border); }
+    .emergency-card.amber { background: var(--amber-light); border: 1.5px solid #fcd34d; }
+    .emergency-card.green { background: var(--green-light); border: 1.5px solid #86efac; }
+
+    .emergency-card h4 {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .emergency-card.red h4 { color: var(--red); }
+    .emergency-card.teal h4 { color: var(--teal); }
+    .emergency-card.amber h4 { color: #92400e; }
+    .emergency-card.green h4 { color: var(--green); }
+
+    .number-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .big-number {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      color: var(--charcoal);
+      line-height: 1;
+    }
+
+    .number-label {
+      font-size: 0.825rem;
+      color: var(--gray);
+    }
+
+    .phrase-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .phrase-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .phrase-en {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .phrase-ja {
+      font-size: 0.825rem;
+      color: var(--teal);
+      font-weight: 500;
+    }
+
+    .phrase-romaji {
+      font-size: 0.75rem;
+      color: var(--gray);
+      font-style: italic;
+    }
+
+    .hospital-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .hospital-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .hospital-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .hospital-detail {
+      font-size: 0.775rem;
+      color: var(--gray);
+    }
+
+    /* ── PRINTABLE CARD ── */
+    .print-preview-wrap {
+      background: var(--charcoal);
+      border-radius: 16px;
+      padding: 40px;
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+
+    .print-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      width: 320px;
+      flex-shrink: 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .print-card-header {
+      border-bottom: 2px solid var(--teal);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .print-card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--teal);
+      margin-bottom: 2px;
+    }
+
+    .print-card-sub {
+      font-size: 0.7rem;
+      color: var(--gray);
+    }
+
+    .print-section {
+      margin-bottom: 14px;
+    }
+
+    .print-section-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 6px;
+    }
+
+    .print-number-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .print-number {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .print-num-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--charcoal);
+      line-height: 1;
+    }
+
+    .print-num-label {
+      font-size: 0.6rem;
+      color: var(--gray);
+    }
+
+    .print-phrase {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.7rem;
+      padding: 3px 0;
+      border-bottom: 1px solid var(--gray-light);
+    }
+
+    .print-phrase:last-child { border-bottom: none; }
+
+    .print-phrase-en { color: var(--charcoal); font-weight: 500; }
+    .print-phrase-ja { color: var(--teal); font-weight: 600; }
+
+    .print-footer {
+      border-top: 1px solid var(--gray-light);
+      padding-top: 10px;
+      font-size: 0.6rem;
+      color: var(--gray);
+      text-align: center;
+    }
+
+    .print-cta {
+      flex: 1;
+      color: #fff;
+    }
+
+    .print-cta h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.6rem;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .print-cta p {
+      font-size: 0.9rem;
+      opacity: 0.75;
+      margin-bottom: 28px;
+      line-height: 1.7;
+      max-width: 360px;
+    }
+
+    .btn-print {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: var(--charcoal);
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn-print:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--charcoal);
+      color: rgba(255,255,255,0.6);
+      padding: 32px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+    footer a:hover { color: #fff; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1rem; color: #fff; }
+
+    /* ── SYMPTOM MATCHER ── */
+    .symptom-matcher {
+      margin-top: 48px;
+      background: linear-gradient(135deg, var(--teal-light) 0%, #fdf8f0 100%);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .matcher-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .matcher-icon {
+      width: 48px;
+      height: 48px;
+      background: #fff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(42,127,127,0.12);
+    }
+
+    .matcher-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      color: var(--charcoal);
+      margin-bottom: 2px;
+    }
+
+    .matcher-sub {
+      font-size: 0.875rem;
+      color: var(--gray);
+    }
+
+    .matcher-input-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .matcher-input {
+      flex: 1;
+      padding: 12px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--charcoal);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .matcher-input:focus { border-color: var(--teal); }
+    .matcher-input::placeholder { color: #9ca3af; }
+
+    .matcher-btn {
+      background: var(--teal);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .matcher-btn:hover { background: var(--teal-dark); transform: translateY(-1px); }
+
+    .matcher-result {
+      margin-top: 20px;
+      animation: fadeSlideIn 0.3s ease;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .matcher-match {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .matcher-match.top { border-color: var(--teal); border-width: 2px; }
+
+    .matcher-match-left { display: flex; flex-direction: column; gap: 4px; }
+
+    .matcher-match-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+
+    .matcher-match.top .matcher-match-label { color: var(--teal); }
+
+    .matcher-match-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .matcher-match-reason {
+      font-size: 0.825rem;
+      color: var(--gray);
+    }
+
+    .matcher-no-match {
+      padding: 16px;
+      font-size: 0.875rem;
+      color: var(--gray);
+      text-align: center;
+    }
+
+    /* ── CARD BUILDER ── */
+    .card-builder {
+      background: #fff;
+      border: 1px solid var(--gray-light);
+      border-radius: 16px;
+      padding: 28px;
+    }
+
+    .card-builder-search {
+      margin-bottom: 24px;
+    }
+
+    .card-builder-search-inner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--white);
+      border: 1.5px solid var(--gray-light);
+      border-radius: 10px;
+      padding: 10px 16px;
+      transition: border-color 0.15s;
+    }
+
+    .card-builder-search-inner:focus-within { border-color: var(--teal); }
+    .card-builder-search-inner svg { color: var(--gray); flex-shrink: 0; }
+
+    .card-builder-search-inner input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--charcoal);
+      outline: none;
+    }
+
+    .card-builder-search-inner input::placeholder { color: #9ca3af; }
+
+    .card-builder-categories {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-builder-group-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 12px;
+    }
+
+    .card-builder-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .card-item-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 100px;
+      border: 1.5px solid var(--gray-light);
+      background: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--charcoal);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .card-item-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+    .card-item-btn.selected { background: var(--teal); color: #fff; border-color: var(--teal); }
+    .card-item-btn.hidden { display: none; }
+
+    .selected-tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .selected-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--teal-light);
+      color: var(--teal);
+      font-size: 0.775rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .selected-tag:hover { background: #c5e8e8; }
+
+    /* Generated card */
+    .generated-card-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .generated-card {
+      background: #fff;
+      border: 2px solid var(--charcoal);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .gen-card-header {
+      background: var(--charcoal);
+      padding: 14px 18px;
+    }
+
+    .gen-card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 0.95rem;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .gen-card-sub {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .gen-card-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .gen-card-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--gray-light);
+    }
+
+    .gen-card-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .gen-card-row-en {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .gen-card-row-ja {
+      font-size: 0.875rem;
+      color: var(--teal);
+      font-weight: 600;
+    }
+
+    .gen-card-row-ro {
+      font-size: 0.7rem;
+      color: var(--gray);
+      font-style: italic;
+    }
+
+    .gen-card-footer {
+      background: var(--red-light);
+      padding: 10px 18px;
+      border-top: 1px solid #fca5a5;
+    }
+
+    .gen-card-numbers {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.72rem;
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .gen-card-actions {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .btn-print-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--teal);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 10px;
+      width: fit-content;
+    }
+
+    .btn-print-card:hover { background: var(--teal-dark); }
+
+    .btn-clear-card {
+      background: transparent;
+      color: var(--gray);
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1.5px solid var(--gray-light);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.825rem;
+      cursor: pointer;
+      width: fit-content;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-clear-card:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── CAROUSEL ── */
+    .carousel-track-wrap {
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+    }
+
+    .carousel-track {
+      display: flex;
+      gap: 20px;
+      animation: carouselScroll 40s linear infinite;
+      width: max-content;
+    }
+
+    @keyframes carouselScroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .carousel-card {
+      background: #fff;
+      border: 1.5px solid var(--gray-light);
+      border-radius: 14px;
+      padding: 20px;
+      width: 220px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .carousel-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      font-size: 1.4rem;
+    }
+
+    .carousel-card-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--charcoal);
+      margin-bottom: 6px;
+    }
+
+    .carousel-card-ja {
+      font-size: 0.9rem;
+      color: var(--teal);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .carousel-card-ro {
+      font-size: 0.72rem;
+      color: var(--gray);
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+
+    .carousel-card-phrase {
+      font-size: 0.75rem;
+      color: var(--gray);
+      line-height: 1.5;
+      padding-top: 10px;
+      border-top: 1px solid var(--gray-light);
+    }
+
+    .carousel-card-phrase strong {
+      color: var(--charcoal);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* Print styles for generated card */
+    @media print {
+      body > *:not(#printArea) { display: none !important; }
+      #printArea {
+        display: block !important;
+        position: fixed;
+        inset: 0;
+        padding: 40px;
+        background: #fff;
+      }
+    }
+
+    /* ── PRINT STYLES ── */
+    @media print {
+      nav, .sub-nav, .page-header-wrap, .section:not(#print-section),
+      footer, .print-preview-wrap { display: none !important; }
+      #print-section { display: block !important; }
+      .print-card { box-shadow: none; border: 1px solid #ccc; width: 100%; max-width: 400px; margin: 0 auto; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      .page-header { padding: 40px 24px 32px; }
+      .sub-nav-inner { padding: 0 24px; }
+      .section { padding: 48px 24px; }
+      .section-divider { margin: 0 24px; }
+      .symptom-grid { grid-template-columns: 1fr; }
+      .emergency-grid { grid-template-columns: 1fr; }
+      .print-preview-wrap { flex-direction: column; padding: 28px 24px; }
+      .print-card { width: 100%; }
+      footer { padding: 24px; flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Japan Healthcare Guide</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="clinic-finder.html">Clinic Finder</a></li>
+    <li><a href="navigating-care.html" class="active">Navigating Care</a></li>
+    <li><a href="healthcare-in-japan.html">Healthcare in Japan</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="emergency.html" class="nav-cta">Emergency Info</a></li>
+  </ul>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header-wrap">
+  <div class="page-header">
+    <span class="page-tag">Navigating Care</span>
+    <h1>Not sure what to do?<br>Start here.</h1>
+    <p>Use the tools below to figure out how urgent your situation is, which specialist you need, and what to do in an emergency — all in one place.</p>
+  </div>
+</div>
+
+<!-- SUB NAV -->
+<div class="sub-nav">
+  <div class="sub-nav-inner">
+    <a href="#specialist" class="active">Symptom to Specialist</a>
+    <a href="#specialist">Symptom to Specialist</a>
+    <a href="#emergency">Emergency Reference</a>
+    <a href="#card">Emergency Card Builder</a>
+  </div>
+</div>
+
+<!-- ── SYMPTOM TO SPECIALIST ── -->
+<div class="section" id="specialist">
+  <p class="section-label">Step 1</p>
+  <h2 class="section-title">Which specialist do you need?</h2>
+  <p class="section-sub">Match your symptoms to the right type of doctor before searching the Clinic Finder.</p>
+
+  <div class="symptom-grid">
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:var(--teal-light)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2A7F7F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <h4>General / Internal Medicine</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Fever, cold, or flu symptoms</li>
+        <li>Fatigue or general unwellness</li>
+        <li>High blood pressure or diabetes management</li>
+        <li>Annual check-ups and immunizations</li>
+        <li>Not sure which specialist to see</li>
+      </ul>
+      <span class="specialist-tag">General Clinic</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:#fce7f3">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#be185d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+        <h4>Pediatrics</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Child fever, cold, or infection</li>
+        <li>Rashes or skin concerns in children</li>
+        <li>Child vaccinations and growth checks</li>
+        <li>Behavioral or developmental concerns</li>
+      </ul>
+      <span class="specialist-tag">Pediatric Clinic</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:var(--red-light)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <h4>Cardiology</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Chest pain or tightness</li>
+        <li>Irregular heartbeat or palpitations</li>
+        <li>Shortness of breath at rest</li>
+        <li>High blood pressure follow-up</li>
+      </ul>
+      <span class="specialist-tag">Cardiologist</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:var(--amber-light)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8A838" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <h4>Orthopedics</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Joint pain, back pain, or stiffness</li>
+        <li>Sports injuries or muscle strains</li>
+        <li>Broken or fractured bones</li>
+        <li>Knee, shoulder, or hip pain</li>
+      </ul>
+      <span class="specialist-tag">Orthopedic Clinic</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:var(--green-light)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#388e3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <h4>Dermatology</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Rashes, hives, or eczema</li>
+        <li>Acne, moles, or skin growths</li>
+        <li>Hair loss or scalp conditions</li>
+        <li>Allergic skin reactions</li>
+      </ul>
+      <span class="specialist-tag">Dermatologist</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:#f3e8ff">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+        </div>
+        <h4>Gastroenterology (GI)</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Stomach pain, bloating, or nausea</li>
+        <li>Diarrhea or constipation lasting over a week</li>
+        <li>Acid reflux or heartburn</li>
+        <li>Blood in stool or unexplained weight loss</li>
+      </ul>
+      <span class="specialist-tag">GI Clinic</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:#e0f2fe">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h4>ENT (Ear, Nose & Throat)</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Persistent sore throat or tonsil issues</li>
+        <li>Ear pain, hearing loss, or ringing</li>
+        <li>Chronic sinus congestion or nosebleeds</li>
+        <li>Hoarseness or voice changes</li>
+      </ul>
+      <span class="specialist-tag">ENT Clinic</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:#fce7f3">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#be185d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <h4>Gynecology</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Menstrual irregularities or pain</li>
+        <li>Pregnancy care and check-ups</li>
+        <li>Pelvic pain or unusual discharge</li>
+        <li>Mammograms and breast health</li>
+      </ul>
+      <span class="specialist-tag">Gynecologist</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:var(--teal-light)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2A7F7F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+        </div>
+        <h4>Urology</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Painful or frequent urination</li>
+        <li>Blood in urine</li>
+        <li>Kidney stone symptoms</li>
+        <li>Male reproductive health concerns</li>
+      </ul>
+      <span class="specialist-tag">Urologist</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:#f0fdf4">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        </div>
+        <h4>Mental Health / Psychiatry</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Persistent low mood, depression, or hopelessness</li>
+        <li>Anxiety, panic attacks, or constant worry</li>
+        <li>Sleep difficulties not caused by physical illness</li>
+        <li>Difficulty functioning at work or in daily life</li>
+        <li>Emotional distress you cannot manage on your own</li>
+      </ul>
+      <span class="specialist-tag">Mental Health Clinic</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:#eff6ff">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        </div>
+        <h4>Physiotherapy & Chiropractic</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Back, neck, or joint pain after injury or strain</li>
+        <li>Recovering from surgery or sports injury</li>
+        <li>Posture-related pain or repetitive strain</li>
+        <li>Stiffness or reduced range of motion</li>
+        <li>Muscle imbalances or rehabilitation needs</li>
+      </ul>
+      <span class="specialist-tag">Physiotherapy & Chiropractic</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:#fef9c3">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h4>Ophthalmology</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Blurry or deteriorating vision</li>
+        <li>Eye pain, redness, or persistent irritation</li>
+        <li>Eye discharge or foreign object in the eye</li>
+        <li>Floaters, flashes of light, or sudden vision loss</li>
+        <li>Routine eye check-ups or prescription updates</li>
+      </ul>
+      <span class="specialist-tag">Ophthalmology Clinic</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:#fdf2f8">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9d174d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <h4>Oncology</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Diagnosed or suspected cancer requiring specialist care</li>
+        <li>Unexplained weight loss, fatigue, or night sweats</li>
+        <li>Persistent lumps or growths that do not resolve</li>
+        <li>Follow-up or ongoing cancer treatment</li>
+      </ul>
+      <span class="specialist-tag">Oncology Clinic</span>
+    </div>
+
+    <div class="symptom-card">
+      <div class="symptom-card-header">
+        <div class="symptom-icon" style="background:#fef3c7">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v-2.38C4 11.5 2.97 10.43 3 8c.03-2.5 2.24-4 4.29-4C9 4 9.67 4 11 4c3 0 5 2 6 4l1 4c.67 2 .33 4-1 5s-3 1-4 0-2-1-3-1H8c-2 0-4-1-4-3z"/><path d="M15 8c0 1-1 2-2 2s-2-1-2-2 1-2 2-2 2 1 2 2z"/></svg>
+        </div>
+        <h4>Podiatry</h4>
+      </div>
+      <ul class="symptom-list">
+        <li>Foot or heel pain, including plantar fasciitis</li>
+        <li>Ingrown toenails or nail infections</li>
+        <li>Bunions, corns, or calluses</li>
+        <li>Diabetic foot care or circulation concerns in feet</li>
+        <li>Ankle instability or gait problems</li>
+      </ul>
+      <span class="specialist-tag">Podiatry Clinic</span>
+    </div>
+
+  </div>
+
+  <!-- Symptom Matcher -->
+  <div class="symptom-matcher">
+    <div class="matcher-header">
+      <div class="matcher-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A7F7F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <div>
+        <h3 class="matcher-title">Still not sure?</h3>
+        <p class="matcher-sub">Describe your symptoms and we will match you to the closest specialist.</p>
+      </div>
+    </div>
+    <div class="matcher-input-row">
+      <input type="text" id="symptomInput" class="matcher-input" placeholder="e.g. my knee hurts when I walk, I have a rash on my arm, stomach pain after eating..." onkeydown="if(event.key==='Enter') matchSymptom()"/>
+      <button class="matcher-btn" onclick="matchSymptom()">Match me</button>
+    </div>
+    <div id="matcherResult" class="matcher-result" style="display:none;"></div>
+  </div>
+
+</div>
+
+<hr class="section-divider"/>
+
+<!-- ── EMERGENCY REFERENCE ── -->
+<div class="section" id="emergency">
+  <p class="section-label">Emergency Reference</p>
+  <h2 class="section-title">What to do in an emergency</h2>
+  <p class="section-sub">Save this page or screenshot it before you need it. In an emergency, every second counts.</p>
+
+  <div class="emergency-grid">
+
+    <div class="emergency-card red">
+      <h4>Emergency Numbers</h4>
+      <div class="number-row"><span class="big-number">119</span><span class="number-label">Ambulance & Fire</span></div>
+      <div class="number-row"><span class="big-number">110</span><span class="number-label">Police</span></div>
+      <div class="number-row" style="margin-top:8px"><span style="font-size:0.8rem;color:var(--gray)">AMDA Medical Interpreter Hotline</span></div>
+      <div class="number-row"><span class="big-number" style="font-size:1.4rem">03-6233-9266</span></div>
+      <p style="font-size:0.75rem;color:var(--gray);margin-top:4px">Free English interpretation for clinic visits</p>
+    </div>
+
+    <div class="emergency-card teal">
+      <h4>English-Friendly ERs in Tokyo</h4>
+      <ul class="hospital-list">
+        <li class="hospital-item">
+          <span class="hospital-name">St. Luke's International Hospital</span>
+          <span class="hospital-detail">Chuo — 24hr ER, English staff</span>
+        </li>
+        <li class="hospital-item">
+          <span class="hospital-name">Tokyo Medical and Surgical Clinic</span>
+          <span class="hospital-detail">Minato — English-speaking GPs</span>
+        </li>
+        <li class="hospital-item">
+          <span class="hospital-name">Keio University Hospital</span>
+          <span class="hospital-detail">Shinjuku — International Medical Care Center</span>
+        </li>
+        <li class="hospital-item">
+          <span class="hospital-name">Higashi Fuchu Hospital</span>
+          <span class="hospital-detail">Fuchu — nearest hospital to west Tokyo, some English support</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="emergency-card amber">
+      <h4>Key Japanese Phrases</h4>
+      <ul class="phrase-list">
+        <li class="phrase-item">
+          <span class="phrase-en">Please call an ambulance</span>
+          <span class="phrase-ja">救急車を呼んでください</span>
+          <span class="phrase-romaji">Kyukyusha wo yonde kudasai</span>
+        </li>
+        <li class="phrase-item">
+          <span class="phrase-en">I need a doctor</span>
+          <span class="phrase-ja">医者が必要です</span>
+          <span class="phrase-romaji">Isha ga hitsuyou desu</span>
+        </li>
+        <li class="phrase-item">
+          <span class="phrase-en">I have chest pain</span>
+          <span class="phrase-ja">胸が痛いです</span>
+          <span class="phrase-romaji">Mune ga itai desu</span>
+        </li>
+        <li class="phrase-item">
+          <span class="phrase-en">I am allergic to...</span>
+          <span class="phrase-ja">〜にアレルギーがあります</span>
+          <span class="phrase-romaji">~ ni arerugii ga arimasu</span>
+        </li>
+        <li class="phrase-item">
+          <span class="phrase-en">Do you speak English?</span>
+          <span class="phrase-ja">英語を話せますか？</span>
+          <span class="phrase-romaji">Eigo wo hanasemasu ka?</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="emergency-card green">
+      <h4>Stay on the Line — Key Tips</h4>
+      <ul class="symptom-list" style="gap:10px">
+        <li>Stay calm and speak slowly when calling 119</li>
+        <li>Give your address in full — have it written down in advance</li>
+        <li>Do not hang up until the operator tells you to</li>
+        <li>If the operator does not speak English, say: <strong>"Eigo wo hanasemasu ka?"</strong></li>
+        <li>AMDA (03-6233-9266) offers free phone interpretation for clinic visits Mon–Fri</li>
+        <li>Take a photo of this page to have it offline</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<hr class="section-divider"/>
+
+<!-- ── EMERGENCY CARD BUILDER ── -->
+<div class="section" id="card">
+  <p class="section-label">Emergency Card</p>
+  <h2 class="section-title">Your personalised emergency card</h2>
+  <p class="section-sub">Select your conditions and allergies below. A printable emergency card will be generated in Japanese and English — ready to carry in your wallet or save to your phone.</p>
+
+  <!-- CARD BUILDER -->
+  <div class="card-builder">
+
+    <!-- Search & Select -->
+    <div class="card-builder-search">
+      <div class="card-builder-search-inner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="cardSearchInput" placeholder="Search conditions or allergies... e.g. diabetes, nut allergy" oninput="filterCardItems()"/>
+      </div>
+    </div>
+
+    <div class="card-builder-categories">
+
+      <!-- CONDITIONS -->
+      <div class="card-builder-group">
+        <p class="card-builder-group-label">Conditions</p>
+        <div class="card-builder-items" id="conditionItems"></div>
+      </div>
+
+      <!-- ALLERGIES -->
+      <div class="card-builder-group">
+        <p class="card-builder-group-label">Allergies</p>
+        <div class="card-builder-items" id="allergyItems"></div>
+      </div>
+
+    </div>
+
+    <!-- Selected tags -->
+    <div id="selectedTagsWrap" style="display:none;">
+      <p class="card-builder-group-label" style="margin-bottom:10px;">Your selections</p>
+      <div id="selectedTags" class="selected-tags-row"></div>
+    </div>
+
+    <!-- Generated card preview -->
+    <div id="generatedCardWrap" style="display:none;">
+      <hr style="border:none;border-top:1px solid var(--gray-light);margin:28px 0;"/>
+      <p class="card-builder-group-label" style="margin-bottom:16px;">Your emergency card preview</p>
+      <div class="generated-card-container">
+        <div class="generated-card" id="generatedCard">
+          <div class="gen-card-header">
+            <div class="gen-card-title">Japan Emergency Medical Card</div>
+            <div class="gen-card-sub">日本緊急医療カード</div>
+          </div>
+          <div class="gen-card-body" id="genCardBody"></div>
+          <div class="gen-card-footer">
+            <div class="gen-card-numbers">
+              <span><strong>119</strong> 救急</span>
+              <span><strong>110</strong> 警察</span>
+              <span><strong>03-6233-9266</strong> AMDA通訳</span>
+            </div>
+          </div>
+        </div>
+        <div class="gen-card-actions">
+          <p style="font-size:0.875rem;color:var(--gray);line-height:1.7;margin-bottom:20px;">Print this card and fold it into your wallet, or screenshot it to save on your phone. Keep it accessible at all times.</p>
+          <button class="btn-print-card" onclick="printCard()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print Emergency Card
+          </button>
+          <button class="btn-clear-card" onclick="clearSelections()">Clear selections</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--gray-light);margin:48px 0 0;"/>
+
+  <!-- CAROUSEL -->
+  <div class="carousel-section">
+    <p class="section-label" style="margin-top:40px;">Common Cards</p>
+    <h3 class="section-title" style="font-size:1.5rem;margin-bottom:8px;">Find your emergency card</h3>
+    <p class="section-sub" style="margin-bottom:32px;">Browse the most common conditions and allergies carried by English-speaking residents in Japan. Use the builder above to create your own.</p>
+
+    <div class="carousel-track-wrap">
+      <div class="carousel-track" id="carouselTrack"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Japan Healthcare Guide</span>
+  <span>Built for English-speaking families in Tokyo.</span>
+  <div style="display:flex; gap: 20px;">
+    <a href="about.html">About</a>
+    <a href="clinic-finder.html">Clinic Finder</a>
+    <a href="emergency.html">Emergency Info</a>
+  </div>
+</footer>
+
+<script>
+  // ── CARD DATA ──
+  const conditionIcons = {
+    diabetes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 3-4 8-4 8S8 9 8 6a4 4 0 0 1 4-4z"/><path d="M8 18h8"/><path d="M9 21h6"/></svg>',
+    hypertension: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+    asthma: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c-4 0-7 3-7 7 0 2.5 1.5 5 3 6.5V18h8v-2.5c1.5-1.5 3-4 3-6.5 0-4-3-7-7-7z"/><path d="M9 18v2a3 3 0 0 0 6 0v-2"/></svg>',
+    epilepsy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+    heartdisease: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><polyline points="12 8 12 12 14 14"/></svg>',
+    stroke: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    depression: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>',
+    pregnancy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"/><path d="M9 12h6a3 3 0 0 1 3 3v1a2 2 0 0 1-2 2h-2l-2 3-2-3H8a2 2 0 0 1-2-2v-1a3 3 0 0 1 3-3z"/></svg>',
+    pacemaker: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3v4M8 3v4M2 11h20"/><polyline points="9 15 11 17 15 13"/></svg>',
+    celiac: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
+    nuts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3c0 0-4 4-4 9s4 9 4 9"/><path d="M12 3c0 0 4 4 4 9s-4 9-4 9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>',
+    peanut: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="9" cy="15" rx="5" ry="6"/><ellipse cx="15" cy="9" rx="5" ry="6"/><line x1="12" y1="12" x2="12" y2="12"/></svg>',
+    shellfish: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 4 6 4 10c0 5 4 10 8 12 4-2 8-7 8-12 0-4-4-8-8-8z"/><path d="M12 2v20M4 10h16"/></svg>',
+    fish: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12c0 0-1.5-6 5.5-6s9 6 9 6-2 6-9 6-5.5-6-5.5-6z"/><path d="M3 7l3.5 5L3 17"/><circle cx="15" cy="12" r="1"/></svg>',
+    dairy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2h8l2 6H6L8 2z"/><path d="M6 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/><line x1="10" y1="13" x2="14" y2="13"/></svg>',
+    egg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 7 5 12a7 7 0 0 0 14 0c0-5-3-10-7-10z"/></svg>',
+    wheat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 12 7 10 7 5a5 5 0 0 1 5-3 5 5 0 0 1 5 3c0 5-5 7-5 7z"/><path d="M8 15s-3-1-4-4M16 15s3-1 4-4"/></svg>',
+    soy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>',
+    sesame: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/><circle cx="12" cy="14" r="2"/><circle cx="8" cy="20" r="2"/><circle cx="16" cy="20" r="2"/></svg>',
+    penicillin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="7" rx="2"/><path d="M6 9h12v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9z"/><line x1="10" y1="14" x2="14" y2="14"/><line x1="12" y1="12" x2="12" y2="16"/></svg>',
+    nsaid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="7" rx="2"/><path d="M6 9h12v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9z"/><line x1="10" y1="14" x2="14" y2="14"/></svg>',
+    latex: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V7a6 6 0 0 0-12 0v4"/><path d="M4 11h16v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9z"/></svg>',
+  };
+
+  const conditions = [
+    { id: "diabetes", name: "Diabetes", ja: "糖尿病", ro: "Tōnyōbyō", color: "#fef3c7", iconColor: "#d97706",
+      sentence_en: "I have diabetes", sentence_ja: "私は糖尿病があります", sentence_ro: "Watashi wa tōnyōbyō ga arimasu",
+      note_en: "May need glucose or insulin", note_ja: "ブドウ糖またはインスリンが必要な場合があります" },
+    { id: "hypertension", name: "High Blood Pressure", ja: "高血圧", ro: "Kōketsuatsu", color: "#fee2e2", iconColor: "#dc2626",
+      sentence_en: "I have high blood pressure", sentence_ja: "私は高血圧があります", sentence_ro: "Watashi wa kōketsuatsu ga arimasu",
+      note_en: "I take blood pressure medication", note_ja: "血圧の薬を服用しています" },
+    { id: "asthma", name: "Asthma", ja: "喘息", ro: "Zensoku", color: "#e0f2fe", iconColor: "#0284c7",
+      sentence_en: "I have asthma", sentence_ja: "私は喘息があります", sentence_ro: "Watashi wa zensoku ga arimasu",
+      note_en: "I use an inhaler", note_ja: "吸入器を使用しています" },
+    { id: "epilepsy", name: "Epilepsy", ja: "てんかん", ro: "Tenkan", color: "#f3e8ff", iconColor: "#7c3aed",
+      sentence_en: "I have epilepsy", sentence_ja: "私はてんかんがあります", sentence_ro: "Watashi wa tenkan ga arimasu",
+      note_en: "Do not restrain me during a seizure", note_ja: "発作中は抑えないでください" },
+    { id: "heartdisease", name: "Heart Disease", ja: "心臓病", ro: "Shinzōbyō", color: "#fee2e2", iconColor: "#dc2626",
+      sentence_en: "I have heart disease", sentence_ja: "私は心臓病があります", sentence_ro: "Watashi wa shinzōbyō ga arimasu",
+      note_en: "Please call an ambulance: 119", note_ja: "救急車を呼んでください：119" },
+    { id: "stroke", name: "Stroke History", ja: "脳卒中", ro: "Nōsotchū", color: "#fdf2f8", iconColor: "#9d174d",
+      sentence_en: "I have a history of stroke", sentence_ja: "私は脳卒中の既往歴があります", sentence_ro: "Watashi wa nōsotchū no kiōreki ga arimasu",
+      note_en: "Please call an ambulance: 119", note_ja: "救急車を呼んでください：119" },
+    { id: "depression", name: "Depression / Anxiety", ja: "うつ病・不安症", ro: "Utsubyō / Fuanshō", color: "#f0fdf4", iconColor: "#16a34a",
+      sentence_en: "I have depression / anxiety", sentence_ja: "私はうつ病・不安症があります", sentence_ro: "Watashi wa utsubyō / fuanshō ga arimasu",
+      note_en: "I am under psychiatric care", note_ja: "精神科の治療を受けています" },
+    { id: "pregnancy", name: "Pregnant", ja: "妊娠中", ro: "Ninshōnchū", color: "#fdf8f0", iconColor: "#E8A838",
+      sentence_en: "I am pregnant", sentence_ja: "私は妊娠中です", sentence_ro: "Watashi wa ninshōnchū desu",
+      note_en: "Please inform medical staff immediately", note_ja: "すぐに医療スタッフに伝えてください" },
+    { id: "pacemaker", name: "Pacemaker", ja: "ペースメーカー", ro: "Pēsumēkā", color: "#e0f2fe", iconColor: "#0284c7",
+      sentence_en: "I have a pacemaker", sentence_ja: "私はペースメーカーを装着しています", sentence_ro: "Watashi wa pēsumēkā wo sōchaku shite imasu",
+      note_en: "Avoid MRI and strong magnets", note_ja: "MRIや強力な磁石は避けてください" },
+    { id: "celiac", name: "Celiac Disease", ja: "セリアック病", ro: "Seriakku-byō", color: "#fef3c7", iconColor: "#d97706",
+      sentence_en: "I have celiac disease — no gluten", sentence_ja: "私はセリアック病です。グルテンは食べられません", sentence_ro: "Watashi wa seriakku-byō desu. Guruten wa taberaremasen",
+      note_en: "No wheat, barley, or rye", note_ja: "小麦・大麦・ライ麦は不可" },
+  ];
+
+  const allergies = [
+    { id: "nuts", name: "Tree Nut Allergy", ja: "ナッツ類アレルギー", ro: "Nattsu-rui arerugī", color: "#fef3c7", iconColor: "#d97706",
+      sentence_en: "I am allergic to all tree nuts (almonds, walnuts, cashews, pistachios, etc.)", sentence_ja: "私はナッツ類（アーモンド、くるみ、カシューナッツ、ピスタチオ等）にアレルギーがあります", sentence_ro: "Watashi wa nattsu-rui ni arerugī ga arimasu",
+      note_en: "Includes all tree nuts — anaphylaxis risk", note_ja: "全てのナッツ類を含む。アナフィラキシーのリスクあり" },
+    { id: "peanut", name: "Peanut Allergy", ja: "ピーナッツアレルギー", ro: "Pīnattsu arerugī", color: "#fef3c7", iconColor: "#d97706",
+      sentence_en: "I am allergic to peanuts", sentence_ja: "私はピーナッツにアレルギーがあります", sentence_ro: "Watashi wa pīnattsu ni arerugī ga arimasu",
+      note_en: "Includes peanut oil — anaphylaxis risk", note_ja: "ピーナッツオイルを含む。アナフィラキシーのリスクあり" },
+    { id: "shellfish", name: "Shellfish Allergy", ja: "甲殻類・貝類アレルギー", ro: "Kōkaku-rui / kai-rui arerugī", color: "#fdf2f8", iconColor: "#9d174d",
+      sentence_en: "I am allergic to all shellfish (shrimp, crab, lobster, clams, oysters, scallops, squid, etc.)", sentence_ja: "私は甲殻類・貝類（エビ、カニ、ロブスター、ハマグリ、カキ、ホタテ、イカ等）にアレルギーがあります", sentence_ro: "Watashi wa kōkaku-rui / kai-rui ni arerugī ga arimasu",
+      note_en: "All shellfish and mollusks — anaphylaxis risk", note_ja: "全ての甲殻類・軟体動物。アナフィラキシーのリスクあり" },
+    { id: "fish", name: "Fish Allergy", ja: "魚アレルギー", ro: "Sakana arerugī", color: "#e0f2fe", iconColor: "#0284c7",
+      sentence_en: "I am allergic to fish (all types)", sentence_ja: "私は魚（全種類）にアレルギーがあります", sentence_ro: "Watashi wa sakana ni arerugī ga arimasu",
+      note_en: "Includes fish sauce and fish stock", note_ja: "魚醤・出汁を含む" },
+    { id: "dairy", name: "Dairy / Milk Allergy", ja: "乳製品アレルギー", ro: "Nyūseihin arerugī", color: "#f0fdf4", iconColor: "#16a34a",
+      sentence_en: "I am allergic to dairy and milk products", sentence_ja: "私は乳製品にアレルギーがあります", sentence_ro: "Watashi wa nyūseihin ni arerugī ga arimasu",
+      note_en: "Includes milk, cheese, butter, cream", note_ja: "牛乳・チーズ・バター・クリームを含む" },
+    { id: "egg", name: "Egg Allergy", ja: "卵アレルギー", ro: "Tamago arerugī", color: "#fef9c3", iconColor: "#ca8a04",
+      sentence_en: "I am allergic to eggs", sentence_ja: "私は卵にアレルギーがあります", sentence_ro: "Watashi wa tamago ni arerugī ga arimasu",
+      note_en: "Includes all egg products and mayonnaise", note_ja: "全ての卵製品・マヨネーズを含む" },
+    { id: "wheat", name: "Wheat / Gluten Allergy", ja: "小麦・グルテンアレルギー", ro: "Komugi / Guruten arerugī", color: "#fef3c7", iconColor: "#d97706",
+      sentence_en: "I am allergic to wheat and gluten", sentence_ja: "私は小麦・グルテンにアレルギーがあります", sentence_ro: "Watashi wa komugi / guruten ni arerugī ga arimasu",
+      note_en: "Includes soy sauce, ramen, bread, tempura batter", note_ja: "醤油・ラーメン・パン・天ぷら粉を含む" },
+    { id: "soy", name: "Soy Allergy", ja: "大豆アレルギー", ro: "Daizu arerugī", color: "#f0fdf4", iconColor: "#16a34a",
+      sentence_en: "I am allergic to soy", sentence_ja: "私は大豆にアレルギーがあります", sentence_ro: "Watashi wa daizu ni arerugī ga arimasu",
+      note_en: "Includes tofu, miso, edamame, soy sauce", note_ja: "豆腐・味噌・枝豆・醤油を含む" },
+    { id: "sesame", name: "Sesame Allergy", ja: "ごまアレルギー", ro: "Goma arerugī", color: "#f9fafb", iconColor: "#6b7280",
+      sentence_en: "I am allergic to sesame", sentence_ja: "私はごまにアレルギーがあります", sentence_ro: "Watashi wa goma ni arerugī ga arimasu",
+      note_en: "Includes sesame oil and tahini", note_ja: "ごま油・タヒニを含む" },
+    { id: "penicillin", name: "Penicillin / Antibiotic Allergy", ja: "ペニシリン・抗生物質アレルギー", ro: "Penishirin / kōseibusshitsu arerugī", color: "#fee2e2", iconColor: "#dc2626",
+      sentence_en: "I am allergic to penicillin / antibiotics", sentence_ja: "私はペニシリン・抗生物質にアレルギーがあります", sentence_ro: "Watashi wa penishirin / kōseibusshitsu ni arerugī ga arimasu",
+      note_en: "Please check before prescribing — anaphylaxis risk", note_ja: "処方前に確認してください。アナフィラキシーのリスクあり" },
+    { id: "nsaid", name: "NSAID / Aspirin Allergy", ja: "NSAIDsアレルギー", ro: "Enuseeaidī arerugī", color: "#fee2e2", iconColor: "#dc2626",
+      sentence_en: "I am allergic to NSAIDs and aspirin", sentence_ja: "私はNSAIDs・アスピリンにアレルギーがあります", sentence_ro: "Watashi wa NSAIDs / asupirin ni arerugī ga arimasu",
+      note_en: "Includes ibuprofen and naproxen", note_ja: "イブプロフェン・ナプロキセンを含む" },
+    { id: "latex", name: "Latex Allergy", ja: "ラテックスアレルギー", ro: "Ratekkusu arerugī", color: "#f3e8ff", iconColor: "#7c3aed",
+      sentence_en: "I am allergic to latex", sentence_ja: "私はラテックスにアレルギーがあります", sentence_ro: "Watashi wa ratekkusu ni arerugī ga arimasu",
+      note_en: "Please use latex-free gloves and equipment", note_ja: "ラテックスフリーの手袋・器具を使用してください" },
+  ];
+
+  const allItems = [...conditions.map(c => ({...c, type: 'condition'})), ...allergies.map(a => ({...a, type: 'allergy'}))];
+  let selectedItems = [];
+
+  function initCardBuilder() {
+    const condEl = document.getElementById("conditionItems");
+    const allergyEl = document.getElementById("allergyItems");
+
+    conditions.forEach(c => condEl.appendChild(makeItemBtn(c, 'condition')));
+    allergies.forEach(a => allergyEl.appendChild(makeItemBtn(a, 'allergy')));
+
+    initCarousel();
+  }
+
+  function getIcon(id, color, size) {
+    const s = size || 18;
+    const svg = conditionIcons[id] || conditionIcons['penicillin'];
+    return svg.replace('viewBox', 'width="' + s + '" height="' + s + '" viewBox').replace('stroke="currentColor"', 'stroke="' + color + '"');
+  }
+
+  function makeItemBtn(item, type) {
+    const btn = document.createElement("button");
+    btn.className = "card-item-btn";
+    btn.id = "btn-" + item.id;
+    btn.dataset.name = item.name.toLowerCase();
+    btn.dataset.type = type;
+    btn.innerHTML = '<span style="display:flex;align-items:center;">' + getIcon(item.id, item.iconColor, 14) + '</span>' + item.name;
+    btn.onclick = () => toggleItem(item, type);
+    return btn;
+  }
+
+  function toggleItem(item, type) {
+    const btn = document.getElementById("btn-" + item.id);
+    const idx = selectedItems.findIndex(s => s.id === item.id);
+    if (idx >= 0) {
+      selectedItems.splice(idx, 1);
+      btn.classList.remove("selected");
+    } else {
+      selectedItems.push({...item, type});
+      btn.classList.add("selected");
+    }
+    updateSelectedTags();
+    updateGeneratedCard();
+  }
+
+  function updateSelectedTags() {
+    const wrap = document.getElementById("selectedTagsWrap");
+    const container = document.getElementById("selectedTags");
+    container.innerHTML = "";
+    if (!selectedItems.length) { wrap.style.display = "none"; return; }
+    wrap.style.display = "block";
+    selectedItems.forEach(item => {
+      const tag = document.createElement("span");
+      tag.className = "selected-tag";
+      tag.innerHTML = item.icon + " " + item.name + " &times;";
+      tag.onclick = () => toggleItem(item, item.type);
+      container.appendChild(tag);
+    });
+  }
+
+  function updateGeneratedCard() {
+    const wrap = document.getElementById("generatedCardWrap");
+    const body = document.getElementById("genCardBody");
+    const titleEl = document.querySelector(".gen-card-title");
+    if (!selectedItems.length) { wrap.style.display = "none"; return; }
+    wrap.style.display = "block";
+
+    // Update title with condition names
+    const names = selectedItems.map(i => i.name).join(", ");
+    titleEl.textContent = "Japan Emergency Medical Card: " + names;
+
+    body.innerHTML = "";
+
+    const headerRow = document.createElement("div");
+    headerRow.className = "gen-card-row";
+    headerRow.innerHTML =
+      '<span class="gen-card-row-en">Please call an ambulance if needed: 119</span>' +
+      '<span class="gen-card-row-ja">必要であれば救急車を呼んでください：119</span>';
+    body.appendChild(headerRow);
+
+    selectedItems.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "gen-card-row";
+      const iconSvg = getIcon(item.id, item.iconColor, 14);
+      row.innerHTML =
+        '<span class="gen-card-row-en" style="display:flex;align-items:center;gap:5px;">' + iconSvg + ' ' + item.sentence_en + '</span>' +
+        '<span class="gen-card-row-ja">' + item.sentence_ja + '</span>' +
+        '<span class="gen-card-row-ro">' + item.sentence_ro + '</span>' +
+        (item.note_en ? '<span class="gen-card-row-en" style="font-size:0.72rem;color:var(--gray);font-weight:400;">' + item.note_en + ' / ' + item.note_ja + '</span>' : '');
+      body.appendChild(row);
+    });
+  }
+
+  function filterCardItems() {
+    const val = document.getElementById("cardSearchInput").value.toLowerCase().trim();
+    document.querySelectorAll(".card-item-btn").forEach(btn => {
+      if (!val || btn.dataset.name.includes(val)) {
+        btn.classList.remove("hidden");
+      } else {
+        btn.classList.add("hidden");
+      }
+    });
+  }
+
+  function clearSelections() {
+    selectedItems = [];
+    document.querySelectorAll(".card-item-btn").forEach(b => b.classList.remove("selected"));
+    document.getElementById("selectedTagsWrap").style.display = "none";
+    document.getElementById("generatedCardWrap").style.display = "none";
+  }
+
+  function printCard() {
+    if (!selectedItems.length) return;
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a6' });
+
+    const W = doc.internal.pageSize.getWidth();
+    let y = 0;
+
+    // Header bar
+    doc.setFillColor(45, 45, 45);
+    doc.rect(0, 0, W, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    const names = selectedItems.map(i => i.name).join(', ');
+    const title = 'Japan Emergency Medical Card: ' + names;
+    const titleLines = doc.splitTextToSize(title, W - 8);
+    doc.text(titleLines, 4, 7);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(180, 180, 180);
+    doc.text('日本緊急医療カード', 4, titleLines.length > 1 ? 17 : 14);
+    y = 24;
+
+    // Ambulance line
+    doc.setFillColor(254, 226, 226);
+    doc.rect(0, y, W, 8, 'F');
+    doc.setTextColor(220, 38, 38);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Please call an ambulance if needed: 119', 4, y + 5);
+    y += 11;
+
+    // Each condition
+    selectedItems.forEach((item, i) => {
+      const bgColor = item.color.replace('#', '');
+      const r = parseInt(bgColor.substring(0,2),16);
+      const g = parseInt(bgColor.substring(2,4),16);
+      const b = parseInt(bgColor.substring(4,6),16);
+
+      doc.setFillColor(r, g, b);
+      doc.rect(0, y, W, 2, 'F');
+      y += 4;
+
+      doc.setTextColor(45, 45, 45);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      const enLines = doc.splitTextToSize(item.sentence_en, W - 8);
+      doc.text(enLines, 4, y);
+      y += enLines.length * 4 + 1;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(42, 127, 127);
+      doc.setFontSize(8);
+      const jaLines = doc.splitTextToSize(item.sentence_ja, W - 8);
+      doc.text(jaLines, 4, y);
+      y += jaLines.length * 4 + 1;
+
+      doc.setTextColor(107, 114, 128);
+      doc.setFontSize(6.5);
+      doc.setFont('helvetica', 'italic');
+      doc.text(item.sentence_ro, 4, y);
+      y += 4;
+
+      if (item.note_en) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        const noteLines = doc.splitTextToSize(item.note_en + ' / ' + item.note_ja, W - 8);
+        doc.text(noteLines, 4, y);
+        y += noteLines.length * 3.5;
+      }
+      y += 3;
+    });
+
+    // Footer numbers
+    const footerH = 10;
+    const footerY = doc.internal.pageSize.getHeight() - footerH;
+    doc.setFillColor(254, 226, 226);
+    doc.rect(0, footerY, W, footerH, 'F');
+    doc.setTextColor(220, 38, 38);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('119 救急   110 警察   03-6233-9266 AMDA通訳', 4, footerY + 6);
+
+    doc.save('japan-emergency-card.pdf');
+  }
+
+  // ── CAROUSEL ──
+  function initCarousel() {
+    const carouselItems = [...conditions, ...allergies];
+    const track = document.getElementById("carouselTrack");
+
+    [0,1].forEach(() => {
+      carouselItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "carousel-card";
+        card.style.borderColor = item.color;
+        const iconSvg = getIcon(item.id, item.iconColor, 22);
+        card.innerHTML =
+          '<div class="carousel-card-icon" style="background:' + item.color + '">' + iconSvg + '</div>' +
+          '<div class="carousel-card-name">' + item.name + '</div>' +
+          '<div class="carousel-card-ja">' + item.ja + '</div>' +
+          '<div class="carousel-card-ro">' + item.ro + '</div>' +
+          '<div class="carousel-card-phrase">' +
+            '<strong>' + item.sentence_en + '</strong>' +
+            item.sentence_ja +
+          '</div>';
+        track.appendChild(card);
+      });
+    });
+  }
+
+  initCardBuilder();
+  const specialistKeywords = [
+    {
+      name: "General / Internal Medicine",
+      tag: "General Clinic",
+      keywords: ["fever","cold","flu","tired","fatigue","cough","runny nose","headache","check","immunization","vaccine","blood pressure","diabetes","unwell","sick","general","not sure","weak","chills","vomiting","nausea general"],
+      color: "#2A7F7F"
+    },
+    {
+      name: "Pediatrics",
+      tag: "Pediatric Clinic",
+      keywords: ["child","kid","baby","infant","toddler","my son","my daughter","growth","vaccination","child fever","rash child","developmental"],
+      color: "#be185d"
+    },
+    {
+      name: "Cardiology",
+      tag: "Cardiologist",
+      keywords: ["chest pain","heart","palpitation","irregular heartbeat","shortness of breath","chest tightness","heart rate","pulse","blood pressure heart"],
+      color: "#dc2626"
+    },
+    {
+      name: "Orthopedics",
+      tag: "Orthopedic Clinic",
+      keywords: ["knee","back pain","joint","bone","fracture","broken","sprain","shoulder","hip","ankle","wrist","muscle pain","sports injury","stiff","neck pain","spine","elbow","ligament"],
+      color: "#E8A838"
+    },
+    {
+      name: "Dermatology",
+      tag: "Dermatologist",
+      keywords: ["rash","hive","eczema","skin","acne","mole","itch","itchy","hair loss","scalp","allergic skin","blister","wart","psoriasis","dry skin","lesion"],
+      color: "#388e3c"
+    },
+    {
+      name: "Gastroenterology (GI)",
+      tag: "GI Clinic",
+      keywords: ["stomach","nausea","vomit","diarrhea","constipation","bloat","acid reflux","heartburn","bowel","stool","abdominal","gut","indigestion","cramp","weight loss","blood stool"],
+      color: "#7c3aed"
+    },
+    {
+      name: "ENT (Ear, Nose & Throat)",
+      tag: "ENT Clinic",
+      keywords: ["ear","hearing","sore throat","tonsil","nose","sinus","congestion","nosebleed","hoarse","voice","throat","swallow","snore","vertigo","dizzy"],
+      color: "#0284c7"
+    },
+    {
+      name: "Gynecology",
+      tag: "Gynecologist",
+      keywords: ["period","menstrual","pregnancy","pregnant","pelvic","breast","mammogram","discharge","ovarian","uterus","cramp period","gynecology","women","female","irregular period"],
+      color: "#be185d"
+    },
+    {
+      name: "Urology",
+      tag: "Urologist",
+      keywords: ["urination","pee","urine","bladder","kidney","kidney stone","blood in urine","frequent urination","prostate","male health","burning urination"],
+      color: "#2A7F7F"
+    },
+    {
+      name: "Dentist",
+      tag: "Dentist",
+      keywords: ["tooth","teeth","dental","cavity","gum","mouth pain","toothache","crown","filling","jaw","bite","wisdom tooth"],
+      color: "#E8A838"
+    },
+    {
+      name: "Orthodontist",
+      tag: "Orthodontist",
+      keywords: ["braces","alignment","crooked teeth","orthodont","retainer","overbite","underbite"],
+      color: "#E8A838"
+    },
+    {
+      name: "Mental Health / Psychiatry",
+      tag: "Mental Health Clinic",
+      keywords: ["anxiety","depression","sad","mood","panic","stress","mental","sleep disorder","insomnia","hopeless","worry","trauma","ptsd","therapy","counseling","psychiatry","emotional","burnout","fatigue mental","low mood","crying"],
+      color: "#16a34a"
+    },
+    {
+      name: "Physiotherapy & Chiropractic",
+      tag: "Physiotherapy & Chiropractic",
+      keywords: ["physio","physiotherapy","chiropractic","rehabilitation","rehab","posture","stiff","strain","repetitive","sports injury","recovery","range of motion","muscle imbalance","spasm","tight muscle","back rehab","shoulder rehab","knee rehab"],
+      color: "#2563eb"
+    },
+    {
+      name: "Ophthalmology",
+      tag: "Ophthalmology Clinic",
+      keywords: ["eye","vision","blurry","eyesight","floater","flash","eye pain","eye red","eye discharge","dry eye","contact lens","glasses","prescription","glaucoma","cataract","retina","eyelid","eye infection"],
+      color: "#ca8a04"
+    },
+    {
+      name: "Oncology",
+      tag: "Oncology Clinic",
+      keywords: ["cancer","tumor","tumour","oncology","lump","malignant","chemotherapy","radiation","biopsy","night sweat","unexplained weight loss","growth","mass","lymphoma","leukemia"],
+      color: "#9d174d"
+    },
+    {
+      name: "Podiatry",
+      tag: "Podiatry Clinic",
+      keywords: ["foot","heel","toe","toenail","ingrown","plantar","bunion","corn","callus","ankle","diabetic foot","arch pain","foot pain","gait","blister foot","wart foot"],
+      color: "#d97706"
+    },
+    {
+      name: "Mammogram",
+      tag: "Mammogram Clinic",
+      keywords: ["mammogram","breast screening","breast lump","breast check","breast cancer screening"],
+      color: "#be185d"
+    }
+  ];
+
+  function matchSymptom() {
+    const input = document.getElementById('symptomInput').value.trim().toLowerCase();
+    const resultEl = document.getElementById('matcherResult');
+
+    if (!input) {
+      resultEl.style.display = 'none';
+      return;
+    }
+
+    // Score each specialist — match if input word appears in any keyword OR keyword appears in input
+    const inputWords = input.split(/\s+/).filter(w => w.length > 2);
+    const scores = specialistKeywords.map(spec => {
+      let score = 0;
+      let matchedWords = [];
+      spec.keywords.forEach(kw => {
+        // full phrase match
+        if (input.includes(kw)) {
+          score += kw.split(' ').length * 2;
+          if (!matchedWords.includes(kw)) matchedWords.push(kw);
+        } else {
+          // partial: any input word appears in the keyword
+          inputWords.forEach(word => {
+            if (kw.includes(word) && !matchedWords.includes(kw)) {
+              score += 1;
+              matchedWords.push(kw);
+            }
+          });
+        }
+      });
+      return { ...spec, score, matchedWords };
+    }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+
+    resultEl.innerHTML = '';
+
+    if (!scores.length) {
+      resultEl.innerHTML =
+        '<div class="matcher-no-match">No clear match found. Try describing your symptoms differently, or start with a <strong>General / Internal Medicine</strong> clinic — they can refer you to the right specialist.</div>';
+      resultEl.style.display = 'block';
+      resultEl.style.animation = 'none';
+      resultEl.offsetHeight;
+      resultEl.style.animation = '';
+      return;
+    }
+
+    const disclaimer = document.createElement('p');
+    disclaimer.style.cssText = 'font-size:0.775rem;color:var(--gray);margin-bottom:14px;font-style:italic;';
+    disclaimer.textContent = 'This is a general guide only — not medical advice. If unsure, start with a General / Internal Medicine clinic.';
+    resultEl.appendChild(disclaimer);
+
+    scores.forEach((match, i) => {
+      const div = document.createElement('div');
+      div.className = 'matcher-match' + (i === 0 ? ' top' : '');
+      div.innerHTML =
+        '<div class="matcher-match-left">' +
+          '<span class="matcher-match-label">' + (i === 0 ? 'Closest match' : 'Also possible') + '</span>' +
+          '<span class="matcher-match-name">' + match.name + '</span>' +
+          '<span class="matcher-match-reason">Related to: ' + match.matchedWords.slice(0, 3).join(', ') + '</span>' +
+        '</div>' +
+        '<span class="specialist-tag">' + match.tag + '</span>';
+      resultEl.appendChild(div);
+    });
+
+    resultEl.style.display = 'block';
+    resultEl.style.animation = 'none';
+    resultEl.offsetHeight;
+    resultEl.style.animation = 'fadeSlideIn 0.3s ease';
+  }
+  document.querySelectorAll('.sub-nav a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href').replace('#', '');
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      const navHeight = document.querySelector('nav').offsetHeight;
+      const subNavHeight = document.querySelector('.sub-nav').offsetHeight;
+      const offset = navHeight + subNavHeight + 24;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+  });
+
+  // Sub nav active state on scroll
+  const sections = ['specialist', 'emergency', 'card'];
+  const subLinks = document.querySelectorAll('.sub-nav a');
+
+  window.addEventListener('scroll', () => {
+    const navHeight = document.querySelector('nav').offsetHeight;
+    const subNavHeight = document.querySelector('.sub-nav').offsetHeight;
+    const offset = navHeight + subNavHeight + 40;
+    let current = sections[0];
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.offsetTop - offset) current = id;
+    });
+    subLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+
+  // Flowchart toggle
+
+</script>
+
+</body>
+</html>
