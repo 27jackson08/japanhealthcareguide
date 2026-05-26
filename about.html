@@ -206,6 +206,124 @@
     .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1rem; color: #fff; }
 
     /* RESPONSIVE */
+    
+    /* ── MOBILE NAV ── */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 6px;
+      border: none;
+      background: transparent;
+      z-index: 200;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--charcoal);
+      border-radius: 2px;
+      transition: all 0.25s ease;
+    }
+
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .mobile-sidebar {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 260px;
+      height: 100vh;
+      background: #fff;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+      z-index: 999;
+      transition: right 0.28s ease;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    .mobile-sidebar.open { right: 0; }
+
+    .mobile-sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--gray-light);
+    }
+
+    .mobile-sidebar-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--teal);
+      text-decoration: none;
+    }
+
+    .mobile-sidebar-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gray-light);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .mobile-sidebar-close:hover { background: #d1d5db; }
+
+    .mobile-sidebar-links {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 12px;
+      flex: 1;
+      overflow-y: auto;
+      gap: 2px;
+    }
+
+    .mobile-sidebar-links a {
+      text-decoration: none;
+      color: var(--charcoal);
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 12px 14px;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .mobile-sidebar-links a:hover { background: var(--teal-light); color: var(--teal); }
+    .mobile-sidebar-links a.active { background: var(--teal-light); color: var(--teal); font-weight: 600; }
+
+    .mobile-sidebar-links .sidebar-cta {
+      background: var(--red) !important;
+      color: #fff !important;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 998;
+      display: none;
+      backdrop-filter: blur(1px);
+    }
+
+    .mobile-overlay.open { display: block; }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+    }
+
     @media (max-width: 900px) {
       nav { padding: 0 24px; }
       .nav-links { display: none; }
@@ -230,8 +348,29 @@
     <li><a href="about.html" class="active">About</a></li>
     <li><a href="emergency.html" class="nav-cta">Emergency Info</a></li>
   </ul>
-</nav>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
+  <!-- MOBILE SIDEBAR -->
+  <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
+  <div class="mobile-sidebar" id="mobileSidebar">
+    <div class="mobile-sidebar-header">
+      <a href="index.html" class="mobile-sidebar-logo">Japan Healthcare Guide</a>
+      <button class="mobile-sidebar-close" onclick="closeSidebar()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="mobile-sidebar-links">
+      <a href="index.html">Home</a>
+      <a href="clinic-finder.html">Clinic Finder</a>
+      <a href="navigating-care.html">Navigating Care</a>
+      <a href="healthcare-in-japan.html">Healthcare in Japan</a>
+      <a href="about.html" class="active">About</a>
+      <a href="emergency.html" class="sidebar-cta">Emergency Info</a>
+    </div>
+  </div>
 <!-- PAGE HEADER -->
 <div class="page-header-wrap">
   <div class="page-header">
@@ -337,5 +476,23 @@
   </div>
 </footer>
 
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('mobileSidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    const btn = document.getElementById('hamburgerBtn');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+    btn.classList.toggle('open');
+    document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+  }
+
+  function closeSidebar() {
+    document.getElementById('mobileSidebar').classList.remove('open');
+    document.getElementById('mobileOverlay').classList.remove('open');
+    document.getElementById('hamburgerBtn').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+</script>
 </body>
 </html>
