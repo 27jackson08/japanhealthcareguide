@@ -278,7 +278,65 @@
 
     .btn-clear:hover { border-color: var(--teal); color: var(--teal); }
 
-    /* ── RESULTS AREA ── */
+    .btn-near-me {
+      background: transparent;
+      color: var(--teal);
+      padding: 11px 18px;
+      border-radius: 8px;
+      border: 1.5px solid var(--teal);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-near-me:hover { background: var(--teal-light); }
+
+    .btn-near-me.loading {
+      color: var(--gray);
+      border-color: var(--gray-light);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .btn-near-me.active {
+      background: var(--green-light);
+      color: var(--green);
+      border-color: #86efac;
+    }
+
+    .btn-near-me .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--gray-light);
+      border-top-color: var(--gray);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .gps-error-msg {
+      width: 100%;
+      background: var(--red-light);
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.825rem;
+      color: var(--red);
+      display: none;
+      margin-top: 8px;
+    }
+
+    .gps-error-msg.show { display: block; }
     .results-wrapper {
       max-width: 1200px;
       margin: 0 auto;
@@ -1232,9 +1290,13 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       Search
     </button>
+    <button class="btn-near-me" id="btnNearMe" onclick="findNearMe()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" opacity="0.3"/></svg>
+      Near me
+    </button>
     <button class="btn-clear" onclick="clearSearch()">Clear</button>
   </div>
-</div>
+  <div class="gps-error-msg" id="gpsError"></div>
 
 <!-- RESULTS -->
 <div class="results-wrapper">
@@ -2001,7 +2063,7 @@
 
     const dist = userCoords ? getDistanceFromUser(c.name, userCoords) : null;
     const distLabel = dist !== null
-      ? '<div class="clinic-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Approx. ' + dist.toFixed(1) + ' km from ' + locVal + '</div>'
+      ? '<div class="clinic-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + dist.toFixed(1) + ' km from ' + (locVal === "your location" ? 'your location' : locVal) + '</div>'
       : "";
 
     card.innerHTML =
@@ -2045,8 +2107,161 @@
     locationInput.value = "";
     selectedSpecialty = "";
     selectedLocation = "";
+    window._gpsCoords = null;
+    const btn = document.getElementById("btnNearMe");
+    btn.classList.remove("loading", "active");
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" opacity="0.3"/></svg> Near me';
+    const errEl = document.getElementById("gpsError");
+    errEl.textContent = "";
+    errEl.classList.remove("show");
     document.getElementById("defaultState").style.display = "block";
     document.getElementById("resultsSection").style.display = "none";
+  }
+
+  // ── GPS NEAR ME ──
+  function findNearMe() {
+    const btn = document.getElementById("btnNearMe");
+    const errEl = document.getElementById("gpsError");
+
+    errEl.textContent = "";
+    errEl.classList.remove("show");
+
+    if (!navigator.geolocation) {
+      errEl.textContent = "Your browser doesn't support GPS location. Try typing a neighborhood instead.";
+      errEl.classList.add("show");
+      return;
+    }
+
+    // Loading state
+    btn.classList.add("loading");
+    btn.classList.remove("active");
+    btn.innerHTML = '<span class="spinner"></span> Locating...';
+
+    navigator.geolocation.getCurrentPosition(
+      // ── SUCCESS ──
+      (pos) => {
+        const userLat = pos.coords.latitude;
+        const userLng = pos.coords.longitude;
+        window._gpsCoords = [userLat, userLng];
+
+        // Active state
+        btn.classList.remove("loading");
+        btn.classList.add("active");
+        btn.innerHTML =
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Location found';
+
+        // Run results using real GPS coords
+        runNearMeResults(userLat, userLng);
+      },
+      // ── ERROR ──
+      (err) => {
+        btn.classList.remove("loading");
+        btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" opacity="0.3"/></svg> Near me';
+        const messages = {
+          1: "Location access was denied. Allow location in your browser settings, or type a neighborhood to search.",
+          2: "Your location couldn't be determined right now. Try again or type a neighborhood.",
+          3: "Location request timed out. Try again or type a neighborhood."
+        };
+        errEl.textContent = messages[err.code] || "Location unavailable. Try typing a neighborhood instead.";
+        errEl.classList.add("show");
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    );
+  }
+
+  function runNearMeResults(userLat, userLng) {
+    const specVal = specialtyInput.value.trim();
+    const userCoords = [userLat, userLng];
+
+    let results = clinics;
+    if (specVal) {
+      results = results.filter(c =>
+        c.specialty.some(s => s.toLowerCase().includes(specVal.toLowerCase()))
+      );
+    }
+
+    document.getElementById("defaultState").style.display = "none";
+    document.getElementById("resultsSection").style.display = "block";
+
+    const grid = document.getElementById("clinicGrid");
+    const empty = document.getElementById("emptyState");
+    const countEl = document.getElementById("resultsCount");
+    const filtersEl = document.getElementById("activeFilters");
+
+    filtersEl.innerHTML = "";
+    if (specVal) filtersEl.innerHTML += '<span class="filter-tag">' + specVal + '</span>';
+    filtersEl.innerHTML +=
+      '<span class="filter-tag" style="background:var(--green-light);color:var(--green);">' +
+        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>' +
+        'Near me' +
+      '</span>';
+
+    if (!results.length) {
+      grid.innerHTML = "";
+      grid.style.display = "block";
+      empty.classList.add("show");
+      countEl.innerHTML = "<strong>0</strong> clinics found";
+      return;
+    }
+
+    empty.classList.remove("show");
+    grid.style.display = "block";
+
+    // Sort all by real GPS distance
+    const sorted = results.slice().sort((a, b) =>
+      getDistanceFromUser(a.name, userCoords) - getDistanceFromUser(b.name, userCoords)
+    );
+
+    // Split into ≤5km and beyond
+    const close   = sorted.filter(c => getDistanceFromUser(c.name, userCoords) <= 5);
+    const further = sorted.filter(c => getDistanceFromUser(c.name, userCoords) >  5).slice(0, 6);
+
+    grid.innerHTML = "";
+
+    const label = specVal ? specVal + ' clinics' : 'clinics';
+
+    if (close.length > 0) {
+      countEl.innerHTML = "<strong>" + close.length + "</strong> " + label + " within 5 km of you";
+
+      const closeHeader = document.createElement("div");
+      closeHeader.className = "results-section-header";
+      closeHeader.innerHTML =
+        '<div class="results-section-title green">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>' +
+          close.length + ' ' + label + ' within 5 km' +
+        '</div>';
+      grid.appendChild(closeHeader);
+
+      const closeGrid = document.createElement("div");
+      closeGrid.className = "clinic-grid";
+      close.forEach(c => closeGrid.appendChild(buildCard(c, userCoords, "your location")));
+      grid.appendChild(closeGrid);
+
+    } else {
+      countEl.innerHTML = "No " + label + " found within 5 km — showing nearest options";
+    }
+
+    if (further.length > 0) {
+      if (close.length > 0) {
+        const divider = document.createElement("div");
+        divider.className = "results-section-divider";
+        grid.appendChild(divider);
+      }
+
+      const furtherHeader = document.createElement("div");
+      furtherHeader.className = "results-section-header";
+      furtherHeader.innerHTML =
+        '<div class="results-section-title gray">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+          'Further away' +
+        '</div>';
+      grid.appendChild(furtherHeader);
+
+      const furtherGrid = document.createElement("div");
+      furtherGrid.className = "clinic-grid";
+      further.forEach(c => furtherGrid.appendChild(buildCard(c, userCoords, "your location")));
+      grid.appendChild(furtherGrid);
+    }
   }
 
   // ── CLINIC HOURS ──
