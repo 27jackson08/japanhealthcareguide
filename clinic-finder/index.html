@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Clinic Finder — Japan Healthcare Guide</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet"/>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -676,6 +678,44 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+
+    /* Mapbox interactive map */
+    #popup-mapbox-container {
+      width: 100%;
+      height: 200px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--gray-light);
+    }
+
+    /* Custom Mapbox marker */
+    .mapbox-clinic-marker {
+      width: 36px;
+      height: 36px;
+      background: var(--teal);
+      border: 3px solid #fff;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 2px 8px rgba(42,127,127,0.4);
+      cursor: pointer;
+    }
+
+    .mapbox-clinic-marker::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(45deg);
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    /* Override Mapbox attribution to keep it subtle */
+    .mapboxgl-ctrl-attrib {
+      font-size: 10px !important;
     }
 
     /* hours table */
@@ -2292,36 +2332,23 @@
     const lat = coords ? coords[0] : null;
     const lng = coords ? coords[1] : null;
 
-    // map — styled placeholder with Google Maps link that works everywhere
+    // map — Mapbox interactive map with marker, or fallback Google Maps link
+    const mapsSearchURL = 'https://www.google.com/maps/search/' + encodeURIComponent(c.name + ' ' + c.address);
     const mapHTML = lat ? (
       '<div class="popup-map-section">' +
         '<p class="popup-section-label">Location on map</p>' +
-        '<a href="https://www.google.com/maps/search/' + encodeURIComponent(c.name + ' ' + c.address) + '" target="_blank" style="text-decoration:none;">' +
-          '<div style="' +
-            'width:100%;height:180px;border-radius:10px;' +
-            'border:1px solid var(--gray-light);' +
-            'background:linear-gradient(135deg,#e8f4f4 0%,#d1e8e8 100%);' +
-            'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;' +
-            'cursor:pointer;transition:background 0.15s;' +
-            '">' +
-            '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2A7F7F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
-            '<div style="text-align:center;">' +
-              '<div style="font-size:0.875rem;font-weight:600;color:#2A7F7F;">' + c.name + '</div>' +
-              '<div style="font-size:0.775rem;color:#6B7280;margin-top:2px;">' + c.address + '</div>' +
-            '</div>' +
-            '<div style="background:#2A7F7F;color:#fff;font-size:0.775rem;font-weight:600;padding:6px 16px;border-radius:6px;">' +
-              'Open in Google Maps →' +
-            '</div>' +
-          '</div>' +
+        '<div id="popup-mapbox-container"></div>' +
+        '<a href="' + mapsSearchURL + '" target="_blank" style="font-size:0.775rem;color:var(--teal);font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">' +
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+          'Open in Google Maps for directions' +
         '</a>' +
-        '<div style="font-size:0.72rem;color:#9ca3af;margin-top:6px;font-style:italic;">Tap above to view exact location and get directions</div>' +
       '</div>'
     ) : (
       '<div class="popup-map-section">' +
         '<p class="popup-section-label">Location</p>' +
         '<div class="popup-info-row">' +
           '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
-          '<a href="https://www.google.com/maps/search/' + encodeURIComponent(c.name + ' ' + c.address) + '" target="_blank">Search on Google Maps</a>' +
+          '<a href="' + mapsSearchURL + '" target="_blank">Search on Google Maps</a>' +
         '</div>' +
       '</div>'
     );
@@ -2423,11 +2450,62 @@
     document.body.style.overflow = "hidden";
     // scroll popup back to top on each open
     document.getElementById("clinicPopup").scrollTop = 0;
+
+    // ── MAPBOX INIT ──
+    // Destroy any previous instance before creating a new one
+    if (window._popupMap) {
+      window._popupMap.remove();
+      window._popupMap = null;
+    }
+
+    if (lat && lng) {
+      // Use requestAnimationFrame to ensure the container is rendered in the DOM
+      requestAnimationFrame(() => {
+        const container = document.getElementById("popup-mapbox-container");
+        if (!container) return;
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiamJvMjAwMCIsImEiOiJjbXBxeGd3cDAwdnMyMnFxN2k2c2Q0NHAyIn0.ZGuPY2k5_FjUJF9KB-ibow';
+
+        const map = new mapboxgl.Map({
+          container: 'popup-mapbox-container',
+          style: 'mapbox://styles/mapbox/light-v11',
+          center: [lng, lat],
+          zoom: 15,
+          scrollZoom: false,        // prevent accidental scroll hijack inside popup
+          attributionControl: true
+        });
+
+        // Custom teal marker element
+        const markerEl = document.createElement('div');
+        markerEl.className = 'mapbox-clinic-marker';
+
+        new mapboxgl.Marker({ element: markerEl, anchor: 'bottom' })
+          .setLngLat([lng, lat])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 25, closeButton: false })
+              .setHTML(
+                '<strong style="font-size:0.8rem;color:#2D2D2D;">' + c.name + '</strong>' +
+                '<br><span style="font-size:0.72rem;color:#6B7280;">' + c.address + '</span>'
+              )
+          )
+          .addTo(map);
+
+        // Add zoom controls
+        map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
+
+        window._popupMap = map;
+      });
+    }
   }
 
   function closeClinicPopup() {
     document.getElementById("clinicPopupOverlay").classList.remove("open");
     document.body.style.overflow = "";
+    // Clean up Mapbox instance to free memory
+    if (window._popupMap) {
+      window._popupMap.remove();
+      window._popupMap = null;
+    }
   }
 
   function handlePopupOverlayClick(e) {
