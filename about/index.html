@@ -725,11 +725,65 @@
   <div id="contact" class="about-block">
     <p class="about-block-label">Contact</p>
     <h2>Get in touch</h2>
-    <p>For corrections, suggestions, or questions about this guide, use the submission form on the Clinic Finder page. We review submissions regularly and update the guide accordingly.</p>
-    <div class="contact-box">
-      <p>Found a clinic that has closed, changed hours, or updated its English support? Found a clinic we should add? Something on this page that needs correcting?</p>
-      <p>Go to the <a href="/clinic-finder" class="contact-link">Clinic Finder</a> and use the "Submit a correction or suggestion" button at the bottom of the page.</p>
-    </div>
+    <p style="font-size:0.9rem;color:var(--gray);line-height:1.7;margin-bottom:28px;">Found a clinic that's closed or changed? Want to suggest something? Have a question about the guide? Send us a message below.</p>
+
+    <form id="contactForm" action="https://formspree.io/f/mjgldlpz" method="POST" style="width:100%;">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div>
+          <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--charcoal);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">First Name <span style="color:#dc2626;">*</span></label>
+          <input type="text" name="first_name" required placeholder="First name"
+            style="width:100%;padding:12px 14px;border:1.5px solid var(--gray-light);border-radius:8px;font-size:0.875rem;font-family:inherit;color:var(--charcoal);background:#fff;outline:none;box-sizing:border-box;transition:border-color 0.15s;"
+            onfocus="this.style.borderColor='#2A7F7F'" onblur="this.style.borderColor='var(--gray-light)'"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--charcoal);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Last Name</label>
+          <input type="text" name="last_name" placeholder="Last name"
+            style="width:100%;padding:12px 14px;border:1.5px solid var(--gray-light);border-radius:8px;font-size:0.875rem;font-family:inherit;color:var(--charcoal);background:#fff;outline:none;box-sizing:border-box;transition:border-color 0.15s;"
+            onfocus="this.style.borderColor='#2A7F7F'" onblur="this.style.borderColor='var(--gray-light)'"/>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div>
+          <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--charcoal);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Email <span style="color:#dc2626;">*</span></label>
+          <input type="email" name="email" required placeholder="your@email.com"
+            style="width:100%;padding:12px 14px;border:1.5px solid var(--gray-light);border-radius:8px;font-size:0.875rem;font-family:inherit;color:var(--charcoal);background:#fff;outline:none;box-sizing:border-box;transition:border-color 0.15s;"
+            onfocus="this.style.borderColor='#2A7F7F'" onblur="this.style.borderColor='var(--gray-light)'"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--charcoal);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Subject</label>
+          <select name="subject"
+            style="width:100%;padding:12px 14px;border:1.5px solid var(--gray-light);border-radius:8px;font-size:0.875rem;font-family:inherit;color:var(--charcoal);background:#fff;outline:none;box-sizing:border-box;transition:border-color 0.15s;-webkit-appearance:none;"
+            onfocus="this.style.borderColor='#2A7F7F'" onblur="this.style.borderColor='var(--gray-light)'">
+            <option value="">Select a topic</option>
+            <option value="clinic_correction">Clinic correction</option>
+            <option value="suggest_clinic">Suggest a clinic</option>
+            <option value="general_feedback">General feedback</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--charcoal);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Message <span style="color:#dc2626;">*</span></label>
+        <textarea name="message" required placeholder="Tell us what you'd like to share or ask..." rows="5"
+          style="width:100%;padding:12px 14px;border:1.5px solid var(--gray-light);border-radius:8px;font-size:0.875rem;font-family:inherit;color:var(--charcoal);background:#fff;outline:none;box-sizing:border-box;resize:vertical;transition:border-color 0.15s;"
+          onfocus="this.style.borderColor='#2A7F7F'" onblur="this.style.borderColor='var(--gray-light)'"></textarea>
+      </div>
+
+      <div id="contactSuccess" style="display:none;background:#e8f4f4;border:1.5px solid #2A7F7F;border-radius:8px;padding:14px 18px;margin-bottom:16px;font-size:0.875rem;color:#2A7F7F;font-weight:500;">
+        Message sent — thank you. We'll review it shortly.
+      </div>
+
+      <button type="submit"
+        style="background:var(--teal);color:#fff;border:none;padding:13px 32px;border-radius:8px;font-size:0.9rem;font-weight:600;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background 0.15s;"
+        onmouseover="this.style.background='#1f6060'" onmouseout="this.style.background='var(--teal)'">
+        Send message
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+
+    </form>
   </div>
 
 </div>
@@ -786,6 +840,36 @@
     document.getElementById('hamburgerBtn').classList.remove('open');
     document.body.style.overflow = '';
   }
+  // Contact form AJAX submission
+  const contactForm = document.getElementById('contactForm');
+  if (contactForm) {
+    contactForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = contactForm.querySelector('button[type="submit"]');
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+      try {
+        const res = await fetch(contactForm.action, {
+          method: 'POST',
+          body: new FormData(contactForm),
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          contactForm.reset();
+          document.getElementById('contactSuccess').style.display = 'block';
+          btn.style.display = 'none';
+        } else {
+          btn.textContent = 'Send message';
+          btn.disabled = false;
+          alert('Something went wrong — please try again.');
+        }
+      } catch {
+        btn.textContent = 'Send message';
+        btn.disabled = false;
+      }
+    });
+  }
+
 </script>
 </body>
 </html>
