@@ -961,7 +961,191 @@
 
     .btn-popup-correction:hover { border-color: var(--teal); color: var(--teal); }
 
-    /* ── CORRECTION MODAL ── */
+    /* ── COMMUNITY SECTION ── */
+    .community-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Reactions */
+    .reaction-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .reaction-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      background: #fff;
+      border: 1.5px solid var(--gray-light);
+      border-radius: 10px;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+      flex: 1;
+    }
+
+    .reaction-btn:hover { border-color: var(--teal); background: var(--teal-light); transform: translateY(-1px); }
+
+    .reaction-btn.selected-helpful  { border-color: var(--green); background: var(--green-light); }
+    .reaction-btn.selected-neutral  { border-color: var(--amber); background: var(--amber-light); }
+    .reaction-btn.selected-unhelpful { border-color: var(--red);  background: var(--red-light); }
+
+    .reaction-btn svg { display: block; }
+
+    .reaction-count {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--charcoal);
+      line-height: 1;
+    }
+
+    .reaction-label {
+      font-size: 0.68rem;
+      color: var(--gray);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Comments */
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .comment-item {
+      background: var(--white);
+      border: 1px solid var(--gray-light);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .comment-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comment-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--teal-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .comment-author {
+      font-size: 0.775rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .comment-date {
+      font-size: 0.7rem;
+      color: var(--gray);
+      margin-left: auto;
+    }
+
+    .comment-body {
+      font-size: 0.825rem;
+      color: var(--charcoal);
+      line-height: 1.6;
+      padding-left: 34px;
+    }
+
+    .comments-empty {
+      font-size: 0.825rem;
+      color: var(--gray);
+      font-style: italic;
+      text-align: center;
+      padding: 16px 0 4px;
+    }
+
+    .comments-loading {
+      font-size: 0.825rem;
+      color: var(--gray);
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    /* Comment input */
+    .comment-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .comment-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--gray-light);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      color: var(--charcoal);
+      resize: none;
+      outline: none;
+      min-height: 72px;
+      transition: border-color 0.15s;
+      line-height: 1.5;
+    }
+
+    .comment-textarea:focus { border-color: var(--teal); }
+    .comment-textarea::placeholder { color: #9ca3af; }
+
+    .comment-submit-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .comment-char-count {
+      font-size: 0.7rem;
+      color: var(--gray);
+    }
+
+    .comment-char-count.over { color: var(--red); }
+
+    .btn-comment-submit {
+      background: var(--teal);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 7px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.825rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-comment-submit:hover { background: var(--teal-dark); }
+    .btn-comment-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .comment-error {
+      font-size: 0.775rem;
+      color: var(--red);
+      display: none;
+    }
+
+    .comment-error.show { display: block; }
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -2614,6 +2798,9 @@
     const lat = coords ? coords[0] : null;
     const lng = coords ? coords[1] : null;
 
+    // Stable ID for Supabase — lowercase slug of clinic name
+    const clinicId = c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
     // map — Mapbox interactive map with marker, or fallback Google Maps link
     const mapsSearchURL = 'https://www.google.com/maps/search/' + encodeURIComponent(c.name + ' ' + c.address);
     const mapHTML = lat ? (
@@ -2711,6 +2898,59 @@
           '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
           '<a href="' + c.website + '" target="_blank">' + c.website.replace('https://','').replace('http://','').split('/')[0] + '</a>' +
         '</div>' +
+      '</div>' +
+
+      '<hr class="popup-divider"/>' +
+
+      // Community section
+      '<div class="community-section">' +
+        '<p class="popup-section-label">Community</p>' +
+
+        // Reactions
+        '<div>' +
+          '<p style="font-size:0.8rem;color:var(--gray);margin-bottom:10px;">Was this clinic information helpful?</p>' +
+          '<div class="reaction-row">' +
+            '<button class="reaction-btn" id="btn-helpful" onclick="submitReaction(\'' + clinicId + '\', \'helpful\')" title="Helpful">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
+              '<span class="reaction-count" id="count-helpful">–</span>' +
+              '<span class="reaction-label">Helpful</span>' +
+            '</button>' +
+            '<button class="reaction-btn" id="btn-neutral" onclick="submitReaction(\'' + clinicId + '\', \'neutral\')" title="Neutral">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
+              '<span class="reaction-count" id="count-neutral">–</span>' +
+              '<span class="reaction-label">Neutral</span>' +
+            '</button>' +
+            '<button class="reaction-btn" id="btn-unhelpful" onclick="submitReaction(\'' + clinicId + '\', \'unhelpful\')" title="Not helpful">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
+              '<span class="reaction-count" id="count-unhelpful">–</span>' +
+              '<span class="reaction-label">Not helpful</span>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<hr class="popup-divider"/>' +
+
+        // Comments list
+        '<div>' +
+          '<p style="font-size:0.8rem;color:var(--gray);margin-bottom:10px;">Community tips &amp; experiences</p>' +
+          '<div class="comments-list" id="commentsList">' +
+            '<p class="comments-loading">Loading comments...</p>' +
+          '</div>' +
+        '</div>' +
+
+        // Comment input
+        '<div class="comment-input-wrap">' +
+          '<textarea class="comment-textarea" id="commentInput" maxlength="400" placeholder="Share a tip about this clinic — e.g. best time to visit, parking, what to bring..." oninput="updateCharCount()"></textarea>' +
+          '<div class="comment-submit-row">' +
+            '<span class="comment-char-count" id="charCount">0 / 400</span>' +
+            '<button class="btn-comment-submit" id="btnCommentSubmit" onclick="submitComment(\'' + clinicId + '\')">' +
+              '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
+              'Post' +
+            '</button>' +
+          '</div>' +
+          '<span class="comment-error" id="commentError"></span>' +
+        '</div>' +
+
       '</div>';
 
     // footer
@@ -2732,6 +2972,10 @@
     document.body.style.overflow = "hidden";
     // scroll popup back to top on each open
     document.getElementById("clinicPopup").scrollTop = 0;
+
+    // Load reactions and comments from Supabase
+    loadReactions(clinicId);
+    loadComments(clinicId);
 
     // ── MAPBOX INIT ──
     // Destroy any previous instance before creating a new one
@@ -2881,6 +3125,227 @@
     document.body.style.overflow = '';
   }
 
+  // ── SUPABASE CONFIG ──
+  const SUPABASE_URL  = 'https://vthnhjcmjlyfgcutuvze.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG5oamNtamx5ZmdjdXR1dnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDc5NjIsImV4cCI6MjA5NTYyMzk2Mn0._nATkowjt3OyPgIKPU7LQ3qQXHSAHh4odQ-mr6p0bU4';
+  const SB_HEADERS    = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+
+  async function sbFetch(path, opts = {}) {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+      headers: SB_HEADERS,
+      ...opts
+    });
+    if (!res.ok) throw new Error(await res.text());
+    // 204 No Content has no body
+    if (res.status === 204) return null;
+    return res.json();
+  }
+
+  // ── BAD WORD FILTER ──
+  // Lightweight English profanity blocklist — not exhaustive but catches casual misuse
+  const BAD_WORDS = [
+    'fuck','shit','ass','bitch','cunt','dick','cock','pussy','bastard',
+    'asshole','motherfucker','faggot','nigger','nigga','retard','whore',
+    'slut','prick','twat','wanker','damn','crap','bullshit','jackass'
+  ];
+
+  function containsBadWord(text) {
+    const lower = text.toLowerCase().replace(/[^a-z\s]/g, ' ');
+    const words = lower.split(/\s+/);
+    return words.some(w => BAD_WORDS.includes(w));
+  }
+
+  // ── REACTIONS ──
+  async function loadReactions(clinicId) {
+    try {
+      const data = await sbFetch('clinic_reactions?clinic_id=eq.' + encodeURIComponent(clinicId) + '&select=helpful,neutral,unhelpful');
+      const row = data && data[0];
+      document.getElementById('count-helpful').textContent   = row ? row.helpful   : 0;
+      document.getElementById('count-neutral').textContent   = row ? row.neutral   : 0;
+      document.getElementById('count-unhelpful').textContent = row ? row.unhelpful : 0;
+
+      // Restore prior selection from sessionStorage
+      const prior = sessionStorage.getItem('reaction:' + clinicId);
+      if (prior) {
+        const btn = document.getElementById('btn-' + prior);
+        if (btn) btn.classList.add('selected-' + prior);
+      }
+    } catch (e) {
+      console.warn('Reactions load failed:', e);
+      ['helpful','neutral','unhelpful'].forEach(t => {
+        const el = document.getElementById('count-' + t);
+        if (el) el.textContent = '–';
+      });
+    }
+  }
+
+  async function submitReaction(clinicId, type) {
+    // One reaction per clinic per session — deselect if same button clicked again
+    const prior = sessionStorage.getItem('reaction:' + clinicId);
+
+    // Remove any prior highlight
+    ['helpful','neutral','unhelpful'].forEach(t => {
+      const btn = document.getElementById('btn-' + t);
+      if (btn) btn.classList.remove('selected-helpful','selected-neutral','selected-unhelpful');
+    });
+
+    if (prior === type) {
+      // Toggle off — decrement the old reaction
+      sessionStorage.removeItem('reaction:' + clinicId);
+      await upsertReaction(clinicId, null, prior);
+    } else {
+      // Apply new reaction
+      sessionStorage.setItem('reaction:' + clinicId, type);
+      const btn = document.getElementById('btn-' + type);
+      if (btn) btn.classList.add('selected-' + type);
+      await upsertReaction(clinicId, type, prior);
+    }
+
+    // Reload fresh counts
+    loadReactions(clinicId);
+  }
+
+  async function upsertReaction(clinicId, addType, removeType) {
+    try {
+      // Try to get existing row
+      const existing = await sbFetch('clinic_reactions?clinic_id=eq.' + encodeURIComponent(clinicId) + '&select=helpful,neutral,unhelpful');
+      const row = existing && existing[0];
+
+      if (!row) {
+        // Insert fresh row — only increment the new type
+        const body = { clinic_id: clinicId, helpful: 0, neutral: 0, unhelpful: 0 };
+        if (addType) body[addType] = 1;
+        await sbFetch('clinic_reactions', {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' }
+        });
+      } else {
+        // Patch existing counts
+        const patch = {};
+        if (addType)    patch[addType]    = Math.max(0, (row[addType]    || 0) + 1);
+        if (removeType) patch[removeType] = Math.max(0, (row[removeType] || 0) - 1);
+        await sbFetch('clinic_reactions?clinic_id=eq.' + encodeURIComponent(clinicId), {
+          method: 'PATCH',
+          body: JSON.stringify(patch),
+          headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' }
+        });
+      }
+    } catch (e) {
+      console.warn('Reaction submit failed:', e);
+    }
+  }
+
+  // ── COMMENTS ──
+  async function loadComments(clinicId) {
+    const list = document.getElementById('commentsList');
+    if (!list) return;
+    list.innerHTML = '<p class="comments-loading">Loading...</p>';
+
+    try {
+      const data = await sbFetch(
+        'clinic_comments?clinic_id=eq.' + encodeURIComponent(clinicId) +
+        '&order=created_at.desc&select=body,created_at'
+      );
+
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="comments-empty">No community tips yet — be the first to share one.</p>';
+        return;
+      }
+
+      list.innerHTML = '';
+      data.forEach(comment => {
+        const date = new Date(comment.created_at).toLocaleDateString('en-US', {
+          year: 'numeric', month: 'short', day: 'numeric'
+        });
+        const div = document.createElement('div');
+        div.className = 'comment-item';
+        div.innerHTML =
+          '<div class="comment-meta">' +
+            '<div class="comment-avatar">' +
+              '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A7F7F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+            '</div>' +
+            '<span class="comment-author">Anonymous</span>' +
+            '<span class="comment-date">' + date + '</span>' +
+          '</div>' +
+          '<div class="comment-body">' + escapeHtml(comment.body) + '</div>';
+        list.appendChild(div);
+      });
+    } catch (e) {
+      console.warn('Comments load failed:', e);
+      list.innerHTML = '<p class="comments-empty">No comments yet — be the first to share a tip.</p>';
+    }
+  }
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function updateCharCount() {
+    const input = document.getElementById('commentInput');
+    const counter = document.getElementById('charCount');
+    if (!input || !counter) return;
+    const len = input.value.length;
+    counter.textContent = len + ' / 400';
+    counter.classList.toggle('over', len > 380);
+  }
+
+  async function submitComment(clinicId) {
+    const input   = document.getElementById('commentInput');
+    const errEl   = document.getElementById('commentError');
+    const btn     = document.getElementById('btnCommentSubmit');
+    if (!input || !errEl || !btn) return;
+
+    const text = input.value.trim();
+    errEl.classList.remove('show');
+    errEl.textContent = '';
+
+    if (!text) {
+      errEl.textContent = 'Please write something before posting.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    if (text.length > 400) {
+      errEl.textContent = 'Keep it under 400 characters.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    if (containsBadWord(text)) {
+      errEl.textContent = 'Your comment contains language that isn\'t allowed. Please revise it.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Posting...';
+
+    try {
+      await sbFetch('clinic_comments', {
+        method: 'POST',
+        body: JSON.stringify({ clinic_id: clinicId, body: text }),
+        headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' }
+      });
+
+      input.value = '';
+      updateCharCount();
+      await loadComments(clinicId);
+    } catch (e) {
+      console.warn('Comment submit failed:', e);
+      errEl.textContent = 'Could not post your comment. Please try again.';
+      errEl.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML =
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post';
+    }
+  }
 </script>
 </body>
 </html>
