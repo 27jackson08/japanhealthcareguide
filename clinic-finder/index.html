@@ -516,6 +516,8 @@
     .tag-english { background: var(--green-light); color: var(--green); }
     .tag-insurance { background: var(--amber-light); color: #b45309; }
     .tag-note { background: #f3e8ff; color: #7c3aed; }
+    .tag-open { background: var(--green-light); color: var(--green); font-weight: 600; }
+    .tag-closed { background: var(--red-light); color: var(--red); font-weight: 600; }
 
     .clinic-card-footer {
       display: flex;
@@ -2049,6 +2051,64 @@
     }
   }
 
+  // ── OPEN/CLOSED STATUS ──
+  // Uses browser's local time. Since users are in Tokyo this is JST.
+  // If the device clock is set correctly, this is accurate.
+  function getOpenStatus(clinicName) {
+    const hours = clinicHours[clinicName];
+    if (!hours) return { status: 'unknown' };
+
+    // Get current Tokyo time. If user device is in Japan, this is just new Date().
+    // For robustness, convert explicitly to JST (UTC+9).
+    const now = new Date();
+    const jstOffset = 9 * 60; // minutes
+    const localOffset = now.getTimezoneOffset(); // negative east of UTC
+    const jstMs = now.getTime() + (jstOffset + localOffset) * 60000;
+    const jst = new Date(jstMs);
+
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const dayName = days[jst.getDay()];
+    const currentMinutes = jst.getHours() * 60 + jst.getMinutes();
+
+    const dayHours = hours[dayName];
+    if (!dayHours || dayHours === 'Closed') {
+      return { status: 'closed', label: 'Closed today' };
+    }
+
+    // Parse one or more time ranges like "9:00–12:30, 14:00–17:00"
+    // Handles both "–" (en-dash) and "-" (hyphen)
+    const ranges = dayHours.split(',').map(r => r.trim());
+    for (const range of ranges) {
+      const parts = range.split(/[–\-]/).map(t => t.trim());
+      if (parts.length < 2) continue;
+      const [startH, startM] = parts[0].split(':').map(Number);
+      const [endH, endM]   = parts[1].split(':').map(Number);
+      if (isNaN(startH) || isNaN(endH)) continue;
+      const start = startH * 60 + (startM || 0);
+      const end   = endH   * 60 + (endM   || 0);
+      if (currentMinutes >= start && currentMinutes < end) {
+        // Open now — show closing time
+        const closeStr = parts[1];
+        return { status: 'open', label: 'Open · closes ' + closeStr };
+      }
+    }
+
+    // Check if it opens later today
+    for (const range of ranges) {
+      const parts = range.split(/[–\-]/).map(t => t.trim());
+      if (parts.length < 2) continue;
+      const [startH, startM] = parts[0].split(':').map(Number);
+      if (isNaN(startH)) continue;
+      const start = startH * 60 + (startM || 0);
+      if (currentMinutes < start) {
+        return { status: 'closed', label: 'Opens at ' + parts[0] };
+      }
+    }
+
+    // All ranges passed for today
+    return { status: 'closed', label: 'Closed now' };
+  }
+
   function buildCard(c, userCoords, locVal) {
     const card = document.createElement("div");
     card.className = "clinic-card";
@@ -2060,6 +2120,13 @@
 
     const insuranceTag = c.insurance ? '<span class="clinic-tag tag-insurance">Insurance accepted</span>' : "";
     const noteTag = c.note ? '<span class="clinic-tag tag-note">' + c.note + '</span>' : "";
+
+    const openStatus = getOpenStatus(c.name);
+    const openTag = openStatus.status === 'open'
+      ? '<span class="clinic-tag tag-open">● ' + openStatus.label + '</span>'
+      : openStatus.status === 'closed'
+        ? '<span class="clinic-tag tag-closed">● ' + openStatus.label + '</span>'
+        : "";
 
     const dist = userCoords ? getDistanceFromUser(c.name, userCoords) : null;
     const distLabel = dist !== null
@@ -2087,7 +2154,7 @@
           '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
           c.englishNote +
         '</span>' +
-        insuranceTag + noteTag + extraSpecialties +
+        openTag + insuranceTag + noteTag + extraSpecialties +
       '</div>' +
       '<div class="clinic-card-footer">' +
         '<span class="verified-badge">' +
