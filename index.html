@@ -883,5 +883,224 @@
     document.body.style.overflow = '';
   }
 </script>
+
+<!-- SEASONAL HEALTH CALENDAR WIDGET -->
+<style>
+  .shc-fab {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    z-index: 900;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #2A7F7F;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(42,127,127,0.38);
+    transition: transform 0.2s, box-shadow 0.2s, background 0.15s;
+  }
+  .shc-fab:hover { transform: scale(1.09); box-shadow: 0 6px 24px rgba(42,127,127,0.48); background: #1f6060; }
+  .shc-fab svg { pointer-events: none; }
+  .shc-fab-badge {
+    position: absolute; top: -4px; right: -4px;
+    width: 18px; height: 18px;
+    background: #ef4444; border-radius: 50%; border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; font-weight: 700; color: #fff;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .shc-fab-tooltip {
+    position: absolute; right: 62px; bottom: 50%;
+    transform: translateY(50%);
+    background: #2D2D2D; color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.775rem; font-weight: 500;
+    white-space: nowrap; padding: 6px 10px;
+    border-radius: 6px; pointer-events: none;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .shc-fab-tooltip::before {
+    content: ''; position: absolute;
+    left: 100%; top: 50%; transform: translateY(-50%);
+    border: 5px solid transparent; border-left-color: #2D2D2D;
+  }
+  .shc-fab:hover .shc-fab-tooltip { opacity: 1; }
+
+  .shc-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.38);
+    z-index: 910; display: none;
+    align-items: center; justify-content: center;
+    padding: 20px; backdrop-filter: blur(2px);
+  }
+  .shc-overlay.open { display: flex; }
+
+  .shc-panel {
+    background: #fff; border-radius: 20px;
+    width: 100%; max-width: 720px; max-height: 86vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+    animation: shcIn 0.22s cubic-bezier(0.34,1.4,0.64,1);
+    overflow: hidden;
+  }
+  @keyframes shcIn {
+    from { transform: translateY(18px) scale(0.97); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .shc-header {
+    padding: 20px 24px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0; display: flex;
+    flex-direction: column; gap: 12px;
+  }
+  .shc-header-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .shc-title-wrap { display: flex; align-items: center; gap: 10px; }
+  .shc-title-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .shc-title { font-family: 'DM Serif Display', serif; font-size: 1.15rem; color: #2D2D2D; letter-spacing: -0.02em; }
+  .shc-subtitle { font-size: 0.72rem; color: #6B7280; margin-top: 2px; }
+  .shc-close { width: 30px; height: 30px; border-radius: 50%; background: #f3f4f6; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+  .shc-close:hover { background: #e5e7eb; }
+
+  .shc-month-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .shc-month-btn { width: 30px; height: 30px; border-radius: 8px; background: #f3f4f6; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; }
+  .shc-month-btn:hover { background: #e5e7eb; }
+  .shc-month-label { font-family: 'DM Serif Display', serif; font-size: 1.05rem; color: #2D2D2D; letter-spacing: -0.01em; text-align: center; flex: 1; }
+  .shc-month-label span { font-family: 'DM Sans', sans-serif; font-size: 0.72rem; color: #6B7280; font-weight: 400; margin-left: 6px; }
+
+  .shc-body { overflow-y: auto; flex: 1; padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+  .shc-disclaimer { background: #fef9ec; border: 1px solid #fde68a; border-radius: 8px; padding: 9px 13px; font-size: 0.75rem; color: #92400e; display: flex; align-items: flex-start; gap: 7px; line-height: 1.5; }
+  .shc-disclaimer svg { flex-shrink: 0; margin-top: 1px; }
+
+  .shc-season-banner { border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+  .shc-season-icon { font-size: 1.6rem; flex-shrink: 0; line-height: 1; }
+  .shc-season-name { font-family: 'DM Serif Display', serif; font-size: 1rem; letter-spacing: -0.01em; }
+  .shc-season-desc { font-size: 0.8rem; margin-top: 3px; line-height: 1.55; opacity: 0.85; }
+
+  .shc-conditions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .shc-condition-card { border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 8px; transition: border-color 0.15s; }
+  .shc-condition-card:hover { border-color: #9ca3af; }
+  .shc-condition-header { display: flex; align-items: center; gap: 8px; }
+  .shc-condition-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .shc-condition-name { font-weight: 700; font-size: 0.875rem; color: #2D2D2D; line-height: 1.3; }
+  .shc-risk-badge { margin-left: auto; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 100px; white-space: nowrap; flex-shrink: 0; }
+  .shc-condition-desc { font-size: 0.775rem; color: #6B7280; line-height: 1.55; }
+  .shc-condition-tips { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+  .shc-tip { display: flex; align-items: flex-start; gap: 6px; font-size: 0.745rem; color: #374151; line-height: 1.45; }
+  .shc-tip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; background: #9ca3af; }
+
+  .shc-general-tips { background: #f9fafb; border-radius: 10px; padding: 14px 16px; }
+  .shc-section-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6B7280; margin-bottom: 10px; }
+
+  @media (max-width: 600px) {
+    .shc-fab { bottom: 20px; right: 20px; width: 46px; height: 46px; }
+    .shc-fab-tooltip { display: none; }
+    .shc-overlay { padding: 0; align-items: flex-end; }
+    .shc-panel { max-width: 100%; max-height: 90vh; border-radius: 20px 20px 0 0; animation: shcUp 0.25s cubic-bezier(0.34,1.2,0.64,1); }
+    @keyframes shcUp { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .shc-header::before { content: ''; display: block; width: 36px; height: 4px; background: #d1d5db; border-radius: 2px; margin: 0 auto 4px; }
+    .shc-header { padding: 10px 18px 14px; }
+    .shc-body { padding: 16px 18px 32px; }
+    .shc-conditions-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<button class="shc-fab" id="shcFab" onclick="openSHC()" aria-label="Seasonal Health Calendar">
+  <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="16" r="1.8" fill="#fff" stroke="none"/>
+  </svg>
+  <div class="shc-fab-badge" id="shcBadge">!</div>
+  <div class="shc-fab-tooltip">Seasonal Health Calendar</div>
+</button>
+
+<div class="shc-overlay" id="shcOverlay" onclick="handleShcOverlayClick(event)">
+  <div class="shc-panel">
+    <div class="shc-header">
+      <div class="shc-header-top">
+        <div class="shc-title-wrap">
+          <div class="shc-title-icon" id="shcTitleIcon"></div>
+          <div>
+            <div class="shc-title">Seasonal Health Calendar</div>
+            <div class="shc-subtitle">Tokyo · Japan · Historical pattern predictions</div>
+          </div>
+        </div>
+        <button class="shc-close" onclick="closeSHC()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="shc-month-nav">
+        <button class="shc-month-btn" onclick="shcChangeMonth(-1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="shc-month-label" id="shcMonthLabel"></div>
+        <button class="shc-month-btn" onclick="shcChangeMonth(1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="shc-body" id="shcBody"></div>
+  </div>
+</div>
+
+<script>
+const SHC_DATA={1:{season:{name:"Deep Winter",icon:"winter",bg:"#e0f2fe",color:"#0369a1",desc:"Cold and dry. The coldest month in Tokyo — average lows around 2°C. Low humidity increases respiratory vulnerability."},general:["Stay warm especially travelling to/from clinics — dress in layers","Keep rooms humidified to reduce airway dryness","Wash hands frequently; alcohol sanitiser is available at clinic entrances","Consider a flu shot now if you missed the autumn window"],conditions:[{name:"Influenza",risk:"high",color:"#dc2626",desc:"Peak flu season. Type A and B strains circulate simultaneously. Schools and offices are primary transmission sites.",tips:["Flu vaccine available at English-friendly clinics for approx. ¥3,000–¥4,500","Wear a mask on public transport — widely accepted and expected in Japan","If symptomatic, call ahead before visiting a clinic","Tamiflu is readily prescribed and available same-day"]},{name:"Norovirus",risk:"high",color:"#dc2626",desc:"Gastroenteritis peaks in winter. Highly contagious via contaminated surfaces, food, and close contact.",tips:["Wash hands with soap for 20+ seconds, especially before meals","Alcohol sanitiser is less effective against norovirus — soap is essential","Avoid raw shellfish in winter","Clean surfaces with diluted bleach after a household case"]},{name:"Common Cold / RSV",risk:"high",color:"#dc2626",desc:"Multiple respiratory viruses co-circulate. Children and elderly most vulnerable. RSV can cause severe bronchiolitis in infants.",tips:["Keep infants away from people with colds","Japanese pharmacies stock a wide range of OTC cold medications (風邪薬)","Many clinics close for New Year — stock up on basics beforehand","Paediatric clinics see high demand; book appointments early in the week"]},{name:"Dry Skin / Eczema",risk:"moderate",color:"#d97706",desc:"Tokyo winter humidity drops to 30–40%. Eczema and dry skin flare significantly, especially in children.",tips:["Apply moisturiser immediately after bathing while skin is still slightly damp","Hada Labo and Curel are widely available and clinically proven","Avoid long hot baths — lukewarm is better for the skin barrier","Dermatology clinics (皮膚科) can prescribe steroid creams if needed"]}]},2:{season:{name:"Late Winter / Cedar Pollen Begins",icon:"wind",bg:"#fef3c7",color:"#92400e",desc:"Still cold but cedar pollen season begins in late February. A critical preparation month for allergy sufferers."},general:["If you had hay fever last year, see an ENT or allergy clinic now — before symptoms start","Stock up on antihistamines in advance of peak season","Check pollen forecasts daily via Yahoo! Japan Weather","Avoid hanging laundry outside on high-pollen days"],conditions:[{name:"Cedar Pollen (Sugi) Begins",risk:"high",color:"#dc2626",desc:"Japanese cedar (杉 sugi) pollen season begins. Cryptomeria japonica affects ~40% of the Japanese population.",tips:["Pre-season medication started 1–2 weeks before symptoms gives significantly better control","Prescription antihistamines (Allegra, Xyzal) are less sedating than most OTC options","Wear glasses or goggles outdoors — pollen settles on the eye surface","HEPA air purifiers reduce indoor pollen levels considerably","Sublingual immunotherapy (舌下免疫療法) is available for long-term desensitisation"]},{name:"Influenza",risk:"moderate",color:"#d97706",desc:"Flu season begins to wind down but remains active through February.",tips:["Continue masking on public transport","Flu testing is a rapid 15-minute nasal swab at most clinics","Children under 13 need two doses — confirm second dose if missed"]},{name:"Norovirus",risk:"moderate",color:"#d97706",desc:"Gastroenteritis remains elevated but typically begins declining in February.",tips:["Maintain hand hygiene especially after public transport","OS-1 oral rehydration solution is the best recovery drink — available at all pharmacies"]},{name:"Chapped Skin / Lips",risk:"moderate",color:"#d97706",desc:"Humidity remains at its annual low. Lips and hands particularly vulnerable in cold wind.",tips:["Lip balm with UV protection recommended as sun angle increases","Gentle hand cream after every wash reduces cracking and dermatitis"]}]},3:{season:{name:"Early Spring — Peak Pollen",icon:"blossom",bg:"#fce7f3",color:"#be185d",desc:"Cedar pollen hits its peak. Cherry blossom season begins. Beautiful but the highest-allergen month of the year."},general:["Peak cedar pollen: check counts before outdoor activities","Carry antihistamines and eye drops at all times","When returning home: remove outer layers at door, shower, wash hair immediately","Consider N95 masks on very high pollen days"],conditions:[{name:"Cedar Pollen (Sugi) — PEAK",risk:"high",color:"#dc2626",desc:"Highest cedar pollen counts of the year. Symptoms can be severe: sneezing, runny nose, itchy eyes, fatigue, and asthma-like symptoms in sensitive individuals.",tips:["Avoid outdoor exercise on high-pollen days (above 4,000 grains/m³)","Close windows even on warm days; use air conditioning with a clean filter","Nasal corticosteroid sprays (ナザール) reduce inflammation — available OTC","OTC eye drops (ザジテン, アレジオン) available at pharmacies","Pollen clothing guard sprays (花粉ガード) can be applied to outerwear"]},{name:"Cypress Pollen (Hinoki) Begins",risk:"moderate",color:"#d97706",desc:"Japanese cypress (檜 hinoki) pollen overlaps with cedar from mid-March. Many people are sensitised to both.",tips:["Allergy testing can confirm whether you react to one or both pollen types","Symptoms may persist even as cedar subsides if cypress is also a trigger"]},{name:"Spring Cold / Rhinovirus",risk:"moderate",color:"#d97706",desc:"A second cold season begins as people gather for hanami (cherry blossom viewing) in large outdoor crowds.",tips:["Large outdoor hanami gatherings increase transmission risk","Hand washing after crowded outdoor events is particularly important"]},{name:"Hay Fever Fatigue",risk:"moderate",color:"#d97706",desc:"Severe allergy sufferers report significant fatigue and brain fog during peak pollen. Recognised in Japan as 花粉症疲労.",tips:["Low-sedation antihistamines (Allegra, Claritin) are better for daytime function","Prioritise sleep and reduce strenuous outdoor activity during peak weeks"]}]},4:{season:{name:"Spring — Cypress Pollen",icon:"leaf",bg:"#dcfce7",color:"#15803d",desc:"Cedar pollen drops from peak but cypress (hinoki) takes over. Warmer days but still a high-allergen month."},general:["Cedar pollen declining — do not stop medications yet","Cypress pollen now dominant — same precautions apply","Outdoor exercise: choose early morning when pollen counts are lower","Check specific pollen type forecasts — cedar and cypress differ"],conditions:[{name:"Cypress Pollen (Hinoki) — PEAK",risk:"high",color:"#dc2626",desc:"Hinoki cypress peaks in April. Pollen grains are smaller and travel further than cedar. Symptoms can be just as severe.",tips:["Continue all pollen precautions from March","School entrance ceremonies (入学式) in early April — check pollen forecasts for outdoor events","Immunotherapy users should confirm their schedule with their ENT"]},{name:"Grass Pollen Begins",risk:"low",color:"#16a34a",desc:"Early grass pollen (カモガヤ — orchard grass) begins appearing. Less prevalent in Tokyo than rural areas.",tips:["Parks and school grounds are higher-risk grass pollen environments","Wearing sunglasses and rinsing eyes after outdoor time helps"]},{name:"Allergic Conjunctivitis",risk:"moderate",color:"#d97706",desc:"Allergic conjunctivitis peaks alongside pollen season. Itchy, watery, red eyes are common.",tips:["Avoid rubbing eyes — introduces more allergen and bacteria","Cold compresses give temporary relief","Prescription anti-allergic eye drops from an ophthalmologist are more effective for severe cases"]},{name:"UV Exposure Increases",risk:"low",color:"#16a34a",desc:"UV index rises significantly from April. Long-term UV exposure is a leading cause of premature skin ageing and skin cancer.",tips:["Begin daily SPF 30+ sunscreen application now","UV-blocking clothing (UPF), hats, and arm sleeves are widely available in Japan","Dermatology clinics can check existing moles if concerned"]}]},5:{season:{name:"Late Spring — Golden Week",icon:"flower",bg:"#fef9c3",color:"#854d0e",desc:"Pollen winds down. Golden Week holidays. Warm and pleasant, though clinic closures mean planning ahead is essential."},general:["Many clinics and pharmacies close during Golden Week (April 29 – May 5) — stock essential medications beforehand","Begin sun protection habits for summer","Pollen season nearly over — taper medication by late May","Good month for a general health check (健康診断) before summer heat"],conditions:[{name:"Pollen Season Winding Down",risk:"low",color:"#16a34a",desc:"Cedar and cypress pollen drops to negligible by mid-to-late May. Grass pollen remains at low levels.",tips:["Taper antihistamines gradually if you have been on them all season","Deep clean your home: vacuum, wash curtains and bedding to remove accumulated pollen","Schedule a debrief with your allergist to plan next year"]},{name:"UV Intensity Rising",risk:"moderate",color:"#d97706",desc:"UV index reaches moderate-to-high levels. Tokyo's UV is stronger than most European cities at the same latitude.",tips:["SPF 50 PA++++ is the Japanese standard for high UV protection","Reapply sunscreen every 2 hours outdoors","Children's skin is more UV-sensitive — hats and long sleeves are standard in Japanese schools"]},{name:"Travel-Related Illness",risk:"moderate",color:"#d97706",desc:"Golden Week travel brings crowding on trains, buses, and tourist sites — increasing respiratory and GI transmission.",tips:["Carry hand sanitiser and OTC medication when travelling","Pre-purchase any prescription medication — restocking during Golden Week is difficult"]},{name:"Heat Acclimatisation",risk:"low",color:"#16a34a",desc:"Late May can produce warm, humid days. The body needs 10–14 days to acclimatise to heat.",tips:["Increase daily water intake now","Identify cool rest spots in your neighbourhood before summer heat becomes extreme"]}]},6:{season:{name:"Rainy Season (梅雨 — Tsuyu)",icon:"rain",bg:"#e0f2fe",color:"#0369a1",desc:"Tsuyu begins in early June. High humidity, frequent rain, and rising temperatures create mold and heat health risks."},general:["Tsuyu significantly increases indoor mold and dust mite levels","Dehumidifiers and ventilation are essential health tools this month","Heat stroke risk begins — start precautions now","Damp clothing causes fungal infections — change and dry promptly"],conditions:[{name:"Mold Allergy / Aspergillus",risk:"high",color:"#dc2626",desc:"Indoor mold spikes during tsuyu, especially in bathrooms, window seals, and air conditioning units. Can trigger or worsen asthma.",tips:["Run a dehumidifier — target indoor humidity below 60%","Clean air conditioning filters and use anti-mold spray before the season","Bathroom ventilation fans should run for 30+ minutes after bathing","Wheezing or shortness of breath: see a respiratory clinic promptly"]},{name:"Dust Mite Allergy",risk:"high",color:"#dc2626",desc:"House dust mite populations peak during warm, humid periods. A leading cause of year-round allergic rhinitis and asthma in Japan.",tips:["Wash bedding weekly at 60°C or higher","Encase mattresses in mite-proof covers (防ダニカバー)","Vacuum tatami mats and carpets frequently","Anti-mite sprays and HEPA air purifiers available at home centres (ホームセンター)"]},{name:"Fungal Skin Infections",risk:"moderate",color:"#d97706",desc:"Athlete's foot (水虫 mizumushi) and other fungal infections increase in hot, damp conditions.",tips:["Dry thoroughly between toes after washing","OTC antifungal creams (ルリコン, ラミシール) work if treatment begins early","Wear sandals in shared bathroom areas","See a dermatologist if no improvement after 2 weeks"]},{name:"Heat-Humidity Stress",risk:"moderate",color:"#d97706",desc:"Combined heat and humidity can reach dangerous levels before peak summer. Elderly and children most at risk.",tips:["Use air conditioning — a health necessity in Japanese summer, not a luxury","Drink water regularly regardless of thirst","Watch for warning signs: dizziness, headache, dark urine"]}]},7:{season:{name:"High Summer",icon:"sun",bg:"#fef9c3",color:"#92400e",desc:"Tsuyu ends mid-July. Intense heat and humidity. Heat stroke risk is at its highest — Tokyo regularly exceeds 35°C."},general:["Heat stroke (熱中症) is a medical emergency in July — treat all cases seriously","Air conditioning is not optional for children, elderly, or anyone with heart or respiratory conditions","Carry a water bottle at all times","Outdoor exercise: before 8 AM or after 7 PM only during heat advisories"],conditions:[{name:"Heat Stroke (熱中症)",risk:"high",color:"#dc2626",desc:"Heatstroke is life-threatening and Japan's #1 summer health risk. Thousands are hospitalised each July in Tokyo alone.",tips:["Warning signs: dizziness, nausea, confusion, stopping sweating, hot dry skin","Move to a cool area immediately, apply cool water to neck/wrists/armpits","Call 119 if person loses consciousness, cannot drink, or symptoms worsen","Children in cars and elderly alone indoors are the highest-risk groups","OS-1 oral rehydration solution is better than plain water for recovery"]},{name:"Dehydration",risk:"high",color:"#dc2626",desc:"Adults need 2.5–3.5L of water per day in Tokyo summer heat. Dehydration occurs faster than most people realise.",tips:["Drink 200ml before going outside, not only when thirsty","Sports drinks provide electrolytes; plain water alone can dilute sodium in extreme heat","Avoid alcohol and excess caffeine — both are diuretic","Dark yellow urine is a reliable indicator of dehydration"]},{name:"Food Poisoning",risk:"high",color:"#dc2626",desc:"Bacterial food poisoning (O157, Salmonella, Vibrio) peaks in summer. Warm temperatures accelerate bacterial growth rapidly.",tips:["Do not leave cooked food unrefrigerated for more than 1 hour in summer heat","Raw meat, seafood, and egg dishes carry elevated risk","Wash hands before food preparation and after handling raw protein","Vomiting + diarrhoea + fever: seek medical care promptly — O157 can be serious"]},{name:"Mosquito-Borne Illness",risk:"low",color:"#16a34a",desc:"Japanese encephalitis mosquito season. Risk in central Tokyo is low but rises for rural travel.",tips:["Ensure Japanese encephalitis vaccination is up to date for rural travel","Use DEET or picaridin-based insect repellent","Mosquito coils (蚊取り線香) are widely used in Japan"]}]},8:{season:{name:"Peak Summer",icon:"heat",bg:"#fee2e2",color:"#dc2626",desc:"The hottest month in Tokyo. Average highs above 35°C. Heat stroke hospitalisations peak. Nights rarely drop below 25°C."},general:["Avoid all outdoor activities during 10 AM – 4 PM on extreme heat days","Sleep quality is severely affected by hot nights — use AC at 26–28°C for sleeping","Children at festivals or sports events: watch closely for heat symptoms","Obon holidays (mid-August) — many clinics close; stock essential medication beforehand"],conditions:[{name:"Heat Stroke — PEAK",risk:"high",color:"#dc2626",desc:"First two weeks of August see the most heat stroke hospitalisations in Japan. Tropical nights prevent recovery from daytime heat.",tips:["Elderly living alone need daily check-ins during heat advisories","Cool spots (クールシェア): public libraries, shopping malls, convenience stores are officially promoted relief points","Set AC to activate automatically if indoor temperature exceeds 28°C","Cold towels on neck and wrists provide rapid cooling"]},{name:"Sunburn / UV Damage",risk:"high",color:"#dc2626",desc:"UV index frequently reaches 'extreme' level (10+) in August. One severe childhood sunburn significantly raises lifetime skin cancer risk.",tips:["SPF 50 PA++++ applied 20 minutes before sun exposure","UV-blocking parasols (日傘) are widely used by all genders in Japan and are highly effective","Seek shade between 10 AM and 3 PM","Dermatology clinics can check for UV-related damage and moles"]},{name:"Food Poisoning",risk:"high",color:"#dc2626",desc:"Peak bacterial food poisoning month. Summer festivals increase exposure to foods stored in warm conditions.",tips:["At summer festivals, choose freshly cooked foods over items sitting out","Signs of serious poisoning: fever above 38.5°C, blood in stool, inability to hold fluids — seek immediate care"]},{name:"AC Illness (冷房病)",risk:"moderate",color:"#d97706",desc:"Moving repeatedly between extreme outdoor heat and heavily air-conditioned interiors stresses the autonomic nervous system. Known as 冷房病 in Japan.",tips:["Avoid AC set below 24°C","Carry a light cardigan or jacket to air-conditioned indoor environments","Good hydration helps the body manage temperature transitions"]}]},9:{season:{name:"Late Summer / Early Autumn",icon:"autumn",bg:"#fef3c7",color:"#92400e",desc:"Heat decreases but remains high early in the month. Typhoon season peaks. Ragweed and autumn pollens begin."},general:["Heat stroke risk persists through mid-September — do not relax precautions too early","Typhoon season: ensure you have an emergency medication supply and clinic numbers saved","A good month for health checks (健康診断) after summer heat stress","Begin transitioning to autumn health preparation"],conditions:[{name:"Residual Heat Stroke",risk:"moderate",color:"#d97706",desc:"September heatwaves (残暑 zansho) are common and can be deadly as people relax vigilance.",tips:["Continue heat precautions until consistent daily highs drop below 30°C","Re-introduce physical activity gradually — do not return to full intensity immediately"]},{name:"Ragweed / Autumn Pollen",risk:"moderate",color:"#d97706",desc:"Ragweed (ブタクサ) and mugwort (ヨモギ) pollen appear. Less widespread than cedar but significant in Tokyo's parks and riversides.",tips:["Symptoms similar to spring hay fever","Riverside parks are higher-risk environments","The same antihistamines from spring are effective"]},{name:"Typhoon Health Risks",risk:"moderate",color:"#d97706",desc:"Typhoons can close clinics and pharmacies for 1–2 days. Flooding creates mold and contamination risks.",tips:["Keep a 3–5 day supply of essential prescription medication at home","Do not walk through floodwater — leptospirosis and other pathogens are a risk","Post-typhoon: inspect your home for mold within 24–48 hours"]},{name:"Back-to-School Illness",risk:"moderate",color:"#d97706",desc:"Schools resume after summer, triggering the first autumn cold wave which then spreads to families.",tips:["Remind children of hand hygiene routines at school","Paediatric clinics see high demand in September — book early in the week","Watch for hand-foot-mouth disease and herpangina in Japanese schools in autumn"]}]},10:{season:{name:"Autumn",icon:"maple",bg:"#fef3c7",color:"#92400e",desc:"Comfortable temperatures. Low humidity. One of the healthiest months in Tokyo. Ideal for health checks and flu vaccination."},general:["The best month to schedule your annual health check (人間ドック or 健康診断)","Book flu vaccination now — supplies run out by late November","Autumn is excellent for outdoor exercise — take advantage before winter","Good time to review and restock your home medicine cabinet"],conditions:[{name:"Flu Vaccination Window",risk:"low",color:"#16a34a",desc:"The optimal window for influenza vaccination is October–November. Immunity takes 2 weeks and lasts approximately 5 months.",tips:["Adults: single dose; children under 13: two doses 2–4 weeks apart","English-friendly clinics on our Clinic Finder offer flu shots — call ahead to confirm","Cost: approx. ¥3,000–¥4,500; some employer insurance reimburses","High-risk groups (elderly, immunocompromised, pregnant): ask about priority access"]},{name:"Autumn Pollen (Winding Down)",risk:"low",color:"#16a34a",desc:"Ragweed and mugwort pollen levels decrease through October. Most sufferers see significant improvement.",tips:["Taper antihistamines as symptoms reduce","Autumn is a good time for allergy testing if you are unsure of your specific triggers"]},{name:"Dry Eyes / Screen Fatigue",risk:"moderate",color:"#d97706",desc:"Drier air and increased indoor heating combined with long screen hours make dry eye syndrome common in autumn.",tips:["Preservative-free artificial tear drops available OTC","20-20-20 rule: every 20 minutes, look 6 metres away for 20 seconds","Ophthalmology clinics in Japan are efficient and very affordable for dry eye assessment"]},{name:"Annual Health Check",risk:"low",color:"#16a34a",desc:"October is the most popular month for 健康診断. Most workplaces organise group checks; individuals can book at hospitals.",tips:["Required by law for employers to provide annual health checks to full-time employees","Basic check covers blood pressure, blood work, chest X-ray, urine, and BMI","Bring results to your English-friendly GP for interpretation","More comprehensive 人間ドック screening is available at most large hospitals"]}]},11:{season:{name:"Early Winter",icon:"earlywin",bg:"#e0f2fe",color:"#1d4ed8",desc:"Temperatures drop rapidly. Flu season begins in earnest. Humidity falls and respiratory health risks increase."},general:["Last chance for flu vaccination before peak season — do not delay","Increase handwashing frequency as flu and norovirus season arrives","Use a humidifier at home — respiratory viruses survive longer in dry air","Stock paracetamol (カロナール), electrolyte drinks, and cold medicines before winter"],conditions:[{name:"Influenza — Season Begins",risk:"moderate",color:"#d97706",desc:"Flu activity picks up in November, typically starting in schools and spreading to families and offices.",tips:["If not yet vaccinated, do it now — season escalates rapidly in December","Flu testing available at most clinics for ¥2,000–¥3,000 with insurance","Antiviral medication (Tamiflu) is most effective within 48 hours of symptom onset","Many companies require flu-positive employees to stay home for 5 days"]},{name:"Norovirus — Season Begins",risk:"moderate",color:"#d97706",desc:"Gastroenteritis season begins. Norovirus is the dominant strain in Japan through to March.",tips:["Good hand hygiene after public transport and before meals","Pre-stock oral rehydration solution (OS-1) at home","Norovirus requires diluted bleach for household disinfection — alcohol alone is insufficient"]},{name:"Respiratory Dryness",risk:"moderate",color:"#d97706",desc:"As heating systems activate and outdoor humidity drops, the respiratory mucosa dries out — reducing its natural barrier function.",tips:["Run a humidifier at 40–60% indoor humidity","Gargling with salt water or gargle solution (うがい薬) is widely practised as prevention in Japan","Stay well hydrated — aim for 1.5–2L water per day"]},{name:"Seasonal Mood / Adjustment",risk:"low",color:"#16a34a",desc:"Shorter days and colder weather can trigger seasonal mood changes. Expats in their first Japanese winter may feel increased isolation.",tips:["TELL (Tokyo English Life Line) provides English mental health counselling: 03-5774-0992","Maintaining physical activity through winter significantly reduces seasonal low mood","Tokyo has excellent indoor wellness: onsen, gyms, and swimming pools"]}]},12:{season:{name:"Winter",icon:"december",bg:"#e0f2fe",color:"#0369a1",desc:"Cold, dry winter. Peak illness season. Year-end gatherings accelerate flu and norovirus. Clinics close for New Year."},general:["Stock a winter medicine kit before December 29 — clinics close Dec 29 – Jan 3 or later","Year-end parties (忘年会) are major flu transmission events","Norovirus and flu peak simultaneously this month","Ensure all prescriptions have enough refills to cover the New Year holiday period"],conditions:[{name:"Influenza — Active",risk:"high",color:"#dc2626",desc:"Full flu season active by December. Office parties, school concerts, and year-end gatherings are primary spread events.",tips:["Masking on crowded trains is a social norm and highly effective","Call your clinic before attending if you have symptoms — many prefer you call ahead","Antiviral medication must be started within 48 hours for maximum effect","Children are required by law to stay home from school for 5 days after diagnosis"]},{name:"Norovirus — PEAK",risk:"high",color:"#dc2626",desc:"December is the peak month for norovirus in Japan. The virus survives on cold surfaces for days.",tips:["Avoid raw oysters unless from a certified source","Clean all surfaces with diluted bleach after a household case — including door handles","Oral rehydration is the primary treatment; seek care if unable to hold fluids down"]},{name:"Year-End Clinic Closures",risk:"moderate",color:"#d97706",desc:"Most clinics and many pharmacies close December 29 – January 3 or later. ERs remain open but are overwhelmed.",tips:["Refill all prescriptions by December 27","Stock paracetamol (カロナール), antidiarrhoeal (ビオフェルミン), OS-1, and a thermometer","Tokyo medical consultation line (24h): 03-5272-0303","For emergencies: 119 (ambulance) or your ward office emergency referral number"]},{name:"Dry Skin / Eczema Flares",risk:"moderate",color:"#d97706",desc:"December humidity is among the lowest of the year. Eczema, psoriasis, and dry skin conditions reach their winter peak.",tips:["Moisturise immediately after bathing — before skin fully dries","Wear soft natural fibre clothing (cotton, bamboo) next to skin","Prescription topical steroids from a dermatologist are more effective than OTC for active flares"]}]}};
+
+const SHC_MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const SHC_RISK={high:{label:"High",bg:"#fee2e2",color:"#dc2626"},moderate:{label:"Moderate",bg:"#fef3c7",color:"#d97706"},low:{label:"Low",bg:"#dcfce7",color:"#16a34a"}};
+let shcM=new Date().getMonth()+1,shcY=new Date().getFullYear();
+
+function openSHC(){document.getElementById("shcOverlay").classList.add("open");document.body.style.overflow="hidden";document.getElementById("shcBadge").style.display="none";try{localStorage.setItem("shc_seen","1")}catch(e){}renderSHC()}
+function closeSHC(){document.getElementById("shcOverlay").classList.remove("open");document.body.style.overflow=""}
+function handleShcOverlayClick(e){if(e.target===document.getElementById("shcOverlay"))closeSHC()}
+function shcChangeMonth(d){shcM+=d;if(shcM>12){shcM=1;shcY++}if(shcM<1){shcM=12;shcY--}renderSHC()}
+
+function getSHCSeasonSVG(key,color,size){
+  var s=size||22,c=color||'#2A7F7F';
+  var icons={
+    winter:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="20" y1="5" x2="4" y2="19"/><line x1="4" y1="5" x2="20" y2="19"/><circle cx="12" cy="12" r="2" fill="'+c+'"/><circle cx="12" cy="4" r="1.2" fill="'+c+'"/><circle cx="12" cy="20" r="1.2" fill="'+c+'"/><circle cx="4" cy="12" r="1.2" fill="'+c+'"/><circle cx="20" cy="12" r="1.2" fill="'+c+'"/></svg>',
+    wind:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>',
+    blossom:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.5" fill="'+c+'" stroke="none"/><ellipse cx="12" cy="6" rx="2" ry="3.5" fill="none" stroke="'+c+'"/><ellipse cx="12" cy="18" rx="2" ry="3.5" fill="none" stroke="'+c+'"/><ellipse cx="6" cy="12" rx="3.5" ry="2" fill="none" stroke="'+c+'"/><ellipse cx="18" cy="12" rx="3.5" ry="2" fill="none" stroke="'+c+'"/></svg>',
+    leaf:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>',
+    flower:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="'+c+'" stroke="none"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>',
+    rain:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><line x1="8" y1="19" x2="8" y2="21"/><line x1="8" y1="13" x2="8" y2="15"/><line x1="16" y1="19" x2="16" y2="21"/><line x1="16" y1="13" x2="16" y2="15"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="12" y1="15" x2="12" y2="17"/></svg>',
+    sun:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+    heat:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>',
+    autumn:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>',
+    maple:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M17 12h2a2 2 0 0 0 1.7-3L18 4l-3.6 3.4A2 2 0 0 1 13 8h-2a2 2 0 0 1-1.4-.6L6 4 3.3 9A2 2 0 0 0 5 12h2"/><path d="M9 22h6"/></svg>',
+    earlywin:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><line x1="8" y1="19" x2="8" y2="21"/><line x1="8" y1="13" x2="8" y2="15"/><line x1="16" y1="19" x2="16" y2="21"/><line x1="16" y1="13" x2="16" y2="15"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="12" y1="15" x2="12" y2="17"/></svg>',
+    december:'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="20" y1="5" x2="4" y2="19"/><line x1="4" y1="5" x2="20" y2="19"/><circle cx="12" cy="12" r="2" fill="'+c+'"/><circle cx="12" cy="4" r="1.2" fill="'+c+'"/><circle cx="12" cy="20" r="1.2" fill="'+c+'"/><circle cx="4" cy="12" r="1.2" fill="'+c+'"/><circle cx="20" cy="12" r="1.2" fill="'+c+'"/></svg>'
+  };
+  return icons[key]||icons.winter;
+}
+
+function renderSHC(){
+  const data=SHC_DATA[shcM];
+  const isCurrent=shcM===new Date().getMonth()+1&&shcY===new Date().getFullYear();
+  document.getElementById("shcMonthLabel").innerHTML=SHC_MONTHS[shcM-1]+" "+shcY+(isCurrent?"<span>Current month</span>":"");
+  const iconEl=document.getElementById("shcTitleIcon");
+  iconEl.style.background=data.season.bg;
+  iconEl.innerHTML=getSHCSeasonSVG(data.season.icon,data.season.color,20);
+  let h='<div class="shc-season-banner" style="background:'+data.season.bg+';color:'+data.season.color+';">'
+    +'<div class="shc-season-icon">'+getSHCSeasonSVG(data.season.icon,data.season.color,28)+'</div>'
+    +'<div><div class="shc-season-name">'+data.season.name+'</div>'
+    +'<div class="shc-season-desc">'+data.season.desc+'</div></div></div>';
+  h+='<div class="shc-disclaimer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+    +'<span>These are <strong>predictive seasonal patterns</strong> based on historical Tokyo health data. Actual conditions vary year to year. Risk levels reflect general population trends — not personal medical advice. Always consult a healthcare professional for personal concerns.</span></div>';
+  h+='<div class="shc-conditions-grid">';
+  for(const c of data.conditions){
+    const rs=SHC_RISK[c.risk];
+    h+='<div class="shc-condition-card"><div class="shc-condition-header"><div class="shc-condition-dot" style="background:'+c.color+';"></div><div class="shc-condition-name">'+c.name+'</div><span class="shc-risk-badge" style="background:'+rs.bg+';color:'+rs.color+';">'+rs.label+'</span></div>'
+      +'<div class="shc-condition-desc">'+c.desc+'</div>'
+      +'<div class="shc-condition-tips">'+c.tips.map(t=>'<div class="shc-tip"><div class="shc-tip-dot" style="background:'+c.color+';opacity:0.5;"></div><span>'+t+'</span></div>').join('')+'</div></div>';
+  }
+  h+='</div>';
+  h+='<div class="shc-general-tips"><div class="shc-section-label">General tips for '+SHC_MONTHS[shcM-1]+'</div><div class="shc-tip-list">'+data.general.map(t=>'<div class="shc-tip"><div class="shc-tip-dot"></div><span>'+t+'</span></div>').join('')+'</div></div>';
+  document.getElementById("shcBody").innerHTML=h;
+  document.getElementById("shcBody").scrollTop=0;
+}
+
+(function(){try{document.getElementById("shcBadge").style.display=localStorage.getItem("shc_seen")?"none":"flex"}catch(e){}})();
+</script>
+
 </body>
 </html>
