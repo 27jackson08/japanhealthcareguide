@@ -3195,7 +3195,7 @@
         '</div>' +
 
         // Comment input
-        '<div class="comment-input-wrap">' +
+        '<div class="comment-input-wrap" id="commentInputWrap">' +
           '<textarea class="comment-textarea" id="commentInput" maxlength="400" placeholder="Share a tip about this clinic — e.g. best time to visit, parking, what to bring..." oninput="updateCharCount()"></textarea>' +
           '<div class="comment-submit-row">' +
             '<span class="comment-char-count" id="charCount">0 / 400</span>' +
@@ -3232,6 +3232,8 @@
     // Load reactions and comments from Supabase
     loadReactions(clinicId);
     loadComments(clinicId);
+    // Render correct comment input state (fresh or already-commented notice)
+    renderCommentInput(clinicId);
 
     // ── MAPBOX INIT ──
     // Destroy any previous instance before creating a new one
@@ -3721,26 +3723,80 @@
     }
 
     btn.disabled = true;
-    btn.textContent = 'Posting...';
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Posting...';
 
+    // ── Step 1: insert the comment ──
+    let insertOk = false;
     try {
-      await sbFetch('clinic_comments', {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/clinic_comments', {
         method: 'POST',
-        body: JSON.stringify({ clinic_id: clinicId, body: text }),
-        headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' }
+        headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ clinic_id: clinicId, body: text })
       });
-
-      input.value = '';
-      updateCharCount();
-      await loadComments(clinicId);
+      // 201 Created or 204 No Content both mean success
+      insertOk = res.status === 201 || res.status === 204 || res.ok;
     } catch (e) {
-      console.warn('Comment submit failed:', e);
+      console.warn('Comment insert failed:', e);
+    }
+
+    if (!insertOk) {
       errEl.textContent = 'Could not post your comment. Please try again.';
       errEl.classList.add('show');
-    } finally {
       btn.disabled = false;
-      btn.innerHTML =
-        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post';
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post';
+      return;
+    }
+
+    // ── Step 2: mark this clinic as commented in localStorage ──
+    try {
+      const commented = JSON.parse(localStorage.getItem('jhg_commented') || '{}');
+      commented[clinicId] = true;
+      localStorage.setItem('jhg_commented', JSON.stringify(commented));
+    } catch (e) { /* localStorage unavailable — non-fatal */ }
+
+    // ── Step 3: clear input and reload comments ──
+    input.value = '';
+    updateCharCount();
+
+    // Reload comments; if it fails that's non-fatal — comment was saved
+    try {
+      await loadComments(clinicId);
+    } catch (e) {
+      console.warn('Could not reload comments after post:', e);
+    }
+
+    // Hide input, show "already commented" notice
+    renderCommentInput(clinicId);
+  }
+
+  // Render the comment input area — shows input or "already commented" notice
+  function renderCommentInput(clinicId) {
+    const wrap = document.getElementById('commentInputWrap');
+    if (!wrap) return;
+
+    let hasCommented = false;
+    try {
+      const commented = JSON.parse(localStorage.getItem('jhg_commented') || '{}');
+      hasCommented = !!commented[clinicId];
+    } catch (e) {}
+
+    if (hasCommented) {
+      wrap.innerHTML =
+        '<div style="background:var(--green-light);border:1px solid #86efac;border-radius:8px;padding:12px 16px;font-size:0.825rem;color:var(--green);display:flex;align-items:center;gap:8px;">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+          'You\'ve already shared a tip for this clinic. Thanks for contributing!' +
+        '</div>';
+    } else {
+      wrap.innerHTML =
+        '<textarea class="comment-textarea" id="commentInput" maxlength="400" placeholder="Share a tip about this clinic — e.g. best time to visit, parking, what to bring..." oninput="updateCharCount()"></textarea>' +
+        '<div class="comment-submit-row">' +
+          '<span class="comment-char-count" id="charCount">0 / 400</span>' +
+          '<button class="btn-comment-submit" id="btnCommentSubmit" onclick="submitComment(\'' + clinicId + '\')">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
+            'Post' +
+          '</button>' +
+        '</div>' +
+        '<span class="comment-error" id="commentError"></span>';
     }
   }
 </script>
