@@ -424,7 +424,84 @@
       margin: 0 48px;
     }
 
-    /* ── RESPONSIVE ── */
+    /* ── WHAT'S NEW ── */
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .news-card {
+      background: #fff;
+      border: 1.5px solid var(--gray-light);
+      border-radius: 16px;
+      padding: 22px 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .news-card:hover {
+      border-color: var(--teal);
+      box-shadow: 0 4px 20px rgba(42,127,127,0.08);
+    }
+
+    .news-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .news-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--teal);
+      background: var(--teal-light);
+      padding: 3px 9px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .news-date {
+      font-size: 0.72rem;
+      color: var(--gray);
+      white-space: nowrap;
+    }
+
+    .news-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--charcoal);
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+    }
+
+    .news-summary {
+      font-size: 0.825rem;
+      color: var(--gray);
+      line-height: 1.7;
+      flex: 1;
+    }
+
+    .news-read-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--teal);
+      text-decoration: none;
+      margin-top: 4px;
+      border-top: 1px solid var(--gray-light);
+      padding-top: 12px;
+      transition: gap 0.15s;
+    }
+
+    .news-read-more:hover { gap: 8px; }
     
     /* ── MOBILE NAV ── */
     .hamburger {
@@ -553,6 +630,7 @@
       .new-to-japan { flex-direction: column; padding: 32px 24px; }
       footer { padding: 24px; flex-direction: column; text-align: center; }
       .divider { margin: 0 24px; }
+      .news-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -708,6 +786,58 @@
         <p>Medical phrases, emergency numbers, and interpreter services in Chinese, Korean, Spanish, Portuguese, Filipino, Vietnamese, Thai, Indonesian, and French.</p>
         <span class="card-arrow">Select your language →</span>
       </a>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- WHAT'S NEW -->
+  <div class="section" id="whats-new">
+    <p class="section-label">What's New</p>
+    <h2 class="section-title">This week in Japan healthcare</h2>
+    <p class="section-sub">Verified stories and developments relevant to anyone living or receiving care in Japan.</p>
+
+    <div class="news-grid">
+
+      <div class="news-card">
+        <div class="news-card-top">
+          <span class="news-tag">Regenerative Medicine</span>
+          <span class="news-date">February 2026</span>
+        </div>
+        <h3 class="news-title">Japan approves the world's first iPS cell therapies — for Parkinson's and heart failure</h3>
+        <p class="news-summary">Japan became the first country in the world to greenlight two treatments built from induced pluripotent stem cells. One transplants lab-grown dopamine neurons directly into the brains of Parkinson's patients; the other places heart muscle patches onto damaged cardiac tissue to stimulate repair. Both received conditional approval from Japan's health ministry in February 2026, with rollout expected by summer. The science traces back to Nobel Prize–winning research at Kyoto University in 2006.</p>
+        <a class="news-read-more" href="https://www.google.com/search?q=Japan+iPS+cell+therapy+Parkinson+heart+failure+approval+2026" target="_blank">
+          Want to read further?
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
+      <div class="news-card">
+        <div class="news-card-top">
+          <span class="news-tag">Health Tech</span>
+          <span class="news-date">May 15, 2026</span>
+        </div>
+        <h3 class="news-title">Fujitsu and IBM Japan are building a shared AI platform for hospitals nationwide</h3>
+        <p class="news-summary">The two tech giants formally announced a partnership to build Japan's first sovereign cloud platform for healthcare — meaning patient data stays within Japan and under domestic control. The system will link electronic health records across hospitals, let AI automate administrative tasks like billing codes and discharge summaries, and eventually handle everything from appointment booking to post-treatment follow-up. It's the most significant push yet to bring Japan's paper-heavy hospital system into the digital age.</p>
+        <a class="news-read-more" href="https://www.google.com/search?q=Fujitsu+IBM+Japan+healthcare+cloud+platform+AI+2026" target="_blank">
+          Want to read further?
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
+      <div class="news-card">
+        <div class="news-card-top">
+          <span class="news-tag">Global Ranking</span>
+          <span class="news-date">May 13, 2026</span>
+        </div>
+        <h3 class="news-title">Japan ranked #1 in the world for healthcare — again — at roughly half the cost of the U.S.</h3>
+        <p class="news-summary">The 2026 U.S. News Best Countries report ranked Japan first in healthcare globally, topping 100 nations on physician availability, hospital access, life expectancy, coverage, and disease detection. The striking part: Japan achieves this at $5,365 per capita — less than half what the United States spends. For families living here, it's a reminder that the system you're navigating is genuinely one of the best in the world, even when it feels complicated from the outside.</p>
+        <a class="news-read-more" href="https://www.google.com/search?q=Japan+ranked+number+1+healthcare+US+News+Best+Countries+2026" target="_blank">
+          Want to read further?
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
     </div>
   </div>
 
