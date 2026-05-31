@@ -1,0 +1,3048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clinic Map — Japan Healthcare Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet"/>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --teal:#2A7F7F;--teal-dark:#1f6060;--teal-light:#e8f4f4;
+      --amber:#E8A838;--amber-light:#fdf3e0;
+      --white:#F8F9FA;--charcoal:#2D2D2D;--gray:#6B7280;--gray-light:#e5e7eb;--border:#d1e8e8;
+      --red:#dc2626;--red-light:#fee2e2;--green:#388e3c;--green-light:#e8f5e9;
+    }
+    html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:#fff;color:var(--charcoal);}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:500;height:60px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px;}
+    .nav-logo{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--teal);text-decoration:none;white-space:nowrap;}
+    .nav-links{display:flex;align-items:center;gap:20px;list-style:none;}
+    .nav-links a{font-size:0.85rem;color:var(--charcoal);text-decoration:none;font-weight:500;transition:color 0.15s;white-space:nowrap;}
+    .nav-links a:hover,.nav-links a.active{color:var(--teal);}
+    .nav-cta{background:#dc2626!important;color:#fff!important;padding:7px 14px;border-radius:8px;}
+    .nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+    .nav-view-toggle{display:flex;align-items:center;gap:4px;background:var(--teal-light);border-radius:8px;padding:3px;}
+    .nav-view-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:0.775rem;font-weight:600;cursor:pointer;color:var(--gray);background:transparent;transition:all 0.15s;white-space:nowrap;}
+    .nav-view-btn.active{background:#fff;color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+    .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:6px;}
+    .hamburger span{display:block;width:22px;height:2px;background:var(--charcoal);border-radius:2px;}
+
+    /* LAYOUT */
+    .map-layout{position:fixed;top:60px;left:0;right:0;bottom:0;display:flex;}
+
+    /* SIDEBAR */
+    .map-sidebar{width:300px;flex-shrink:0;background:#fff;border-right:1px solid var(--gray-light);display:flex;flex-direction:column;overflow:hidden;position:relative;transition:width 0.25s ease;z-index:10;}
+    .map-sidebar.collapsed{width:0;overflow:hidden;}
+    .sidebar-toggle{position:absolute;top:50%;right:-16px;transform:translateY(-50%);width:16px;height:48px;background:#fff;border:1px solid var(--gray-light);border-left:none;border-radius:0 8px 8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:20;box-shadow:2px 0 6px rgba(0,0,0,0.08);transition:background 0.15s;}
+    .sidebar-toggle:hover{background:var(--teal-light);}
+    .map-sidebar.collapsed .sidebar-toggle svg{transform:rotate(180deg);}
+
+    .sidebar-header{padding:14px 14px 10px;border-bottom:1px solid var(--gray-light);flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
+    .sidebar-title{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--charcoal);letter-spacing:-0.02em;}
+
+    /* Clinic name search */
+    .map-search-box{position:relative;}
+    .map-search-input{width:100%;padding:8px 32px 8px 10px;border:1.5px solid var(--gray-light);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--charcoal);outline:none;transition:border-color 0.15s;}
+    .map-search-input:focus{border-color:var(--teal);}
+    .map-search-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--gray);pointer-events:none;}
+    .map-search-suggestions{position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1.5px solid var(--gray-light);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:200;max-height:220px;overflow-y:auto;display:none;}
+    .map-search-suggestions.open{display:block;}
+    .suggestion-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--gray-light);transition:background 0.1s;}
+    .suggestion-item:last-child{border-bottom:none;}
+    .suggestion-item:hover{background:var(--teal-light);}
+    .suggestion-name{font-weight:700;font-size:0.82rem;color:var(--charcoal);}
+    .suggestion-sub{font-size:0.72rem;color:var(--gray);margin-top:1px;}
+
+    /* Filter controls */
+    .sidebar-filters{display:flex;flex-direction:column;gap:6px;}
+    .filter-label{font-size:0.65rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--gray);margin-bottom:2px;}
+    .filter-select{width:100%;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;border:1.5px solid var(--gray-light);border-radius:8px;padding:7px 30px 7px 10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--charcoal);cursor:pointer;transition:border-color 0.15s;}
+    .filter-select:focus{outline:none;border-color:var(--teal);}
+    .btn-map-search{width:100%;padding:9px;border-radius:8px;border:none;background:var(--teal);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;justify-content:center;gap:7px;}
+    .btn-map-search:hover{background:var(--teal-dark);}
+    .filter-row{display:flex;gap:6px;}
+    .btn-map-action{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 6px;border-radius:8px;border:1.5px solid var(--teal);background:transparent;color:var(--teal);font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:700;cursor:pointer;transition:background 0.15s;white-space:nowrap;}
+    .btn-map-action:hover{background:var(--teal-light);}
+    .btn-map-action.active{background:var(--green-light);color:var(--green);border-color:#86efac;}
+    .btn-map-action.loading{opacity:0.6;pointer-events:none;}
+    .btn-map-clear{padding:7px 10px;border-radius:8px;border:1.5px solid var(--gray-light);background:transparent;color:var(--gray);font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.15s;}
+    .btn-map-clear:hover{border-color:var(--teal);color:var(--teal);}
+    .gps-error-sidebar{background:var(--red-light);border:1px solid #fca5a5;border-radius:8px;padding:7px 10px;font-size:0.75rem;color:var(--red);display:none;}
+    .gps-error-sidebar.show{display:block;}
+
+    /* Style picker */
+    .style-picker{display:flex;gap:4px;padding:8px 14px;border-bottom:1px solid var(--gray-light);flex-shrink:0;}
+    .style-btn{flex:1;padding:5px 2px;border-radius:6px;border:1.5px solid var(--gray-light);background:#fff;font-family:'DM Sans',sans-serif;font-size:0.65rem;font-weight:700;color:var(--gray);cursor:pointer;text-align:center;transition:all 0.15s;letter-spacing:0.02em;}
+    .style-btn:hover{border-color:var(--teal);color:var(--teal);}
+    .style-btn.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+    /* Results list */
+    .results-count{padding:7px 14px;font-size:0.68rem;color:var(--gray);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid var(--gray-light);flex-shrink:0;}
+    .sidebar-results{flex:1;overflow-y:auto;}
+    .sidebar-clinic-item{padding:10px 14px;border-bottom:1px solid var(--gray-light);cursor:pointer;transition:background 0.1s;}
+    .sidebar-clinic-item:hover,.sidebar-clinic-item.highlighted{background:var(--teal-light);}
+    .sci-header{display:flex;align-items:flex-start;gap:5px;justify-content:space-between;}
+    .sci-name{font-weight:700;font-size:0.83rem;color:var(--charcoal);line-height:1.3;flex:1;}
+    .sci-open-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+    .sci-open-dot.open{background:var(--green);}
+    .sci-open-dot.closed{background:var(--red);}
+    .sci-meta{font-size:0.72rem;color:var(--gray);display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:2px;}
+    .sci-dist{font-size:0.7rem;color:var(--teal);font-weight:700;}
+    .sci-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px;}
+    .sci-tag{font-size:0.62rem;font-weight:700;padding:2px 6px;border-radius:100px;background:var(--teal-light);color:var(--teal);}
+    .sci-tag.insurance{background:var(--amber-light);color:#b45309;}
+
+    /* MAP */
+    .map-container{flex:1;position:relative;}
+    #mapbox{width:100%;height:100%;}
+    .map-overlay-top{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:8px;z-index:10;}
+    .map-overlay-btn{width:36px;height:36px;background:#fff;border:1px solid var(--gray-light);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);transition:all 0.15s;color:var(--charcoal);}
+    .map-overlay-btn:hover{background:var(--teal-light);color:var(--teal);}
+    .mobile-open-btn{display:none;position:absolute;top:12px;left:12px;z-index:10;}
+
+    /* Markers */
+    .map-marker{width:26px;height:26px;background:var(--teal);border:2.5px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(42,127,127,0.4);cursor:pointer;transition:transform 0.15s,background 0.15s;position:relative;}
+    .map-marker::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg);width:7px;height:7px;background:#fff;border-radius:50%;}
+    .map-marker:hover{background:var(--teal-dark);transform:rotate(-45deg) scale(1.2);}
+    .map-marker.highlighted{background:var(--amber);transform:rotate(-45deg) scale(1.3);box-shadow:0 3px 14px rgba(232,168,56,0.55);}
+    .map-marker.saved{background:#8b5cf6;}
+    .user-pulse{width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,0.2);animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 6px rgba(59,130,246,0.2);}50%{box-shadow:0 0 0 12px rgba(59,130,246,0.04);}}
+
+        .clinic-popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 600;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(2px);
+    }
+
+    .clinic-popup-overlay.open { display: flex; }
+
+    .clinic-popup {
+      background: #fff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 680px;
+      max-height: 88vh;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.2);
+      animation: popupIn 0.2s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* sticky header so name is always visible while scrolling */
+    .clinic-popup-header {
+      padding: 28px 28px 20px;
+      border-bottom: 1px solid var(--gray-light);
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 10;
+      border-radius: 20px 20px 0 0;
+    }
+
+    /* map embed */
+    .popup-map {
+      width: 100%;
+      height: 200px;
+      border: none;
+      border-radius: 10px;
+      display: block;
+    }
+
+    .popup-map-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Mapbox interactive map */
+    #popup-mapbox-container {
+      width: 100%;
+      height: 200px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--gray-light);
+    }
+
+    /* Custom Mapbox marker */
+    .mapbox-clinic-marker {
+      width: 36px;
+      height: 36px;
+      background: var(--teal);
+      border: 3px solid #fff;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 2px 8px rgba(42,127,127,0.4);
+      cursor: pointer;
+    }
+
+    .mapbox-clinic-marker::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(45deg);
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    /* Override Mapbox attribution to keep it subtle */
+    .mapboxgl-ctrl-attrib {
+      font-size: 10px !important;
+    }
+
+    /* hours table */
+    .popup-hours-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .popup-hours-table tr { border-bottom: 1px solid var(--gray-light); }
+    .popup-hours-table tr:last-child { border-bottom: none; }
+    .popup-hours-table td { padding: 6px 0; }
+    .popup-hours-table td:first-child { color: var(--gray); font-weight: 500; width: 90px; }
+    .popup-hours-table td:last-child { color: var(--charcoal); }
+    .popup-hours-closed { color: #dc2626 !important; }
+    .popup-hours-english { color: var(--teal); font-weight: 600; }
+    .popup-hours-note {
+      font-size: 0.75rem;
+      color: var(--gray);
+      font-style: italic;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .clinic-popup-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gray-light);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .clinic-popup-close:hover { background: #d1d5db; }
+
+    /* ── BOOKMARK BUTTON (popup header) ── */
+    .btn-bookmark {
+      position: absolute;
+      top: 20px;
+      right: 60px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gray-light);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .btn-bookmark:hover { background: var(--teal-light); }
+
+    .btn-bookmark svg {
+      transition: stroke 0.2s, fill 0.2s;
+    }
+
+    .btn-bookmark.saved {
+      background: var(--teal-light);
+    }
+
+    .btn-bookmark.saved svg {
+      stroke: var(--teal);
+      fill: var(--teal);
+    }
+
+    @keyframes bookmark-pop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.45); }
+      70%  { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+
+    .btn-bookmark.pop {
+      animation: bookmark-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ── SAVED CLINICS BUTTON (search bar) ── */
+    .btn-saved {
+      background: transparent;
+      color: var(--teal);
+      padding: 11px 18px;
+      border-radius: 8px;
+      border: 1.5px solid var(--teal);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .btn-saved:hover { background: var(--teal-light); }
+
+    .saved-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--teal);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    /* ── SAVED CLINICS OVERLAY ── */
+    .saved-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .saved-overlay.open { display: flex; }
+
+    .saved-modal {
+      background: #fff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    }
+
+    .saved-modal-header {
+      padding: 24px 28px 18px;
+      border-bottom: 1px solid var(--gray-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .saved-modal-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      color: var(--charcoal);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .saved-modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gray-light);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .saved-modal-close:hover { background: #d1d5db; }
+
+    .saved-modal-body {
+      overflow-y: auto;
+      flex: 1;
+      padding: 20px 28px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .saved-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--gray);
+      font-size: 0.875rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .saved-empty svg { color: var(--gray-light); }
+
+    .saved-clinic-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border: 1.5px solid var(--gray-light);
+      border-radius: 12px;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .saved-clinic-row:hover { border-color: var(--teal); background: var(--teal-light); }
+
+    .saved-clinic-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+
+    .saved-clinic-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--charcoal);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .saved-clinic-meta {
+      font-size: 0.775rem;
+      color: var(--gray);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .saved-open-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .saved-open-dot.open   { background: var(--green); }
+    .saved-open-dot.closed { background: var(--red); }
+
+    .btn-unsave {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--gray);
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .btn-unsave:hover { color: var(--red); }
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      color: var(--charcoal);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      padding-right: 40px;
+    }
+
+    .clinic-popup-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .clinic-popup-body {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .popup-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .popup-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 2px;
+    }
+
+    .popup-info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: var(--charcoal);
+      line-height: 1.5;
+    }
+
+    .popup-info-row svg { flex-shrink: 0; margin-top: 2px; color: var(--gray); }
+
+    .popup-info-row a {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .popup-info-row a:hover { text-decoration: underline; }
+
+    .popup-placeholder {
+      font-size: 0.825rem;
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    .popup-divider {
+      border: none;
+      border-top: 1px solid var(--gray-light);
+    }
+
+    .popup-english-box {
+      background: var(--green-light);
+      border: 1px solid #86efac;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: #166534;
+      line-height: 1.6;
+    }
+
+    .popup-english-box svg { flex-shrink: 0; margin-top: 2px; }
+
+    .popup-note-box {
+      background: #f3e8ff;
+      border: 1px solid #d8b4fe;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.825rem;
+      color: #6b21a8;
+      line-height: 1.6;
+    }
+
+    .popup-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--gray-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--white);
+      border-radius: 0 0 20px 20px;
+    }
+
+    .popup-verified {
+      font-size: 0.75rem;
+      color: var(--gray);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-popup-website {
+      background: var(--teal);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: background 0.15s;
+    }
+
+    .btn-popup-website:hover { background: var(--teal-dark); }
+
+    .btn-popup-correction {
+      background: transparent;
+      color: var(--gray);
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1.5px solid var(--gray-light);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.825rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-popup-correction:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── COMMUNITY SECTION ── */
+    .community-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Reactions */
+    .reaction-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .reaction-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      background: #fff;
+      border: 1.5px solid var(--gray-light);
+      border-radius: 10px;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+      flex: 1;
+    }
+
+    .reaction-btn:hover { border-color: var(--teal); background: var(--teal-light); transform: translateY(-1px); }
+
+    .reaction-btn.selected-helpful  { border-color: var(--green); background: var(--green-light); }
+    .reaction-btn.selected-neutral  { border-color: var(--amber); background: var(--amber-light); }
+    .reaction-btn.selected-unhelpful { border-color: var(--red);  background: var(--red-light); }
+
+    .reaction-btn svg { display: block; }
+
+    .reaction-count {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--charcoal);
+      line-height: 1;
+    }
+
+    .reaction-label {
+      font-size: 0.68rem;
+      color: var(--gray);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Comments */
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .comment-item {
+      background: var(--white);
+      border: 1px solid var(--gray-light);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .comment-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comment-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--teal-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .comment-author {
+      font-size: 0.775rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .comment-date {
+      font-size: 0.7rem;
+      color: var(--gray);
+      margin-left: auto;
+    }
+
+    .comment-body {
+      font-size: 0.825rem;
+      color: var(--charcoal);
+      line-height: 1.6;
+      padding-left: 34px;
+    }
+
+    .comments-empty {
+      font-size: 0.825rem;
+      color: var(--gray);
+      font-style: italic;
+      text-align: center;
+      padding: 16px 0 4px;
+    }
+
+    .comments-loading {
+      font-size: 0.825rem;
+      color: var(--gray);
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    /* Comment input */
+    .comment-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .comment-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--gray-light);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      color: var(--charcoal);
+      resize: none;
+      outline: none;
+      min-height: 72px;
+      transition: border-color 0.15s;
+      line-height: 1.5;
+    }
+
+    .comment-textarea:focus { border-color: var(--teal); }
+    .comment-textarea::placeholder { color: #9ca3af; }
+
+    .comment-submit-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .comment-char-count {
+      font-size: 0.7rem;
+      color: var(--gray);
+    }
+
+    .comment-char-count.over { color: var(--red); }
+
+    .btn-comment-submit {
+      background: var(--teal);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 7px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.825rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-comment-submit:hover { background: var(--teal-dark); }
+    .btn-comment-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .comment-error {
+      font-size: 0.775rem;
+      color: var(--red);
+      display: none;
+    }
+
+    .comment-error.show { display: block; }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+
+    .modal h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--charcoal);
+      margin-bottom: 6px;
+    }
+
+    .modal p {
+      font-size: 0.875rem;
+      color: var(--gray);
+      margin-bottom: 24px;
+    }
+
+    .modal-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .modal-field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    .modal-field input,
+    .modal-field select,
+    .modal-field textarea {
+      padding: 10px 14px;
+      border: 1.5px solid var(--gray-light);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      color: var(--charcoal);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .modal-field input:focus,
+    .modal-field select:focus,
+    .modal-field textarea:focus { border-color: var(--teal); }
+
+    .modal-field textarea { resize: vertical; min-height: 90px; }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn-modal-submit {
+      flex: 1;
+      background: var(--teal);
+      color: #fff;
+      padding: 11px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-modal-submit:hover { background: var(--teal-dark); }
+
+    .btn-modal-cancel {
+      background: transparent;
+      color: var(--gray);
+      padding: 11px 20px;
+      border-radius: 8px;
+      border: 1.5px solid var(--gray-light);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--charcoal);
+      color: rgba(255,255,255,0.6);
+      padding: 32px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+    footer a:hover { color: #fff; }
+
+    .footer-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    /* ── RESPONSIVE ── */
+    
+    /* ── MOBILE NAV ── */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 6px;
+      border: none;
+      background: transparent;
+      z-index: 200;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--charcoal);
+      border-radius: 2px;
+      transition: all 0.25s ease;
+    }
+
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .mobile-sidebar {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 260px;
+      height: 100vh;
+      background: #fff;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+      z-index: 999;
+      transition: right 0.28s ease;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    .mobile-sidebar.open { right: 0; }
+
+    .mobile-sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--gray-light);
+    }
+
+    .mobile-sidebar-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--teal);
+      text-decoration: none;
+    }
+
+    .mobile-sidebar-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gray-light);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .mobile-sidebar-close:hover { background: #d1d5db; }
+
+    .mobile-sidebar-links {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 12px;
+      flex: 1;
+      overflow-y: auto;
+      gap: 2px;
+    }
+
+    .mobile-sidebar-links a {
+      text-decoration: none;
+      color: var(--charcoal);
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 12px 14px;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .mobile-sidebar-links a:hover { background: var(--teal-light); color: var(--teal); }
+    .mobile-sidebar-links a.active { background: var(--teal-light); color: var(--teal); font-weight: 600; }
+
+    .mobile-sidebar-links .sidebar-cta {
+      background: var(--red) !important;
+      color: #fff !important;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 998;
+      display: none;
+      backdrop-filter: blur(1px);
+    }
+
+    .mobile-overlay.open { display: block; }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    @media (max-width: 900px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      .page-header { padding: 40px 24px 32px; }
+      .search-wrapper { padding: 20px 24px; }
+      .results-wrapper { padding: 24px 24px 60px; }
+      .clinic-grid { grid-template-columns: 1fr; }
+      .correction-bar { padding: 16px 24px; }
+      footer { padding: 24px; flex-direction: column; text-align: center; }
+    }
+
+    /* ── MOBILE POPUP ── */
+    @media (max-width: 600px) {
+      /* Remove overlay padding so the popup fills the screen edge to edge */
+      .clinic-popup-overlay {
+        padding: 0;
+        align-items: flex-end;
+      }
+
+      /* Bottom sheet: sits in the lower ~92% of the screen, rounded top corners only */
+      .clinic-popup {
+        max-height: 92vh;
+        height: 92vh;
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 100%;
+        /* Slide up animation on mobile */
+        animation: popupSlideUp 0.25s ease;
+      }
+
+      @keyframes popupSlideUp {
+        from { transform: translateY(40px); opacity: 0; }
+        to   { transform: translateY(0);   opacity: 1; }
+      }
+
+      /* Header: tighter padding, close button always visible */
+      .clinic-popup-header {
+        padding: 16px 16px 14px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #fff;
+        border-radius: 20px 20px 0 0;
+      }
+
+      /* Drag pill at top of sheet for affordance */
+      .clinic-popup-header::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        background: #d1d5db;
+        border-radius: 2px;
+        margin: 0 auto 12px;
+      }
+
+      .clinic-popup-close {
+        top: 28px;
+        right: 16px;
+      }
+
+      .btn-bookmark {
+        top: 28px;
+        right: 56px;
+      }
+
+      /* Body: tighter padding */
+      .clinic-popup-body {
+        padding: 16px 16px 32px;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      /* Shrink map on mobile — saves a lot of space */
+      #popup-mapbox-container {
+        height: 150px;
+      }
+
+      /* Footer stays pinned at bottom */
+      .popup-footer {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        border-top: 1px solid var(--gray-light);
+        padding: 12px 16px;
+      }
+
+      /* Search bar wraps on small screens */
+      .search-inner {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .btn-near-me,
+      .btn-saved {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    /* MOBILE */
+    @media(max-width:768px){
+      .nav-links{display:none;}
+      .hamburger{display:flex;}
+      .nav-view-toggle{display:none;}
+      .map-sidebar{position:absolute;top:0;left:0;bottom:0;width:100%!important;z-index:30;transform:translateX(-100%);transition:transform 0.25s;}
+      .map-sidebar.mobile-open{transform:translateX(0);}
+      .map-sidebar.collapsed{transform:translateX(-100%);width:100%!important;}
+      .sidebar-toggle{display:none;}
+      .mobile-open-btn{display:flex!important;}
+    }
+    .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:450;}
+    .mobile-overlay.open{display:block;}
+    .mobile-sidebar{position:fixed;top:0;right:0;bottom:0;width:260px;background:#fff;z-index:460;padding:24px 20px;transform:translateX(100%);transition:transform 0.25s;}
+    .mobile-sidebar.open{transform:translateX(0);}
+    .mobile-sidebar ul{list-style:none;display:flex;flex-direction:column;gap:18px;margin-top:40px;}
+    .mobile-sidebar a{font-size:0.95rem;font-weight:600;color:var(--charcoal);text-decoration:none;}
+    .mobile-sidebar-close{position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Japan Healthcare Guide</a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/clinic-finder" class="active">Clinic Finder</a></li>
+    <li><a href="/navigating-care">Navigating Care</a></li>
+    <li><a href="/healthcare-in-japan">Healthcare in Japan</a></li>
+    <li><a href="/about">About</a></li>
+    <li><a href="/emergency" class="nav-cta">Emergency Info</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-view-toggle">
+      <button class="nav-view-btn" href="/clinic-finder">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        List
+      </a>
+      <button class="nav-view-btn active">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Map
+      </button>
+    </div>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileNav()"></div>
+<div class="mobile-sidebar" id="mobileSidebar">
+  <button class="mobile-sidebar-close" onclick="closeMobileNav()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/clinic-finder">Clinic Finder</a></li>
+    <li><a href="/navigating-care">Navigating Care</a></li>
+    <li><a href="/healthcare-in-japan">Healthcare in Japan</a></li>
+    <li><a href="/about">About</a></li>
+    <li><a href="/emergency">Emergency Info</a></li>
+  </ul>
+</div>
+
+<div class="map-layout">
+  <div class="map-sidebar" id="mapSidebar">
+    <button class="sidebar-toggle" onclick="toggleMapSidebar()">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <div class="sidebar-header">
+      <div class="sidebar-title">Find a Clinic</div>
+
+      <!-- Clinic name search with live dropdown -->
+      <div class="map-search-box">
+        <input type="text" class="map-search-input" id="clinicNameSearch"
+          placeholder="Search clinic name..."
+          autocomplete="off"
+          oninput="handleNameSearch(this.value)"
+          onfocus="handleNameSearch(this.value)"
+          onblur="hideSuggestions()"/>
+        <svg class="map-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <div class="map-search-suggestions" id="nameSuggestions"></div>
+      </div>
+
+      <!-- Filters -->
+      <div class="sidebar-filters">
+        <div>
+          <div class="filter-label">Specialty</div>
+          <select class="filter-select" id="mapSpecialtyFilter">
+            <option value="">All specialties</option>
+          </select>
+        </div>
+        <div>
+          <div class="filter-label">Neighbourhood</div>
+          <select class="filter-select" id="mapLocationFilter">
+            <option value="">All areas</option>
+          </select>
+        </div>
+        <div>
+          <div class="filter-label">Insurance</div>
+          <select class="filter-select" id="mapInsuranceFilter">
+            <option value="">All clinics</option>
+            <option value="insurance">Insurance accepted</option>
+          </select>
+        </div>
+        <button class="btn-map-search" onclick="applyMapFilters()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search
+        </button>
+        <div class="filter-row">
+          <button class="btn-map-action" id="btnMapNearMe" onclick="mapNearMe()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            Near me
+          </button>
+          <button class="btn-map-action" id="btnMapSaved" onclick="toggleSavedFilter()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            Saved
+          </button>
+          <button class="btn-map-clear" onclick="clearMapFilters()">Clear</button>
+        </div>
+        <div class="gps-error-sidebar" id="gpsErrorSidebar"></div>
+      </div>
+    </div>
+
+    <div class="style-picker">
+      <button class="style-btn active" id="styleLight"     onclick="setMapStyle('light')">Light</button>
+      <button class="style-btn"        id="styleStreets"   onclick="setMapStyle('streets')">Streets</button>
+      <button class="style-btn"        id="styleDark"      onclick="setMapStyle('dark')">Dark</button>
+      <button class="style-btn"        id="styleSatellite" onclick="setMapStyle('satellite')">Satellite</button>
+    </div>
+
+    <div class="results-count" id="mapResultsCount">Loading...</div>
+    <div class="sidebar-results" id="sidebarResults"></div>
+  </div>
+
+  <div class="map-container">
+    <button class="map-overlay-btn mobile-open-btn" onclick="openMobileFilterSidebar()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="map-overlay-top">
+      <button class="map-overlay-btn" onclick="locateOnMap()" title="My location">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      </button>
+      <button class="map-overlay-btn" onclick="fitAllMarkers()" title="Show all clinics">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+      </button>
+    </div>
+    <div id="mapbox"></div>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div class="clinic-popup-overlay" id="clinicPopupOverlay" onclick="handlePopupOverlayClick(event)">
+  <div class="clinic-popup" id="clinicPopup">
+    <div class="clinic-popup-header">
+      <button class="clinic-popup-close" onclick="closeClinicPopup()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button class="btn-bookmark" id="btnBookmark" onclick="toggleBookmark()" title="Save clinic">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <div class="clinic-popup-name" id="popupName"></div>
+      <div class="clinic-popup-badges" id="popupBadges"></div>
+    </div>
+    <div class="clinic-popup-body" id="popupBody"></div>
+    <div class="popup-footer" id="popupFooter"></div>
+  </div>
+</div>
+
+<div class="saved-overlay" id="savedOverlay" onclick="handleSavedOverlayClick(event)">
+  <div class="saved-modal">
+    <div class="saved-modal-header">
+      <div class="saved-modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--teal)" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        Saved Clinics
+      </div>
+      <button class="saved-modal-close" onclick="closeSavedModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="saved-modal-body" id="savedModalBody"></div>
+  </div>
+</div>
+
+<script>
+  // ── DATA ─────────────────────────────────────────────────────────────────
+    const clinics = [
+    // General / Multi-Specialty
+    { name: "Asahicho Clinic", specialty: ["General","Cardiology"], location: "Fuchu", address: "Fuchu, Tokyo", website: "http://www.asahichou-cl.com/", englishNote: "English support available", insurance: true },
+    { name: "Ehara Clinic", specialty: ["General","Pediatric"], location: "Fuchu", address: "Fuchu, Tokyo", website: "https://eharaclinic.com/", englishNote: "English support available", insurance: true },
+    { name: "Medilocus", specialty: ["General"], location: "Otemachi", address: "Otemachi, Chiyoda, Tokyo", website: "https://medilocus.luke.ac.jp/", englishNote: "English support available", insurance: true },
+    { name: "Shimazu Medical", specialty: ["General"], location: "Shimokitazawa", address: "Shimokitazawa, Setagaya, Tokyo", website: "https://www.shimazu-med.com/", englishNote: "English support available", insurance: true },
+    { name: "Musashinooka Family Clinic", specialty: ["General"], location: "Musashino", address: "Musashino, Tokyo", website: "https://musashino-hills.com/", englishNote: "English support available", insurance: true },
+    { name: "Koganei Family Clinic", specialty: ["General"], location: "Koganei", address: "Koganei, Tokyo", website: "https://koganei-family-cl.com/", englishNote: "English support available", insurance: true },
+    { name: "IUHW Mita Hospital", specialty: ["General"], location: "Hiroo", address: "Azabu / Hiroo, Minato, Tokyo", website: "https://mita.iuhw.ac.jp/english/", englishNote: "English support available", insurance: true },
+    { name: "Japanese Red Cross Medical Center", specialty: ["General"], location: "Hiroo", address: "Azabu / Hiroo, Shibuya, Tokyo", website: "https://www.med.jrc.or.jp/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Metropolitan Hiroo Hospital", specialty: ["General"], location: "Hiroo", address: "Azabu / Hiroo, Shibuya, Tokyo", website: "https://www.tmhp.jp/hiroo/", englishNote: "English support available", insurance: true },
+    { name: "NTT Medical Center Tokyo", specialty: ["General"], location: "Shinagawa", address: "Shinagawa / Shirokane, Tokyo", website: "https://www.nmct.ntt-east.co.jp/en/", englishNote: "English support available", insurance: true },
+    { name: "Sanno Hospital", specialty: ["General"], location: "Aoyama", address: "Aoyama, Minato, Tokyo", website: "https://www.sannoclc.or.jp/hospital/english/", englishNote: "English support available", insurance: true },
+    { name: "St. Luke's International Hospital", specialty: ["General"], location: "Tsukiji", address: "Ginza / Tsukiji, Chuo, Tokyo", website: "https://hospital.luke.ac.jp/eng/index.html", englishNote: "Full English service available", insurance: true },
+    { name: "Tokyo Medical University Hospital", specialty: ["General"], location: "Shinjuku", address: "Shinjuku, Tokyo", website: "https://www.tokyo-med.ac.jp/", englishNote: "English support available", insurance: true },
+    { name: "National Center for Global Health and Medicine", specialty: ["General"], location: "Shinjuku", address: "Shinjuku, Tokyo", website: "https://www.ncgm.go.jp/", englishNote: "English support available", insurance: true },
+    { name: "Kameda Kyobashi Clinic", specialty: ["General"], location: "Chuo", address: "Central Tokyo, Chuo", website: "https://medical.kameda.com/kyobashi/en/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Midtown Clinic", specialty: ["General"], location: "Roppongi", address: "Roppongi, Minato, Tokyo", website: "https://www.tokyomidtown-mc.jp/en/", englishNote: "English support available", insurance: true },
+    // General Practice / Internal Medicine
+    { name: "Hiroo International Clinic", specialty: ["General"], location: "Hiroo", address: "Azabu / Hiroo, Shibuya, Tokyo", website: "http://www.hiroo-ic.com", englishNote: "Fully English-speaking", insurance: true },
+    { name: "International Health Care Clinic", specialty: ["General"], location: "Shimbashi", address: "Shimbashi, Minato, Tokyo", website: "https://www.ihcc.jp/", englishNote: "English support available", insurance: true },
+    { name: "American Clinic Tokyo", specialty: ["General"], location: "Akasaka", address: "Akasaka / Yotsuya, Minato, Tokyo", website: "https://www.americanclinictokyo.com/", englishNote: "Fully English-speaking", insurance: true },
+    { name: "Sendagaya International Clinic", specialty: ["General"], location: "Shinjuku", address: "Central Tokyo, Shinjuku", website: "https://www.sendagaya-ic.com/en/index.html", englishNote: "English support available", insurance: true },
+    { name: "Hibiya Clinic", specialty: ["General"], location: "Hibiya", address: "Marunouchi / Hibiya, Chiyoda, Tokyo", website: "https://hibiya-clinic.com/", englishNote: "English support available", insurance: true },
+    { name: "National Medical Clinic", specialty: ["General"], location: "Hiroo", address: "Azabu / Hiroo, Minato, Tokyo", website: "https://nationalmedical.jp/", englishNote: "Fully English-speaking", insurance: true },
+    { name: "Shinagawa East Clinic", specialty: ["General"], location: "Shinagawa", address: "Shinagawa / Shirokane, Tokyo", website: "https://e-clinic.gr.jp/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Station International Clinic", specialty: ["General"], location: "Chuo", address: "Yaesu, Chuo, Tokyo", website: "https://www.international-clinic.tokyo/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Medical and Surgical Clinic", specialty: ["General","Gastroenterology (GI)"], location: "Shiba", address: "Shiba, Minato, Tokyo", website: "https://www.tmsc.jp/", englishNote: "Fully English-speaking", insurance: true },
+    { name: "Biotope Clinic", specialty: ["General"], location: "Shiba", address: "Minato / Shiba, Tokyo", website: "https://biotopeclinic.com/", englishNote: "English support available", insurance: true },
+    // Pediatric
+    { name: "Fujimoto Kodomo Clinic", specialty: ["Pediatric"], location: "Mitaka", address: "Mitaka, Tokyo", website: "https://www.fujimoto-c.com/", englishNote: "English support available", insurance: true },
+    { name: "Akiyama Kodomo Clinic", specialty: ["Pediatric"], location: "Tokyo", address: "Tokyo", website: "https://www.akiyamakodomo.com/", englishNote: "English support available", insurance: true },
+    { name: "Kaede Clinic", specialty: ["Pediatric"], location: "Mitaka", address: "Mitaka, Tokyo", website: "https://kaede-kodomo.jp/", englishNote: "English support available", insurance: true },
+    { name: "Numata Medical Clinic", specialty: ["Pediatric"], location: "Musashino", address: "Musashino, Tokyo", website: "https://www.numatamedical.com/", englishNote: "English support available", insurance: true },
+    // Orthopedic
+    { name: "Nakajima Orthopedic", specialty: ["Orthopedic"], location: "Fuchu", address: "Shiraitodai, Fuchu, Tokyo", website: "https://nakajima-seikei.com/", englishNote: "English support available", insurance: true },
+    { name: "Yamate Clinic", specialty: ["Orthopedic"], location: "Shimokitazawa", address: "Shimokitazawa, Setagaya, Tokyo", website: "http://www.yamateclinic.jp/", englishNote: "English support available", insurance: true },
+    { name: "Nishiwaseda Ortho Knee Specialist", specialty: ["Orthopedic"], location: "Tokyo", address: "Tokyo", website: "http://www.nos-arts.com/", englishNote: "English support available", insurance: true },
+    { name: "TAO Clinic", specialty: ["Orthopedic"], location: "Tokyo", address: "Tokyo", website: "https://tao-clinic.jp/", englishNote: "English support available", insurance: true },
+    // Dentist
+    { name: "Higashikoganei Ekimae Dental Clinic", specialty: ["Dentist"], location: "Higashi-Koganei", address: "Higashi-Koganei, Tokyo", website: "https://www.higashikoganei-shika.com/", englishNote: "English support available", insurance: true },
+    { name: "Narumi Dental Clinic", specialty: ["Dentist"], location: "Kichijoji", address: "Kichijoji, Musashino, Tokyo", website: "https://musashino-dental.or.jp/", englishNote: "English support available", insurance: true },
+    { name: "Orion Dental", specialty: ["Dentist"], location: "Shiodome", address: "Shiodome, Minato, Tokyo", website: "https://www.orion-shiodome.com/", englishNote: "English support available", insurance: true },
+    { name: "The English Speaking Dentist Tokyo", specialty: ["Dentist"], location: "Yaesu", address: "Yaesu, Chuo, Tokyo", website: "https://ryodental.com/", englishNote: "Fully English-speaking", insurance: true },
+    { name: "NOBU Restorative Dental Office", specialty: ["Dentist"], location: "Yaesu", address: "Yaesu, Chuo, Tokyo", website: "https://nobu-dental.com/", englishNote: "English support available", insurance: true },
+    { name: "Ambassador Dental Office Tokyo", specialty: ["Dentist"], location: "Roppongi", address: "Roppongi, Minato, Tokyo", website: "https://www.tokyodentist.com/", englishNote: "English support available", insurance: true },
+    { name: "Azabudai United Dental Office Tokyo", specialty: ["Dentist"], location: "Hiroo", address: "Azabu / Hiroo, Minato, Tokyo", website: "https://www.uniteddentaloffice.com/", englishNote: "English support available", insurance: true },
+    { name: "Azabujuban Cler Dental Clinic", specialty: ["Dentist"], location: "Hiroo", address: "Azabujuban, Minato, Tokyo", website: "https://www.instagram.com/clerdentalazabujuban/", englishNote: "English support available", insurance: true },
+    { name: "Fujimoto International Dental Clinic", specialty: ["Dentist"], location: "Tsukiji", address: "Ginza / Tsukiji, Chuo, Tokyo", website: "https://fujimoto-dental.jp/", englishNote: "English support available", insurance: true },
+    { name: "Inaba Dental Office", specialty: ["Dentist"], location: "Shinjuku", address: "Shinjuku, Tokyo", website: "https://www.inaba-dental.jp/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Clinic Dental Office", specialty: ["Dentist"], location: "Shiba", address: "Shiba, Minato, Tokyo", website: "https://www.tcdo.jp/jp/index.html", englishNote: "English support available", insurance: true },
+    { name: "Trust Dental Clinic", specialty: ["Dentist"], location: "Harajuku", address: "Harajuku / Omotesando, Shibuya, Tokyo", website: "https://www.trustdental.jp/", englishNote: "English support available", insurance: true },
+    // Orthodontist
+    { name: "Aspen Clinic", specialty: ["Orthodontist"], location: "Kichijoji", address: "Kichijoji, Musashino, Tokyo", website: "https://www.aspen-shika.jp/english/", englishNote: "English website available", insurance: true },
+    { name: "Dr. Kaku's Office", specialty: ["Orthodontist","Dentist"], location: "Hiroo", address: "Azabu / Hiroo & Yoyogi-Uehara, Tokyo", website: "https://drskaku.com/ja.html", englishNote: "English support available", insurance: true },
+    // Dermatology
+    { name: "Kondo Dermatology", specialty: ["Dermatology"], location: "Koganei", address: "Shin-Koganei, Tokyo", website: "https://www.tcda.jp/kondo/", englishNote: "English support available", insurance: true },
+    { name: "Okamura Dermatology", specialty: ["Dermatology"], location: "Higashi-Koganei", address: "Higashi-Koganei, Tokyo", website: "https://www.tcda.jp/okamura/", englishNote: "English support available", insurance: true },
+    { name: "Hira Dermatology", specialty: ["Dermatology"], location: "Shimokitazawa", address: "Shimokitazawa, Setagaya, Tokyo", website: "https://hira-clinic.com/", englishNote: "English support available", insurance: true },
+    { name: "Hanafusa Dermatology", specialty: ["Dermatology"], location: "Mitaka", address: "Mitaka and several locations, Tokyo", website: "https://mitakahifu.com/kugayama/", englishNote: "English support available", insurance: true },
+    { name: "Takadanobaba Dermatology Clinic", specialty: ["Dermatology"], location: "Takadanobaba", address: "Takadanobaba, Shinjuku, Tokyo", website: "https://takadanobaba-derm.com/", englishNote: "English support available", insurance: true },
+    { name: "Garden Clinic Hiroo", specialty: ["Dermatology"], location: "Hiroo", address: "Azabu / Hiroo, Shibuya, Tokyo", website: "https://gardenclinic-hiroo.com/", englishNote: "English support available", insurance: true },
+    { name: "Maiko Skin Surgery Clinic Minami Aoyama", specialty: ["Dermatology"], location: "Aoyama", address: "Aoyama, Minato, Tokyo", website: "https://www.maiko-skin.com/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Skin Clinic", specialty: ["Dermatology"], location: "Roppongi", address: "Roppongi, Minato, Tokyo", website: "https://tokyoskinclinic.com/", englishNote: "English support available", insurance: true },
+    { name: "Takasu Clinic Ginza", specialty: ["Dermatology"], location: "Ginza", address: "Ginza / Tsukiji, Chuo, Tokyo", website: "https://www.takasu.co.jp/", englishNote: "English support available", insurance: true },
+    // Mammogram
+    { name: "Mammaria", specialty: ["Mammogram"], location: "Tsukiji", address: "Tsukiji / Tachikawa, Tokyo", website: "https://www.mammaria.jp/", englishNote: "English support available", insurance: true },
+    // Gynecology
+    { name: "Azuma-Motomachi Clinic", specialty: ["Gynecology"], location: "Kokubunji", address: "Kokubunji, Tokyo", website: "https://kokubunji-ladies.com/", englishNote: "English support available", insurance: true },
+    { name: "Shimodaira Clinic", specialty: ["Gynecology"], location: "Higashi-Koenji", address: "Higashi-Koenji, Suginami, Tokyo", website: "https://www.shimodaira-ladies.com/", englishNote: "English support available", insurance: true },
+    { name: "Higashi Fuchu Hospital", specialty: ["Gynecology"], location: "Fuchu", address: "Higashi Fuchu, Tokyo", website: "https://www.higashifuchu-hp.jp/", englishNote: "English support available", insurance: true },
+    { name: "Kichijoji Ladies Clinic", specialty: ["Gynecology"], location: "Kichijoji", address: "Kichijoji, Musashino, Tokyo", website: "https://kichijyoji-ladies.com/", englishNote: "English speaker available Thursdays", insurance: true, note: "English speaker on Thursdays" },
+    { name: "Shimodaira Ladies Clinic", specialty: ["Gynecology"], location: "Koenji", address: "Koenji, Tokyo", website: "https://www.shimodaira-ladies.com/", englishNote: "Doctor speaks English", insurance: true, note: "Doctor speaks English — always able to communicate" },
+    { name: "Kirin Women's Clinic", specialty: ["Gynecology"], location: "Mitaka", address: "Mitaka, Tokyo", website: "https://kirin-womens-clinic.com/musashino/", englishNote: "English available Wed PM & Thu", insurance: true, note: "English speaker Wed afternoon, Thu AM/PM" },
+    { name: "Sayaka Women's Health", specialty: ["Gynecology"], location: "Hiroo", address: "Hiroo, Minato, Tokyo", website: "https://www.sayaka-cl.jp/english", englishNote: "English website available", insurance: true },
+    { name: "Aiiku Clinic International Unit", specialty: ["Gynecology"], location: "Hiroo", address: "Azabu / Hiroo, Minato, Tokyo", website: "https://www.aiiku.net/clinic/departments/international-unit/", englishNote: "English support available", insurance: true },
+    { name: "Fertility Clinic Tokyo", specialty: ["Gynecology"], location: "Shibuya", address: "Shibuya, Tokyo", website: "https://fert-tokyo.jp/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Women's Clinic", specialty: ["Gynecology"], location: "Roppongi", address: "Roppongi, Minato, Tokyo", website: "https://www.sbc-ladies.com/", englishNote: "English support available", insurance: true },
+    { name: "Yoga Ladies Clinic", specialty: ["Gynecology"], location: "Setagaya", address: "Setagaya, Tokyo", website: "http://www.11yoga-lady.com/", englishNote: "English support available", insurance: true },
+    // Urology
+    { name: "Fuchu Aoba Clinic", specialty: ["Urology"], location: "Fuchu", address: "Higashi Fuchu, Tokyo", website: "https://mirai-mg.com/fuchu/", englishNote: "English support available", insurance: true },
+    { name: "Ohori International Hospital", specialty: ["Urology"], location: "Mitaka", address: "Mitaka, Tokyo", website: "https://www.tmhp.jp/okubo/index.html", englishNote: "International hospital", insurance: true },
+    // Gastroenterology
+    { name: "Toranomon Clinic", specialty: ["Gastroenterology (GI)"], location: "Toranomon", address: "Toranomon, Minato, Tokyo", website: "https://akatora-clinic.com/", englishNote: "English support available", insurance: true },
+    { name: "Think Park Internal Medical Clinic", specialty: ["Gastroenterology (GI)"], location: "Shinagawa", address: "Shinagawa, Tokyo", website: "http://www.thinkparkclinic.com/", englishNote: "English support available", insurance: true },
+    { name: "Kichijoji Medical Clinic", specialty: ["Gastroenterology (GI)"], location: "Kichijoji", address: "Kichijoji, Musashino, Tokyo", website: "https://www.kichijoji-clinic.com/gastroenterology/", englishNote: "English support available", insurance: true },
+    { name: "Seventh Day Adventist Hospital", specialty: ["Gastroenterology (GI)"], location: "Ogikubo", address: "Ogikubo, Suginami, Tokyo", website: "https://www.tokyoeisei.com/", englishNote: "English support available", insurance: true },
+    { name: "Shiba Coloproctological Clinic", specialty: ["Gastroenterology (GI)"], location: "Shiba", address: "Shiba, Minato, Tokyo", website: "https://shibaangel.com/", englishNote: "English support available", insurance: true },
+    // ENT
+    { name: "Musashisakai ENT", specialty: ["ENT (Ear, Nose & Throat)"], location: "Musashisakai", address: "Musashisakai, Musashino, Tokyo", website: "https://musashisakai-jibika.jp/", englishNote: "English support available", insurance: true },
+    { name: "Kumada ENT", specialty: ["ENT (Ear, Nose & Throat)"], location: "Nishiazabu", address: "Nishiazabu, Minato, Tokyo", website: "https://kumadaclinic.com/en/", englishNote: "English website available", insurance: true },
+    { name: "Jingumae E.N.T. Clinic", specialty: ["ENT (Ear, Nose & Throat)"], location: "Harajuku", address: "Harajuku / Omotesando, Shibuya, Tokyo", website: "https://www.jingumae-ent.com/", englishNote: "English support available", insurance: true },
+    { name: "Nishiya ENT Clinic", specialty: ["ENT (Ear, Nose & Throat)"], location: "Shinagawa", address: "Shinagawa / Shirokane, Tokyo", website: "https://nishiya-ent.com/", englishNote: "English support available", insurance: true },
+    // Mental Health / Psychiatry
+    { name: "Tokyo Mental Health", specialty: ["Mental Health"], location: "Tsukiji", address: "Ginza / Tsukiji, Chuo, Tokyo", website: "https://www.tokyomentalhealth.com/", englishNote: "Fully English-speaking", insurance: true },
+    { name: "Roppongi Clinic: Psychiatric and Psychological Therapy", specialty: ["Mental Health"], location: "Akasaka", address: "Akasaka / Yotsuya, Minato, Tokyo", website: "https://www.roppongi-clinic.jp/", englishNote: "English support available", insurance: true },
+    // Physiotherapy & Chiropractic
+    { name: "Toritsudai Physio Care & Conditioning", specialty: ["Physiotherapy & Chiropractic"], location: "Meguro", address: "Daikanyama / Ebisu / Meguro, Tokyo", website: "https://physicaltherapy-exercise.com/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Physio", specialty: ["Physiotherapy & Chiropractic"], location: "Hiroo", address: "Azabu / Hiroo, Minato, Tokyo", website: "https://tokyophysio.com/", englishNote: "Fully English-speaking", insurance: true },
+    { name: "Club360 – Physiotherapy & Sports Massage", specialty: ["Physiotherapy & Chiropractic"], location: "Roppongi", address: "Roppongi, Minato, Tokyo", website: "https://www.club360.jp/", englishNote: "English support available", insurance: true },
+    { name: "Izumi Chiropractic", specialty: ["Physiotherapy & Chiropractic"], location: "Shinagawa", address: "Shinagawa / Shirokane, Tokyo", website: "https://www.izumichiropractic.com/", englishNote: "English support available", insurance: true },
+    { name: "Active-Ageing Chiropractic Tokyo", specialty: ["Physiotherapy & Chiropractic"], location: "Setagaya", address: "Setagaya, Tokyo", website: "https://chirocare-tokyo.com/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Chiropractic", specialty: ["Physiotherapy & Chiropractic"], location: "Harajuku", address: "Harajuku / Omotesando, Shibuya, Tokyo", website: "https://tokyochiro.com/", englishNote: "English support available", insurance: true },
+    // Ophthalmology
+    { name: "Eye Rose Clinic", specialty: ["Ophthalmology"], location: "Chuo", address: "Central Tokyo, Chuo", website: "https://www.misumarunosato.or.jp/", englishNote: "English support available", insurance: true },
+    { name: "Kamoshita Eye Clinic", specialty: ["Ophthalmology"], location: "Roppongi", address: "Roppongi, Minato, Tokyo", website: "https://www.kamoshita-eye.com/", englishNote: "English support available", insurance: true },
+    { name: "Tameike Eye Clinic", specialty: ["Ophthalmology"], location: "Akasaka", address: "Akasaka / Yotsuya, Minato, Tokyo", website: "https://www.tameike-eye.com/", englishNote: "English support available", insurance: true },
+    // Oncology
+    { name: "The Cancer Institute Hospital of JFCR", specialty: ["Oncology"], location: "Koto", address: "Central South Tokyo, Koto", website: "https://www.jfcr.or.jp/hospital/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Cancer Clinic", specialty: ["Oncology"], location: "Chuo", address: "Central Tokyo / Iidabashi, Chuo", website: "https://tokyocancerclinic.jp/", englishNote: "English support available", insurance: true },
+    // Podiatry
+    { name: "Tokyo Podiatry Clinic", specialty: ["Podiatry"], location: "Shimbashi", address: "Shimbashi, Minato, Tokyo", website: "https://tokyopodiatry.jp/15203926617208", englishNote: "English support available", insurance: true },
+    // ── WEST TOKYO / FUCHU / CHOFU / TAMA AREA ──
+    { name: "Tokyo Metropolitan Children's Medical Center", specialty: ["Pediatric"], location: "Fuchu", address: "Musashidai, Fuchu, Tokyo", website: "https://www.tmhp.jp/shouni/en/", englishNote: "English, Chinese, Korean, Indonesian support", insurance: true, note: "JMIP certified — pediatric specialist hospital" },
+    { name: "Tama Medical Center", specialty: ["General"], location: "Fuchu", address: "Musashidai, Fuchu, Tokyo", website: "https://www.tmhp.jp/tama/en/", englishNote: "English support available", insurance: true, note: "JMIP certified 2019 — 24-hour ER" },
+    { name: "Jikei University Hospital Kokuryo", specialty: ["General"], location: "Chofu", address: "Kokuryo, Chofu, Tokyo", website: "https://www.hosp.jikei.ac.jp/", englishNote: "English support available", insurance: true, note: "10 min walk from Kokuryo Station (Keio Line)" },
+    { name: "Musashino Red Cross Hospital", specialty: ["General"], location: "Musashino", address: "Musashino, Tokyo", website: "https://www.musashino.jrc.or.jp/", englishNote: "English support available", insurance: true },
+    { name: "Tachikawa Hospital", specialty: ["General"], location: "Tachikawa", address: "Tachikawa, Tokyo", website: "https://www.tachikawa-hospital.jp/", englishNote: "English support available", insurance: true },
+    { name: "Tokyo Medical University Hachioji Medical Center", specialty: ["General"], location: "Hachioji", address: "Hachioji, Tokyo", website: "https://hachioji.tokyo-med.ac.jp/english/", englishNote: "English website available", insurance: true },
+    // ── CENTRAL TOKYO — MAJOR HOSPITALS ──
+    { name: "Tokyo Saiseikai Central Hospital", specialty: ["General"], location: "Shiba", address: "Mita, Minato, Tokyo", website: "https://www.saichu.jp/english/home/", englishNote: "English, Spanish, French, Russian, Chinese", insurance: true, note: "JMIP certified 2017 — referral letter preferred" },
+    { name: "Toranomon Hospital", specialty: ["General","Gastroenterology (GI)","Cardiology","Oncology"], location: "Toranomon", address: "Toranomon, Minato, Tokyo", website: "https://toranomon.kkr.or.jp/", englishNote: "Full English service available", insurance: true, note: "All departments — large general hospital" },
+    { name: "Jikei University Hospital", specialty: ["General"], location: "Shimbashi", address: "Nishi-Shinbashi, Minato, Tokyo", website: "https://www.hosp.jikei.ac.jp/", englishNote: "International Patient Services available", insurance: true, note: "Accepts international patients — referral preferred" },
+    { name: "Keio University Hospital", specialty: ["General"], location: "Shinjuku", address: "Shinanomachi, Shinjuku, Tokyo", website: "https://www.hosp.keio.ac.jp/en/", englishNote: "International Patient Center", insurance: true, note: "JCI & JMIP certified — referral letter required" },
+    { name: "Juntendo University Hospital", specialty: ["General"], location: "Bunkyo", address: "Hongo, Bunkyo, Tokyo", website: "https://www.juntendo.ac.jp/hospital/ihc/", englishNote: "Department of International Healthcare", insurance: true, note: "Referral letter required" },
+    { name: "University of Tokyo Hospital", specialty: ["General"], location: "Bunkyo", address: "Hongo, Bunkyo, Tokyo", website: "https://www.h.u-tokyo.ac.jp/english/", englishNote: "International Medical Center", insurance: true, note: "175 countries served — referral letter required" },
+    { name: "Institute of Science Tokyo Hospital", specialty: ["General","Dentist"], location: "Bunkyo", address: "Yushima, Bunkyo, Tokyo", website: "https://www.tmd.ac.jp/medhospital/english/", englishNote: "English support available", insurance: true, note: "JCI certified — formerly Tokyo Medical and Dental University" },
+    { name: "Ebara Hospital", specialty: ["General"], location: "Ota", address: "Ota, Tokyo", website: "https://www.tmhp.jp/ebara/", englishNote: "Patient Support Center — English, Chinese, Korean", insurance: true, note: "English website available" },
+    { name: "JCHO Tokyo Takanawa Hospital", specialty: ["General"], location: "Shinagawa", address: "Takanawa, Minato, Tokyo", website: "https://takanawa.jcho.go.jp/international-assistance-service/", englishNote: "English, Chinese, Russian interpreters", insurance: true, note: "No referral required — international assistance service" },
+    { name: "Tokyo Metropolitan Komagome Hospital", specialty: ["General","Oncology"], location: "Bunkyo", address: "Honkomagome, Bunkyo, Tokyo", website: "https://www.tmhp.jp/komagome/", englishNote: "English support available", insurance: true, note: "Cancer specialist — Tokyo Metropolitan" },
+    { name: "Okubo Hospital", specialty: ["General"], location: "Shinjuku", address: "Kabukicho, Shinjuku, Tokyo", website: "https://ohkubo-hosp.jp/", englishNote: "English support available", insurance: true },
+    { name: "Sumida Hospital", specialty: ["General"], location: "Sumida", address: "Sumida, Tokyo", website: "https://www.tmhp.jp/sumida/", englishNote: "Tablet translation — English, Chinese, Korean", insurance: true, note: "Tokyo Metropolitan Government hospital" },
+    { name: "Setagaya Medical Center", specialty: ["General"], location: "Setagaya", address: "Setagaya, Tokyo", website: "https://www.tmhp.jp/setagaya/", englishNote: "English signage throughout", insurance: true, note: "24-hour ER" },
+    { name: "Seibo International Catholic Hospital", specialty: ["General","Gynecology","Pediatric"], location: "Nakano", address: "Nakaochiai, Shinjuku, Tokyo", website: "https://seibokai.or.jp/en/", englishNote: "English-speaking OB/GYN and general", insurance: true },
+    // ── GENERAL PRACTICE / INTERNAL MEDICINE ──
+    { name: "Jinai Naika Clinic", specialty: ["General"], location: "Shibuya", address: "Shibuya, Tokyo", website: "https://jinai-naika.com/", englishNote: "English-speaking GP", insurance: true },
+    { name: "Pride Clinic", specialty: ["Dermatology"], location: "Shinjuku", address: "Shinjuku, Tokyo", website: "https://pride-clinic.com/", englishNote: "Expat-focused general practice", insurance: true },
+    { name: "Tokyo Business Clinic", specialty: ["General"], location: "Yaesu", address: "Yaesu, Chuo, Tokyo", website: "https://www.businessclinic.tokyo/yaesu-kitaguchi", englishNote: "English and Chinese-speaking", insurance: true },
+    { name: "Suginami International Clinic", specialty: ["General"], location: "Nerima", address: "Shimoshakujii, Nerima, Tokyo", website: "https://www.suikido.jp/", englishNote: "Fluent English — internal medicine, allergology, rheumatology", insurance: true },
+    // ── ORTHOPEDICS ──
+    { name: "Muraki Orthopedic Clinic", specialty: ["Orthopedic"], location: "Ikebukuro", address: "Higashi-Ikebukuro, Toshima, Tokyo", website: "https://www.higashiikebukuro46-totsukaseikei.com/", englishNote: "Fluent English-speaking doctor", insurance: true },
+    // ── OPHTHALMOLOGY ──
+    { name: "Musashi Eye Clinic", specialty: ["Ophthalmology"], location: "Setagaya", address: "Kaminoge, Setagaya, Tokyo", website: "https://www.musashi-eye-clinic.com/e-top", englishNote: "English website available", insurance: true },
+    // ── DERMATOLOGY ──
+    { name: "Plaza Plastic Surgery", specialty: ["Dermatology"], location: "Hiroo", address: "Azabu / Hiroo, Minato, Tokyo", website: "https://plazaclinic.net/", englishNote: "English-speaking staff", insurance: true },
+    // ── MENTAL HEALTH ──
+    { name: "Tokyo Harmony Counseling and Psychotherapy", specialty: ["Mental Health"], location: "Minato", address: "Minato, Tokyo", website: "https://www.tokyoharmony.com/", englishNote: "English, French, German, Korean, Chinese, Portuguese", insurance: false, note: "Individual, couples, family and group therapy" },
+    { name: "Therapy Garden", specialty: ["Mental Health"], location: "Tokyo", address: "Online / Tokyo", website: "https://www.therapygarden.net/", englishNote: "Fully English-speaking — expat focused", insurance: false, note: "Online therapy available — expat specialization" },
+    // ── PHYSIOTHERAPY ──
+    { name: "Comodo Chiropractic", specialty: ["Physiotherapy & Chiropractic"], location: "Nerima", address: "Oizumigakuen, Nerima, Tokyo", website: "https://oizumigakuen-chiro.com/", englishNote: "Dr. Ikuko Abe speaks fluent English", insurance: true, note: "Scoliosis, herniated discs, sports rehabilitation" },
+    // Hachioji
+    { name: "Kitahara International Hospital", specialty: ["General"], location: "Hachioji", address: "Hachioji, Tokyo", website: "https://kokusai.kitaharahosp.com/", englishNote: "International hospital", insurance: true },
+    { name: "Kitahara Life Support Clinic", specialty: ["General"], location: "Hachioji", address: "Hachioji, Tokyo", website: "https://kokusai.kitaharahosp.com/", englishNote: "English support available", insurance: true },
+  ];
+    const locationCoords = {
+    "Fuchu": [35.6686, 139.4776],
+    "Koganei": [35.6995, 139.5027],
+    "Mitaka": [35.6837, 139.5597],
+    "Musashino": [35.7071, 139.5596],
+    "Higashi-Koganei": [35.6995, 139.5180],
+    "Kichijoji": [35.7027, 139.5795],
+    "Musashisakai": [35.7120, 139.5530],
+    "Chofu": [35.6516, 139.5430],
+    "Kokubunji": [35.7104, 139.4626],
+    "Shimokitazawa": [35.6614, 139.6677],
+    "Setagaya": [35.6464, 139.6532],
+    "Nakano": [35.7072, 139.6651],
+    "Suginami": [35.6994, 139.6367],
+    "Ogikubo": [35.7050, 139.6197],
+    "Koenji": [35.7057, 139.6494],
+    "Higashi-Koenji": [35.7030, 139.6570],
+    "Shinjuku": [35.6896, 139.6917],
+    "Takadanobaba": [35.7126, 139.7034],
+    "Shibuya": [35.6580, 139.7016],
+    "Yoyogi": [35.6831, 139.6989],
+    "Hiroo": [35.6491, 139.7196],
+    "Minato": [35.6580, 139.7514],
+    "Toranomon": [35.6665, 139.7494],
+    "Nishiazabu": [35.6563, 139.7258],
+    "Roppongi": [35.6627, 139.7318],
+    "Shiodome": [35.6650, 139.7580],
+    "Chiyoda": [35.6938, 139.7535],
+    "Otemachi": [35.6863, 139.7634],
+    "Chuo": [35.6762, 139.7709],
+    "Tsukiji": [35.6654, 139.7707],
+    "Shinagawa": [35.6284, 139.7387],
+    "Meguro": [35.6339, 139.7153],
+    "Toshima": [35.7272, 139.7184],
+    "Taito": [35.7126, 139.7778],
+    "Tachikawa": [35.6985, 139.4086],
+    "Higashi Fuchu": [35.6630, 139.4900],
+    "Kokubunji": [35.7104, 139.4626],
+    "Musashisakai": [35.7120, 139.5530],
+    "Tokyo": [35.6762, 139.6503],
+    "Aoyama": [35.6694, 139.7193],
+    "Akasaka": [35.6742, 139.7366],
+    "Harajuku": [35.6702, 139.7027],
+    "Hibiya": [35.6742, 139.7581],
+    "Shiba": [35.6511, 139.7473],
+    "Yaesu": [35.6789, 139.7701],
+    "Shimbashi": [35.6657, 139.7588],
+    "Ginza": [35.6717, 139.7650],
+    "Koto": [35.6722, 139.8169],
+    "Hachioji": [35.6664, 139.3160],
+    "Daikanyama": [35.6490, 139.7034],
+    "Ebisu": [35.6467, 139.7101],
+    "Setagaya": [35.6464, 139.6532],
+    "Chofu": [35.6516, 139.5430],
+    "Tachikawa": [35.6985, 139.4086],
+    "Bunkyo": [35.7078, 139.7520],
+    "Ota": [35.5614, 139.7160],
+    "Sumida": [35.7101, 139.8018],
+    "Nakano": [35.7072, 139.6651],
+    "Nerima": [35.7357, 139.6516],
+    "Ikebukuro": [35.7295, 139.7109],
+    "Toshima": [35.7272, 139.7184]
+  };
+    const clinicCoords = {
+    "Asahicho Clinic":               [35.6686, 139.4776],
+    "Ehara Clinic":                  [35.6686, 139.4776],
+    "Medilocus":                     [35.6863, 139.7634],
+    "Shimazu Medical":               [35.6614, 139.6677],
+    "Musashinooka Family Clinic":    [35.7071, 139.5596],
+    "Koganei Family Clinic":         [35.6995, 139.5027],
+    "Fujimoto Kodomo Clinic":        [35.6837, 139.5597],
+    "Akiyama Kodomo Clinic":         [35.6762, 139.6503],
+    "Kaede Clinic":                  [35.6837, 139.5597],
+    "Numata Medical Clinic":         [35.7071, 139.5596],
+    "Nakajima Orthopedic":           [35.6686, 139.4776],
+    "Yamate Clinic":                 [35.6614, 139.6677],
+    "Nishiwaseda Ortho Knee Specialist": [35.6762, 139.6503],
+    "TAO Clinic": [35.6762, 139.6503],
+    "Higashikoganei Ekimae Dental Clinic": [35.6995, 139.5180],
+    "Narumi Dental Clinic":          [35.7027, 139.5795],
+    "Orion Dental":                  [35.6650, 139.7580],
+    "Aspen Clinic":                  [35.7027, 139.5795],
+    "Kondo Dermatology":             [35.6995, 139.5180],
+    "Okamura Dermatology":           [35.6995, 139.5180],
+    "Hira Dermatology":              [35.6614, 139.6677],
+    "Hanafusa Dermatology":          [35.6837, 139.5597],
+    "Takadanobaba Dermatology Clinic": [35.7126, 139.7034],
+    "Mammaria":                      [35.6654, 139.7707],
+    "Azuma-Motomachi Clinic":        [35.7104, 139.4626],
+    "Shimodaira Clinic":             [35.7030, 139.6570],
+    "Higashi Fuchu Hospital":        [35.6630, 139.4900],
+    "Kichijoji Ladies Clinic":       [35.7027, 139.5795],
+    "Shimodaira Ladies Clinic":      [35.7057, 139.6494],
+    "Kirin Women's Clinic":          [35.6837, 139.5597],
+    "Sayaka Women's Health":         [35.6491, 139.7196],
+    "Ohori International Hospital":  [35.6837, 139.5597],
+    "Toranomon Clinic":              [35.6665, 139.7494],
+    "Think Park Internal Medical Clinic": [35.6284, 139.7387],
+    "Kichijoji Medical Clinic":      [35.7027, 139.5795],
+    "Seventh Day Adventist Hospital":[35.7050, 139.6197],
+    "Musashisakai ENT":              [35.7120, 139.5530],
+    "Kumada ENT":                    [35.6563, 139.7258],
+    "IUHW Mita Hospital":            [35.6491, 139.7196],
+    "Japanese Red Cross Medical Center": [35.6491, 139.7016],
+    "Tokyo Metropolitan Hiroo Hospital": [35.6491, 139.7016],
+    "NTT Medical Center Tokyo":      [35.6284, 139.7387],
+    "Sanno Hospital":                [35.6694, 139.7193],
+    "St. Luke's International Hospital": [35.6654, 139.7707],
+    "Tokyo Medical University Hospital": [35.6896, 139.6917],
+    "National Center for Global Health and Medicine": [35.6896, 139.6917],
+    "Kameda Kyobashi Clinic":        [35.6762, 139.7709],
+    "Tokyo Midtown Clinic":          [35.6627, 139.7318],
+    "Hiroo International Clinic":    [35.6491, 139.7196],
+    "International Health Care Clinic": [35.6657, 139.7588],
+    "American Clinic Tokyo":         [35.6742, 139.7366],
+    "Sendagaya International Clinic":[35.6896, 139.6917],
+    "Hibiya Clinic":                 [35.6742, 139.7581],
+    "National Medical Clinic":       [35.6491, 139.7196],
+    "Shinagawa East Clinic":         [35.6284, 139.7387],
+    "Tokyo Station International Clinic": [35.6789, 139.7701],
+    "Tokyo Medical and Surgical Clinic": [35.6511, 139.7473],
+    "Biotope Clinic":                [35.6511, 139.7473],
+    "The English Speaking Dentist Tokyo": [35.6789, 139.7701],
+    "NOBU Restorative Dental Office":[35.6789, 139.7701],
+    "Ambassador Dental Office Tokyo":[35.6627, 139.7318],
+    "Azabudai United Dental Office Tokyo": [35.6491, 139.7196],
+    "Azabujuban Cler Dental Clinic": [35.6491, 139.7196],
+    "Fujimoto International Dental Clinic": [35.6654, 139.7707],
+    "Inaba Dental Office":           [35.6896, 139.6917],
+    "Tokyo Clinic Dental Office":    [35.6511, 139.7473],
+    "Trust Dental Clinic":           [35.6702, 139.7027],
+    "Dr. Kaku's Office":             [35.6491, 139.7196],
+    "Garden Clinic Hiroo":           [35.6491, 139.7016],
+    "Maiko Skin Surgery Clinic Minami Aoyama": [35.6694, 139.7193],
+    "Tokyo Skin Clinic":             [35.6627, 139.7318],
+    "Takasu Clinic Ginza":           [35.6717, 139.7650],
+    "Aiiku Clinic International Unit": [35.6491, 139.7196],
+    "Fertility Clinic Tokyo":        [35.6580, 139.7016],
+    "Tokyo Women's Clinic":          [35.6627, 139.7318],
+    "Yoga Ladies Clinic":            [35.6464, 139.6532],
+    "Shiba Coloproctological Clinic":[35.6511, 139.7473],
+    "Jingumae E.N.T. Clinic":        [35.6702, 139.7027],
+    "Nishiya ENT Clinic":            [35.6284, 139.7387],
+    "Roppongi Clinic: Psychiatric and Psychological Therapy":               [35.6627, 139.7318],
+    "Tokyo Mental Health":           [35.6654, 139.7707],
+    "Toritsudai Physio Care & Conditioning": [35.6339, 139.7153],
+    "Tokyo Physio":                  [35.6491, 139.7196],
+    "Club360 – Physiotherapy & Sports Massage": [35.6627, 139.7318],
+    "Izumi Chiropractic":            [35.6284, 139.7387],
+    "Active-Ageing Chiropractic Tokyo": [35.6464, 139.6532],
+    "Tokyo Chiropractic":            [35.6702, 139.7027],
+    "Eye Rose Clinic":               [35.6762, 139.7709],
+    "Kamoshita Eye Clinic":          [35.6627, 139.7318],
+    "Tameike Eye Clinic":            [35.6742, 139.7366],
+    "The Cancer Institute Hospital of JFCR": [35.6722, 139.8169],
+    "Tokyo Cancer Clinic":           [35.6762, 139.7709],
+    "Tokyo Podiatry Clinic":         [35.6657, 139.7588],
+    "Kitahara International Hospital": [35.6664, 139.3160],
+    "Kitahara Life Support Clinic":  [35.6664, 139.3160],
+    // New clinics
+    "Tokyo Metropolitan Children's Medical Center": [35.6686, 139.4776],
+    "Tama Medical Center":           [35.6686, 139.4776],
+    "Jikei University Hospital Kokuryo": [35.6452, 139.5648],
+    "Musashino Red Cross Hospital":  [35.7071, 139.5596],
+    "Tachikawa Hospital":            [35.6985, 139.4086],
+    "Tokyo Medical University Hachioji Medical Center": [35.6664, 139.3160],
+    "Tokyo Saiseikai Central Hospital": [35.6511, 139.7473],
+    "Toranomon Hospital":            [35.6665, 139.7494],
+    "Jikei University Hospital":     [35.6657, 139.7558],
+    "Keio University Hospital":      [35.6826, 139.7195],
+    "Juntendo University Hospital":  [35.7078, 139.7520],
+    "University of Tokyo Hospital":  [35.7130, 139.7622],
+    "Institute of Science Tokyo Hospital": [35.7040, 139.7660],
+    "Ebara Hospital":                [35.5800, 139.6934],
+    "JCHO Tokyo Takanawa Hospital":  [35.6284, 139.7387],
+    "Tokyo Metropolitan Komagome Hospital": [35.7322, 139.7464],
+    "Okubo Hospital":               [35.6943, 139.7020],
+    "Sumida Hospital":               [35.7101, 139.8018],
+    "Setagaya Medical Center":       [35.6464, 139.6532],
+    "Seibo International Catholic Hospital": [35.7072, 139.6951],
+    "Jinai Naika Clinic":            [35.6580, 139.7016],
+    "Pride Clinic":              [35.6896, 139.6917],
+    "Tokyo Business Clinic":         [35.6789, 139.7701],
+    "Suginami International Clinic": [35.7357, 139.6516],
+    "Muraki Orthopedic Clinic":      [35.7295, 139.7109],
+    "Musashi Eye Clinic":            [35.6195, 139.6232],
+    "Plaza Plastic Surgery":         [35.6491, 139.7196],
+    "Tokyo Harmony Counseling and Psychotherapy":     [35.6580, 139.7514],
+    "Therapy Garden":                [35.6762, 139.6503],
+    "Comodo Chiropractic":     [35.7426, 139.6030],
+    "Fuchu Aoba Clinic":          [35.6630, 139.4900],
+
+  };
+    const clinicHours = {
+    "St. Luke's International Hospital": {
+      Monday: "8:30–11:00", Tuesday: "8:30–11:00", Wednesday: "8:30–11:00",
+      Thursday: "8:30–11:00", Friday: "8:30–11:00", Saturday: "8:30–11:00", Sunday: "Closed",
+      phone: "03-5550-7166",
+      note: "24-hour emergency department. Outpatient hours vary by department — confirm ahead."
+    },
+    "NTT Medical Center Tokyo": {
+      Monday: "8:30–11:00, 13:00–15:00", Tuesday: "8:30–11:00, 13:00–15:00",
+      Wednesday: "8:30–11:00, 13:00–15:00", Thursday: "8:30–11:00, 13:00–15:00",
+      Friday: "8:30–11:00, 13:00–15:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-3448-6111",
+      note: "Emergency department open 24 hours. EN/ES/FR/KO/PT/RU/TH/VI/ZH."
+    },
+    "IUHW Mita Hospital": {
+      Monday: "14:00–19:30", Tuesday: "14:00–19:30", Wednesday: "14:00–19:30",
+      Thursday: "14:00–19:30", Friday: "14:00–19:30", Saturday: "14:00–19:30", Sunday: "11:00–19:30",
+      phone: "03-3451-8121",
+      note: "Open 7 days including Sundays and national holidays.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+    },
+    "Sanno Hospital": {
+      Monday: "8:30–11:30, 13:00–16:30", Tuesday: "8:30–11:30, 13:00–16:30",
+      Wednesday: "8:30–11:30, 13:00–16:30", Thursday: "8:30–11:30, 13:00–16:30",
+      Friday: "8:30–11:30, 13:00–16:30", Saturday: "8:30–11:30", Sunday: "Closed",
+      phone: "03-3402-3151",
+      note: "Walk-ins available for some departments. Appointment recommended."
+    },
+    "Tokyo Metropolitan Hiroo Hospital": {
+      Monday: "9:00–17:00", Tuesday: "9:00–17:00", Wednesday: "9:00–17:00",
+      Thursday: "9:00–17:00", Friday: "9:00–17:00", Saturday: "9:00–11:30", Sunday: "Closed",
+      phone: "03-3444-1181",
+      note: "Emergency department 24 hours. English/Chinese interpreter available."
+    },
+    "National Center for Global Health and Medicine": {
+      Monday: "8:30–11:00", Tuesday: "8:30–11:00", Wednesday: "8:30–11:00",
+      Thursday: "8:30–11:00", Friday: "8:30–11:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-3202-7181",
+      note: "International Health Care Center Mon–Fri. 15+ languages supported."
+    },
+    "JCHO Tokyo Takanawa Hospital": {
+      Monday: "9:00–11:00", Tuesday: "9:00–11:00", Wednesday: "9:00–11:00",
+      Thursday: "9:00–11:00", Friday: "9:00–11:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-3443-9191",
+      note: "International Assistance Desk Mon–Fri 9:00–15:45. EN/ZH/RU."
+    },
+    "Toranomon Hospital": {
+      Monday: "8:30–11:00", Tuesday: "8:30–11:00", Wednesday: "8:30–11:00",
+      Thursday: "8:30–11:00", Friday: "8:30–11:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-3588-1111",
+      note: "Emergency care 17:00–8:00 weekdays and 24 hours weekends/holidays."
+    },
+    "Keio University Hospital": {
+      Monday: "7:45–11:00", Tuesday: "7:45–11:00", Wednesday: "7:45–11:00",
+      Thursday: "7:45–11:00", Friday: "7:45–11:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-3353-1211",
+      note: "Referral letter required. International Patient Center Mon–Fri."
+    },
+    "Juntendo University Hospital": {
+      Monday: "8:00–11:00", Tuesday: "8:00–11:00", Wednesday: "8:00–11:00",
+      Thursday: "8:00–11:00", Friday: "8:00–11:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-3813-3111",
+      note: "Department of International Healthcare. Referral required."
+    },
+    "University of Tokyo Hospital": {
+      Monday: "8:30–11:00", Tuesday: "8:30–11:00", Wednesday: "8:30–11:00",
+      Thursday: "8:30–11:00", Friday: "8:30–11:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-3815-5411",
+      note: "International Medical Center available. Referral strongly recommended."
+    },
+    "Tokyo Saiseikai Central Hospital": {
+      Monday: "8:30–11:00", Tuesday: "8:30–11:00", Wednesday: "8:30–11:00",
+      Thursday: "8:30–11:00", Friday: "8:30–11:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-3451-8211",
+      note: "JMIP certified. Referral letter preferred. EN/ES/FR/RU/ZH."
+    },
+    "Tokyo Midtown Medical Center": {
+      Monday: "9:00–12:30, 14:00–17:30", Tuesday: "9:00–12:30, 14:00–17:30",
+      Wednesday: "9:00–12:30, 14:00–17:30", Thursday: "9:00–12:30, 14:00–17:30",
+      Friday: "9:00–12:30, 14:00–17:30", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-5413-0080",
+      note: "JCI certified. English-speaking staff available.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday"]
+    },
+    "American Clinic Tokyo": {
+      Monday: "9:00–12:00, 15:00–18:00", Tuesday: "9:00–12:00, 15:00–18:00",
+      Wednesday: "9:00–12:00, 15:00–18:00", Thursday: "9:00–12:00, 15:00–18:00",
+      Friday: "9:00–12:00, 15:00–18:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-6441-0969",
+      note: "By appointment only. Fully English-speaking.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday"]
+    },
+    "Tokyo Medical and Surgical Clinic": {
+      Monday: "9:00–13:00, 14:30–18:00", Tuesday: "9:00–13:00, 14:30–18:00",
+      Wednesday: "9:00–13:00", Thursday: "9:00–13:00, 14:30–18:00",
+      Friday: "9:00–13:00, 14:30–18:00", Saturday: "9:00–13:00", Sunday: "Closed",
+      phone: "03-3436-3028",
+      note: "EN/ES/DE/FR depending on doctor. Out-of-hours service available.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    },
+    "Hiroo International Clinic": {
+      Monday: "9:00–17:00", Tuesday: "9:00–17:00", Wednesday: "9:00–17:00",
+      Thursday: "9:00–17:00", Friday: "9:00–17:00", Saturday: "9:00–13:00", Sunday: "Closed",
+      phone: "03-5789-8861",
+      note: "Closed Sat afternoon, Sun, and national holidays.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    },
+    "National Medical Clinic": {
+      Monday: "9:00–12:00, 13:30–17:00", Tuesday: "9:00–12:00, 13:30–17:00",
+      Wednesday: "9:00–12:00, 13:30–17:00", Thursday: "9:00–12:00, 13:30–17:00",
+      Friday: "9:00–12:00, 13:30–17:00", Saturday: "9:00–12:00", Sunday: "Closed",
+      phone: "03-3473-2057",
+      note: "Established 1988. Fully English-speaking.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    },
+    "Tokyo Station International Clinic": {
+      Monday: "9:00–21:00", Tuesday: "9:00–21:00", Wednesday: "9:00–21:00",
+      Thursday: "9:00–21:00", Friday: "9:00–21:00", Saturday: "9:00–21:00", Sunday: "9:00–21:00",
+      phone: "03-6262-5252",
+      note: "Open every day 9:00–21:00. English and Chinese-speaking staff.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+    },
+    "International Health Care Clinic": {
+      Monday: "Closed", Tuesday: "10:00–12:30, 15:30–18:00",
+      Wednesday: "10:00–12:30, 15:30–18:00", Thursday: "10:00–12:30, 15:30–18:00",
+      Friday: "10:00–12:30, 15:30–18:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-5301-1330",
+      note: "Closed Monday, weekends, and national holidays.",
+      englishDays: ["Tuesday","Wednesday","Thursday","Friday"]
+    },
+    "Seibo International Catholic Hospital": {
+      Monday: "9:00–16:30", Tuesday: "9:00–16:30", Wednesday: "9:00–16:30",
+      Thursday: "9:00–16:30", Friday: "9:00–16:30", Saturday: "9:00–12:00", Sunday: "Closed",
+      phone: "03-3951-1111",
+      note: "24-hour emergency department. English-speaking OB/GYN available."
+    },
+    "Aiiku Clinic International Unit": {
+      Monday: "9:00–12:00, 13:00–16:00", Tuesday: "9:00–12:00, 13:00–16:00",
+      Wednesday: "9:00–12:00, 13:00–16:00", Thursday: "9:00–12:00, 13:00–16:00",
+      Friday: "9:00–12:00, 13:00–16:00", Saturday: "9:00–12:00", Sunday: "Closed",
+      phone: "03-3473-8240",
+      note: "Closed Sun and national holidays.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    },
+    "Kameda Kyobashi Clinic": {
+      Monday: "8:30–18:00", Tuesday: "8:30–18:00", Wednesday: "8:30–18:00",
+      Thursday: "8:30–18:00", Friday: "8:30–18:00", Saturday: "8:30–13:00", Sunday: "Closed",
+      phone: "03-3527-9100",
+      note: "English and Chinese-speaking staff. International Patient Services department.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    },
+    "Kichijoji Ladies Clinic": {
+      Monday: "9:00–12:30, 14:00–17:00", Tuesday: "9:00–12:30, 14:00–17:00",
+      Wednesday: "9:00–12:30", Thursday: "9:00–12:30, 14:00–17:00",
+      Friday: "9:00–12:30, 14:00–17:00", Saturday: "9:00–12:30", Sunday: "Closed",
+      note: "English speaker available on Thursdays.",
+      englishDays: ["Thursday"]
+    },
+    "Kirin Women's Clinic": {
+      Monday: "9:00–12:30, 14:00–17:00", Tuesday: "9:00–12:30, 14:00–17:00",
+      Wednesday: "9:00–12:30, 14:00–18:30", Thursday: "9:00–12:30, 14:00–17:00",
+      Friday: "9:00–12:30, 14:00–17:00", Saturday: "9:00–12:30", Sunday: "Closed",
+      note: "English available Wed afternoon and Thu.",
+      englishDays: ["Wednesday","Thursday"]
+    },
+    "Tokyo Mental Health": {
+      Monday: "9:00–20:00", Tuesday: "9:00–20:00", Wednesday: "9:00–20:00",
+      Thursday: "9:00–20:00", Friday: "9:00–20:00", Saturday: "9:00–19:00", Sunday: "9:00–19:00",
+      phone: "03-6280-4750",
+      note: "Shintomi office. 7 days/week by appointment. Fully English-speaking.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+    },
+    "Roppongi Clinic: Psychiatric and Psychological Therapy": {
+      Monday: "9:00–19:00", Tuesday: "Closed", Wednesday: "Closed",
+      Thursday: "9:00–19:00", Friday: "9:00–19:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-6441-0969",
+      note: "Psychiatry clinic at American Clinic Tokyo. Mon/Thu/Fri by appointment only.",
+      englishDays: ["Monday","Thursday","Friday"]
+    },
+    "Tokyo Physio": {
+      Monday: "8:00–20:00", Tuesday: "8:00–20:00", Wednesday: "8:00–20:00",
+      Thursday: "8:00–20:00", Friday: "8:00–20:00", Saturday: "8:00–17:00", Sunday: "Closed",
+      note: "Fully English-speaking physiotherapy.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    },
+    "Club360 – Physiotherapy & Sports Massage": {
+      Monday: "6:30–21:30", Tuesday: "6:30–21:30", Wednesday: "6:30–21:30",
+      Thursday: "6:30–21:30", Friday: "6:30–21:30", Saturday: "7:00–18:00", Sunday: "7:00–18:00",
+      phone: "03-6434-9667",
+      note: "Motoazabu. Internationally-trained physiotherapists. English-speaking.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+    },
+    "Tokyo Metropolitan Children's Medical Center": {
+      Monday: "8:30–11:00", Tuesday: "8:30–11:00", Wednesday: "8:30–11:00",
+      Thursday: "8:30–11:00", Friday: "8:30–11:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "042-300-5111",
+      note: "24-hour emergency. EN/ZH/KO/ID support."
+    },
+    "Tama Medical Center": {
+      Monday: "8:30–11:00", Tuesday: "8:30–11:00", Wednesday: "8:30–11:00",
+      Thursday: "8:30–11:00", Friday: "8:30–11:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "042-323-5111",
+      note: "24-hour emergency. JMIP certified 2019."
+    },
+    "Jinai Naika Clinic": {
+      Monday: "10:00–13:00, 15:00–18:00", Tuesday: "10:00–13:00, 15:00–18:00",
+      Wednesday: "10:00–13:00", Thursday: "10:00–13:00, 15:00–18:00",
+      Friday: "10:00–13:00, 15:00–18:00", Saturday: "10:00–13:00", Sunday: "Closed",
+      phone: "03-6906-8553",
+      note: "Closed 3rd Wed, 2nd/4th/5th Sat, Sun, national holidays.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    },
+    "Sendagaya International Clinic": {
+      Monday: "10:00–13:00, 15:00–18:00", Tuesday: "10:00–13:00, 15:00–18:00",
+      Wednesday: "10:00–13:00, 15:00–18:00", Thursday: "10:00–13:00, 15:00–18:00",
+      Friday: "10:00–13:00, 15:00–18:00", Saturday: "9:00–14:00", Sunday: "Closed",
+      phone: "03-3478-4747",
+      note: "Fully English-speaking.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    },
+    "Jingumae E.N.T. Clinic": {
+      Monday: "9:45–12:45, 14:45–17:45", Tuesday: "9:45–12:45, 14:45–17:45",
+      Wednesday: "Closed", Thursday: "Closed",
+      Friday: "9:45–12:45, 14:45–17:45", Saturday: "9:45–12:45", Sunday: "Closed",
+      phone: "03-3400-3022",
+      note: "Closed Wednesday, Thursday, and Sunday.",
+      englishDays: ["Monday","Tuesday","Friday","Saturday"]
+    },
+    "Tokyo Podiatry Clinic": {
+      Monday: "10:00–12:00, 13:00–18:00", Tuesday: "10:00–12:00, 13:00–18:00",
+      Wednesday: "10:00–12:00, 13:00–18:00", Thursday: "10:00–12:00, 13:00–18:00",
+      Friday: "10:00–12:00, 13:00–18:00", Saturday: "10:00–15:00", Sunday: "Closed",
+      phone: "03-6875-2970",
+      note: "Appointment required. Australia/NZ-trained podiatrist. Fully English.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    },
+    "Plaza Plastic Surgery": {
+      Monday: "9:30–18:00", Tuesday: "9:30–18:00", Wednesday: "9:30–18:00",
+      Thursday: "Closed", Friday: "9:30–18:00", Saturday: "9:30–18:00", Sunday: "Closed",
+      phone: "03-5475-2345",
+      note: "By appointment. Hiroo. Closed Thursday and Sunday.",
+      englishDays: ["Monday","Tuesday","Wednesday","Friday","Saturday"]
+    },
+    "Yoga Ladies Clinic": {
+      Monday: "15:00–19:00", Tuesday: "9:30–12:30", Wednesday: "15:00–19:00",
+      Thursday: "9:30–12:30, 15:00–19:00", Friday: "Closed", Saturday: "9:30–12:30, 15:00–19:00", Sunday: "Closed",
+      phone: "03-5491-5137",
+      note: "Closed Friday and Sunday. Kamiyoga, Setagaya.",
+      englishDays: ["Tuesday","Thursday","Saturday"]
+    },
+    "Shimokitazawa Hospital": {
+      Monday: "9:00–12:00, 14:00–17:00", Tuesday: "9:00–12:00, 14:00–17:00",
+      Wednesday: "9:00–12:00", Thursday: "9:00–12:00", Friday: "9:00–12:00, 14:00–17:00",
+      Saturday: "9:00–12:00", Sunday: "Closed",
+      phone: "03-3460-0300",
+      note: "Closed Mon/Thu afternoon, Sat afternoon, Sun."
+    },
+    "Tokyo Medical University Hospital": {
+      Monday: "8:00–14:30", Tuesday: "8:00–14:30", Wednesday: "8:00–14:30",
+      Thursday: "8:00–14:30", Friday: "8:00–14:30", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-3342-6111",
+      note: "Outpatient hours. English support available."
+    },
+  };
+
+  // ── MAPBOX INIT ───────────────────────────────────────────────────────────
+  mapboxgl.accessToken = 'pk.eyJ1IjoiamJvMjAwMCIsImEiOiJjbXBxeGd3cDAwdnMyMnFxN2k2c2Q0NHAyIn0.ZGuPY2k5_FjUJF9KB-ibow';
+  const MAP_STYLES = {
+    light:     'mapbox://styles/mapbox/light-v11',
+    streets:   'mapbox://styles/mapbox/streets-v12',
+    dark:      'mapbox://styles/mapbox/dark-v11',
+    satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
+  };
+  const map = new mapboxgl.Map({
+    container: 'mapbox',
+    style: MAP_STYLES.light,
+    center: [139.7200, 35.6762],
+    zoom: 11,
+  });
+  map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
+
+  // ── STATE ─────────────────────────────────────────────────────────────────
+  let activeMarkers    = [];
+  let userMarker       = null;
+  let userCoords       = null;
+  let currentStyle     = 'light';
+  let filteredClinics  = [...clinics];
+  let highlightedName  = null;
+  let savedFilterActive = false;
+
+  // ── POPULATE DROPDOWNS ────────────────────────────────────────────────────
+  const specSel = document.getElementById('mapSpecialtyFilter');
+  [...new Set(clinics.flatMap(c => c.specialty))].sort().forEach(s => {
+    const o = document.createElement('option'); o.value = s; o.textContent = s; specSel.appendChild(o);
+  });
+
+  const locSel = document.getElementById('mapLocationFilter');
+  Object.keys(locationCoords).sort().forEach(loc => {
+    const o = document.createElement('option'); o.value = loc; o.textContent = loc; locSel.appendChild(o);
+  });
+
+  // ── SHARED FUNCTIONS (popup, saved, supabase, reactions, comments) ────────
+    function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function getDistanceFromUser(clinicName, userCoords) {
+    const cc = clinicCoords[clinicName];
+    if (!cc || !userCoords) return 999;
+    return haversine(userCoords[0], userCoords[1], cc[0], cc[1]);
+  }
+
+  function getOpenStatus(clinicName) {
+    const hours = clinicHours[clinicName];
+    if (!hours) return { status: 'unknown' };
+
+    // Get current Tokyo time. If user device is in Japan, this is just new Date().
+    // For robustness, convert explicitly to JST (UTC+9).
+    const now = new Date();
+    const jstOffset = 9 * 60; // minutes
+    const localOffset = now.getTimezoneOffset(); // negative east of UTC
+    const jstMs = now.getTime() + (jstOffset + localOffset) * 60000;
+    const jst = new Date(jstMs);
+
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const dayName = days[jst.getDay()];
+    const currentMinutes = jst.getHours() * 60 + jst.getMinutes();
+
+    const dayHours = hours[dayName];
+    if (!dayHours || dayHours === 'Closed') {
+      return { status: 'closed', label: 'Closed today' };
+    }
+
+    // Parse one or more time ranges like "9:00–12:30, 14:00–17:00"
+    // Handles both "–" (en-dash) and "-" (hyphen)
+    const ranges = dayHours.split(',').map(r => r.trim());
+    for (const range of ranges) {
+      const parts = range.split(/[–\-]/).map(t => t.trim());
+      if (parts.length < 2) continue;
+      const [startH, startM] = parts[0].split(':').map(Number);
+      const [endH, endM]   = parts[1].split(':').map(Number);
+      if (isNaN(startH) || isNaN(endH)) continue;
+      const start = startH * 60 + (startM || 0);
+      const end   = endH   * 60 + (endM   || 0);
+      if (currentMinutes >= start && currentMinutes < end) {
+        // Open now — show closing time
+        const closeStr = parts[1];
+        return { status: 'open', label: 'Open · closes ' + closeStr };
+      }
+    }
+
+    // Check if it opens later today
+    for (const range of ranges) {
+      const parts = range.split(/[–\-]/).map(t => t.trim());
+      if (parts.length < 2) continue;
+      const [startH, startM] = parts[0].split(':').map(Number);
+      if (isNaN(startH)) continue;
+      const start = startH * 60 + (startM || 0);
+      if (currentMinutes < start) {
+        return { status: 'closed', label: 'Opens at ' + parts[0] };
+      }
+    }
+
+    // All ranges passed for today
+    return { status: 'closed', label: 'Closed now' };
+  }
+  function openClinicPopup(c) {
+    window._currentClinic = c; // track for bookmark toggle
+
+    document.getElementById("popupName").textContent = c.name;
+
+    // Set bookmark button state
+    const saved = getSavedClinics();
+    const isSaved = saved.some(s => s.name === c.name);
+    const bookmarkBtn = document.getElementById("btnBookmark");
+    bookmarkBtn.classList.toggle("saved", isSaved);
+
+    // badges
+    const badges = document.getElementById("popupBadges");
+    badges.innerHTML = c.specialty.map(s =>
+      '<span class="clinic-specialty-badge">' + s + '</span>'
+    ).join("") + (c.insurance ? '<span class="clinic-tag tag-insurance" style="margin-left:4px;">Insurance accepted</span>' : "");
+
+    // get coordinates for map
+    const coords = clinicCoords[c.name] || locationCoords[c.location] || null;
+    const lat = coords ? coords[0] : null;
+    const lng = coords ? coords[1] : null;
+
+    // Stable ID for Supabase — lowercase slug of clinic name
+    const clinicId = c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+    // map — Mapbox interactive map with marker, or fallback Google Maps link
+    const mapsSearchURL = 'https://www.google.com/maps/search/' + encodeURIComponent(c.name + ' ' + c.address);
+    const mapHTML = lat ? (
+      '<div class="popup-map-section">' +
+        '<p class="popup-section-label">Location on map</p>' +
+        '<div id="popup-mapbox-container"></div>' +
+        '<a href="' + mapsSearchURL + '" target="_blank" style="font-size:0.775rem;color:var(--teal);font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">' +
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+          'Open in Google Maps for directions' +
+        '</a>' +
+      '</div>'
+    ) : (
+      '<div class="popup-map-section">' +
+        '<p class="popup-section-label">Location</p>' +
+        '<div class="popup-info-row">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+          '<a href="' + mapsSearchURL + '" target="_blank">Search on Google Maps</a>' +
+        '</div>' +
+      '</div>'
+    );
+
+    // hours — check clinic data, fall back to honest placeholder
+    const hoursData = clinicHours[c.name] || null;
+    const hoursHTML = '<div class="popup-section">' +
+      '<p class="popup-section-label">Opening hours</p>' +
+      (hoursData ? (
+        '<table class="popup-hours-table">' +
+        ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(day => {
+          const h = hoursData[day] || 'Closed';
+          const closed = h === 'Closed';
+          const englishDay = hoursData.englishDays && hoursData.englishDays.includes(day);
+          return '<tr>' +
+            '<td>' + day.slice(0,3) + '</td>' +
+            '<td class="' + (closed ? 'popup-hours-closed' : '') + (englishDay ? ' popup-hours-english' : '') + '">' +
+              h + (englishDay ? ' ✓ English' : '') +
+            '</td>' +
+          '</tr>';
+        }).join('') +
+        '</table>' +
+        (hoursData.note ? '<p class="popup-hours-note">' + hoursData.note + '</p>' : '')
+      ) : (
+        '<div class="popup-info-row">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+          '<span class="popup-placeholder">Hours not confirmed — please check the clinic\'s website or call ahead before visiting</span>' +
+        '</div>'
+      )) +
+    '</div>';
+
+    // body
+    const body = document.getElementById("popupBody");
+    body.innerHTML =
+
+      // English support
+      '<div class="popup-english-box">' +
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+        c.englishNote +
+      '</div>' +
+
+      // special note if any
+      (c.note ? '<div class="popup-note-box">' + c.note + '</div>' : '') +
+
+      '<hr class="popup-divider"/>' +
+
+      // Map
+      mapHTML +
+
+      '<hr class="popup-divider"/>' +
+
+      // Address
+      '<div class="popup-section">' +
+        '<p class="popup-section-label">Address</p>' +
+        '<div class="popup-info-row">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+          c.address +
+        '</div>' +
+      '</div>' +
+
+      '<hr class="popup-divider"/>' +
+
+      // Hours
+      hoursHTML +
+
+      '<hr class="popup-divider"/>' +
+
+      // Contact
+      '<div class="popup-section">' +
+        '<p class="popup-section-label">Contact</p>' +
+        '<div class="popup-info-row">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.61 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.09 6.09l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' +
+          (hoursData && hoursData.phone
+            ? '<a href="tel:' + hoursData.phone + '" style="color:var(--teal);font-weight:500;">' + hoursData.phone + '</a>'
+            : '<span class="popup-placeholder">Phone — check clinic website for contact details</span>') +
+        '</div>' +
+        '<div class="popup-info-row">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+          '<a href="' + c.website + '" target="_blank">' + c.website.replace('https://','').replace('http://','').split('/')[0] + '</a>' +
+        '</div>' +
+      '</div>' +
+
+      '<hr class="popup-divider"/>' +
+
+      // Community section
+      '<div class="community-section">' +
+        '<p class="popup-section-label">Community</p>' +
+
+        // Reactions
+        '<div>' +
+          '<p style="font-size:0.8rem;color:var(--gray);margin-bottom:10px;">Was this clinic information helpful?</p>' +
+          '<div class="reaction-row">' +
+            '<button class="reaction-btn" id="btn-helpful" onclick="submitReaction(\'' + clinicId + '\', \'helpful\')" title="Helpful">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
+              '<span class="reaction-count" id="count-helpful">–</span>' +
+              '<span class="reaction-label">Helpful</span>' +
+            '</button>' +
+            '<button class="reaction-btn" id="btn-neutral" onclick="submitReaction(\'' + clinicId + '\', \'neutral\')" title="Neutral">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
+              '<span class="reaction-count" id="count-neutral">–</span>' +
+              '<span class="reaction-label">Neutral</span>' +
+            '</button>' +
+            '<button class="reaction-btn" id="btn-unhelpful" onclick="submitReaction(\'' + clinicId + '\', \'unhelpful\')" title="Not helpful">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
+              '<span class="reaction-count" id="count-unhelpful">–</span>' +
+              '<span class="reaction-label">Not helpful</span>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<hr class="popup-divider"/>' +
+
+        // Comments list
+        '<div>' +
+          '<p style="font-size:0.8rem;color:var(--gray);margin-bottom:10px;">Community tips &amp; experiences</p>' +
+          '<div class="comments-list" id="commentsList">' +
+            '<p class="comments-loading">Loading comments...</p>' +
+          '</div>' +
+        '</div>' +
+
+        // Comment input
+        '<div class="comment-input-wrap" id="commentInputWrap">' +
+          '<textarea class="comment-textarea" id="commentInput" maxlength="400" placeholder="Share a tip about this clinic — e.g. best time to visit, parking, what to bring..." oninput="updateCharCount()"></textarea>' +
+          '<div class="comment-submit-row">' +
+            '<span class="comment-char-count" id="charCount">0 / 400</span>' +
+            '<button class="btn-comment-submit" id="btnCommentSubmit" onclick="submitComment(\'' + clinicId + '\')">' +
+              '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
+              'Post' +
+            '</button>' +
+          '</div>' +
+          '<span class="comment-error" id="commentError"></span>' +
+        '</div>' +
+
+      '</div>';
+
+    // footer
+    const footer = document.getElementById("popupFooter");
+    footer.innerHTML =
+      '<span class="popup-verified">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+        'Last verified: 2025' +
+      '</span>' +
+      '<div style="display:flex;gap:8px;align-items:center;">' +
+        '<button class="btn-popup-correction" onclick="closeClinicPopup(); openModalForClinic(\'' + c.name.replace(/'/g, "\\'") + '\')">Report an issue</button>' +
+        '<a href="' + c.website + '" target="_blank" class="btn-popup-website">' +
+          'Visit website ' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+        '</a>' +
+      '</div>';
+
+    document.getElementById("clinicPopupOverlay").classList.add("open");
+    document.body.style.overflow = "hidden";
+    // scroll popup back to top on each open
+    document.getElementById("clinicPopup").scrollTop = 0;
+
+    // Load reactions and comments from Supabase
+    loadReactions(clinicId);
+    loadComments(clinicId);
+    // Render correct comment input state (fresh or already-commented notice)
+    renderCommentInput(clinicId);
+
+    // ── MAPBOX INIT ──
+    // Destroy any previous instance before creating a new one
+    if (window._popupMap) {
+      window._popupMap.remove();
+      window._popupMap = null;
+    }
+
+    if (lat && lng) {
+      // Use requestAnimationFrame to ensure the container is rendered in the DOM
+      requestAnimationFrame(() => {
+        const container = document.getElementById("popup-mapbox-container");
+        if (!container) return;
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiamJvMjAwMCIsImEiOiJjbXBxeGd3cDAwdnMyMnFxN2k2c2Q0NHAyIn0.ZGuPY2k5_FjUJF9KB-ibow';
+
+        const map = new mapboxgl.Map({
+          container: 'popup-mapbox-container',
+          style: 'mapbox://styles/mapbox/light-v11',
+          center: [lng, lat],
+          zoom: 15,
+          scrollZoom: false,        // prevent accidental scroll hijack inside popup
+          attributionControl: true
+        });
+
+        // Custom teal marker element
+        const markerEl = document.createElement('div');
+        markerEl.className = 'mapbox-clinic-marker';
+
+        new mapboxgl.Marker({ element: markerEl, anchor: 'bottom' })
+          .setLngLat([lng, lat])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 25, closeButton: false })
+              .setHTML(
+                '<strong style="font-size:0.8rem;color:#2D2D2D;">' + c.name + '</strong>' +
+                '<br><span style="font-size:0.72rem;color:#6B7280;">' + c.address + '</span>'
+              )
+          )
+          .addTo(map);
+
+        // Add zoom controls
+        map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
+
+        window._popupMap = map;
+      });
+    }
+  }
+  function closeClinicPopup() {
+    document.getElementById("clinicPopupOverlay").classList.remove("open");
+    document.body.style.overflow = "";
+    // Clean up Mapbox instance to free memory
+    if (window._popupMap) {
+      window._popupMap.remove();
+      window._popupMap = null;
+    }
+  }
+
+  function handlePopupOverlayClick(e) {
+    if (e.target === document.getElementById("clinicPopupOverlay")) closeClinicPopup();
+  }
+
+
+  const SAVED_KEY = 'jhg_saved_clinics';
+
+  function getSavedClinics() {
+    try {
+      return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
+    } catch { return []; }
+  }
+
+  function setSavedClinics(arr) {
+    localStorage.setItem(SAVED_KEY, JSON.stringify(arr));
+    updateSavedBadge();
+  }
+
+  function updateSavedBadge() {
+    const count = getSavedClinics().length;
+    const badge = document.getElementById('savedBadge');
+    if (!badge) return;
+    if (count > 0) {
+      badge.textContent = count;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  function toggleBookmark() {
+    const c = window._currentClinic;
+    if (!c) return;
+
+    const saved = getSavedClinics();
+    const idx = saved.findIndex(s => s.name === c.name);
+    const btn = document.getElementById('btnBookmark');
+
+    if (idx > -1) {
+      // Remove
+      saved.splice(idx, 1);
+      setSavedClinics(saved);
+      btn.classList.remove('saved');
+    } else {
+      // Add — store minimal data needed for the dashboard
+      saved.push({
+        name:      c.name,
+        specialty: c.specialty,
+        address:   c.address,
+        location:  c.location,
+        insurance: c.insurance || false,
+        website:   c.website
+      });
+      setSavedClinics(saved);
+      btn.classList.add('saved');
+    }
+
+    // Pop animation — remove then re-add so it can fire again
+    btn.classList.remove('pop');
+    void btn.offsetWidth; // force reflow
+    btn.classList.add('pop');
+    btn.addEventListener('animationend', () => btn.classList.remove('pop'), { once: true });
+  }
+
+  function openSavedModal() {
+    renderSavedModal();
+    document.getElementById('savedOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSavedModal() {
+    document.getElementById('savedOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function handleSavedOverlayClick(e) {
+    if (e.target === document.getElementById('savedOverlay')) closeSavedModal();
+  }
+
+  function renderSavedModal() {
+    const body = document.getElementById('savedModalBody');
+    const saved = getSavedClinics();
+
+    if (saved.length === 0) {
+      body.innerHTML =
+        '<div class="saved-empty">' +
+          '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>' +
+          '<p>No saved clinics yet.</p>' +
+          '<p style="font-size:0.8rem;">Click the bookmark icon in any clinic popup to save it here.</p>' +
+        '</div>';
+      return;
+    }
+
+    body.innerHTML = '';
+    saved.forEach(s => {
+      const status = getOpenStatus(s.name);
+      const isDotOpen = status.status === 'open';
+      const isDotClosed = status.status === 'closed';
+      const statusText = status.status !== 'unknown' ? status.label : '';
+
+      const row = document.createElement('div');
+      row.className = 'saved-clinic-row';
+      row.innerHTML =
+        '<div class="saved-clinic-info">' +
+          '<span class="saved-clinic-name">' + s.name + '</span>' +
+          '<span class="saved-clinic-meta">' +
+            (s.specialty && s.specialty[0] ? '<span>' + s.specialty[0] + '</span><span>·</span>' : '') +
+            '<span>' + s.address + '</span>' +
+            (statusText ?
+              '<span>·</span>' +
+              '<span class="saved-open-dot ' + (isDotOpen ? 'open' : isDotClosed ? 'closed' : '') + '"></span>' +
+              '<span style="color:' + (isDotOpen ? 'var(--green)' : 'var(--red)') + ';font-weight:500;">' + statusText + '</span>'
+            : '') +
+          '</span>' +
+        '</div>' +
+        '<button class="btn-unsave" onclick="unsaveClinic(\'' + s.name.replace(/'/g,"\\'") + '\', event)" title="Remove">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
+        '</button>';
+
+      // Click row to open clinic popup
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-unsave')) return;
+        const clinic = clinics.find(c => c.name === s.name);
+        if (clinic) {
+          closeSavedModal();
+          openClinicPopup(clinic);
+        }
+      });
+
+      body.appendChild(row);
+    });
+  }
+
+  function unsaveClinic(name, e) {
+    e.stopPropagation();
+    const saved = getSavedClinics().filter(s => s.name !== name);
+    setSavedClinics(saved);
+    renderSavedModal();
+    // If this clinic's popup is open, update its bookmark button too
+    if (window._currentClinic && window._currentClinic.name === name) {
+      document.getElementById('btnBookmark').classList.remove('saved');
+    }
+  }
+
+  // Init badge on page load
+  updateSavedBadge();
+  const SUPABASE_URL  = 'https://vthnhjcmjlyfgcutuvze.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG5oamNtamx5ZmdjdXR1dnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDc5NjIsImV4cCI6MjA5NTYyMzk2Mn0._nATkowjt3OyPgIKPU7LQ3qQXHSAHh4odQ-mr6p0bU4';
+  const SB_HEADERS    = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+
+  async function sbFetch(path, opts = {}) {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+      headers: SB_HEADERS,
+      ...opts
+    });
+    if (!res.ok) throw new Error(await res.text());
+    // 204 No Content has no body
+    if (res.status === 204) return null;
+    return res.json();
+  }
+
+  // ── BAD WORD FILTER ──
+  // Lightweight English profanity blocklist — not exhaustive but catches casual misuse
+  const BAD_WORDS = [
+    'fuck','shit','ass','bitch','cunt','dick','cock','pussy','bastard',
+    'asshole','motherfucker','faggot','nigger','nigga','retard','whore',
+    'slut','prick','twat','wanker','damn','crap','bullshit','jackass'
+  ];
+
+  function containsBadWord(text) {
+    const lower = text.toLowerCase().replace(/[^a-z\s]/g, ' ');
+    const words = lower.split(/\s+/);
+    return words.some(w => BAD_WORDS.includes(w));
+  }
+
+  // ── REACTIONS ──
+  async function loadReactions(clinicId) {
+    try {
+      const data = await sbFetch('clinic_reactions?clinic_id=eq.' + encodeURIComponent(clinicId) + '&select=helpful,neutral,unhelpful');
+      const row = data && data[0];
+      document.getElementById('count-helpful').textContent   = row ? row.helpful   : 0;
+      document.getElementById('count-neutral').textContent   = row ? row.neutral   : 0;
+      document.getElementById('count-unhelpful').textContent = row ? row.unhelpful : 0;
+
+      // Restore prior selection from sessionStorage
+      const prior = sessionStorage.getItem('reaction:' + clinicId);
+      if (prior) {
+        const btn = document.getElementById('btn-' + prior);
+        if (btn) btn.classList.add('selected-' + prior);
+      }
+    } catch (e) {
+      console.warn('Reactions load failed:', e);
+      ['helpful','neutral','unhelpful'].forEach(t => {
+        const el = document.getElementById('count-' + t);
+        if (el) el.textContent = '–';
+      });
+    }
+  }
+
+  async function submitReaction(clinicId, type) {
+    // One reaction per clinic per session — deselect if same button clicked again
+    const prior = sessionStorage.getItem('reaction:' + clinicId);
+
+    // Remove any prior highlight
+    ['helpful','neutral','unhelpful'].forEach(t => {
+      const btn = document.getElementById('btn-' + t);
+      if (btn) btn.classList.remove('selected-helpful','selected-neutral','selected-unhelpful');
+    });
+
+    if (prior === type) {
+      // Toggle off — decrement the old reaction
+      sessionStorage.removeItem('reaction:' + clinicId);
+      await upsertReaction(clinicId, null, prior);
+    } else {
+      // Apply new reaction
+      sessionStorage.setItem('reaction:' + clinicId, type);
+      const btn = document.getElementById('btn-' + type);
+      if (btn) btn.classList.add('selected-' + type);
+      await upsertReaction(clinicId, type, prior);
+    }
+
+    // Reload fresh counts
+    loadReactions(clinicId);
+  }
+
+  async function upsertReaction(clinicId, addType, removeType) {
+    try {
+      // Try to get existing row
+      const existing = await sbFetch('clinic_reactions?clinic_id=eq.' + encodeURIComponent(clinicId) + '&select=helpful,neutral,unhelpful');
+      const row = existing && existing[0];
+
+      if (!row) {
+        // Insert fresh row — only increment the new type
+        const body = { clinic_id: clinicId, helpful: 0, neutral: 0, unhelpful: 0 };
+        if (addType) body[addType] = 1;
+        await sbFetch('clinic_reactions', {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' }
+        });
+      } else {
+        // Patch existing counts
+        const patch = {};
+        if (addType)    patch[addType]    = Math.max(0, (row[addType]    || 0) + 1);
+        if (removeType) patch[removeType] = Math.max(0, (row[removeType] || 0) - 1);
+        await sbFetch('clinic_reactions?clinic_id=eq.' + encodeURIComponent(clinicId), {
+          method: 'PATCH',
+          body: JSON.stringify(patch),
+          headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' }
+        });
+      }
+    } catch (e) {
+      console.warn('Reaction submit failed:', e);
+    }
+  }
+
+  // ── COMMENTS ──
+  async function loadComments(clinicId) {
+    const list = document.getElementById('commentsList');
+    if (!list) return;
+    list.innerHTML = '<p class="comments-loading">Loading...</p>';
+
+    try {
+      const data = await sbFetch(
+        'clinic_comments?clinic_id=eq.' + encodeURIComponent(clinicId) +
+        '&order=created_at.desc&select=body,created_at'
+      );
+
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="comments-empty">No community tips yet — be the first to share one.</p>';
+        return;
+      }
+
+      list.innerHTML = '';
+      data.forEach(comment => {
+        const date = new Date(comment.created_at).toLocaleDateString('en-US', {
+          year: 'numeric', month: 'short', day: 'numeric'
+        });
+        const div = document.createElement('div');
+        div.className = 'comment-item';
+        div.innerHTML =
+          '<div class="comment-meta">' +
+            '<div class="comment-avatar">' +
+              '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A7F7F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+            '</div>' +
+            '<span class="comment-author">Anonymous</span>' +
+            '<span class="comment-date">' + date + '</span>' +
+          '</div>' +
+          '<div class="comment-body">' + escapeHtml(comment.body) + '</div>';
+        list.appendChild(div);
+      });
+    } catch (e) {
+      console.warn('Comments load failed:', e);
+      list.innerHTML = '<p class="comments-empty">No comments yet — be the first to share a tip.</p>';
+    }
+  }
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function updateCharCount() {
+    const input = document.getElementById('commentInput');
+    const counter = document.getElementById('charCount');
+    if (!input || !counter) return;
+    const len = input.value.length;
+    counter.textContent = len + ' / 400';
+    counter.classList.toggle('over', len > 380);
+  }
+
+  async function submitComment(clinicId) {
+    const input   = document.getElementById('commentInput');
+    const errEl   = document.getElementById('commentError');
+    const btn     = document.getElementById('btnCommentSubmit');
+    if (!input || !errEl || !btn) return;
+
+    const text = input.value.trim();
+    errEl.classList.remove('show');
+    errEl.textContent = '';
+
+    if (!text) {
+      errEl.textContent = 'Please write something before posting.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    if (text.length > 400) {
+      errEl.textContent = 'Keep it under 400 characters.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    if (containsBadWord(text)) {
+      errEl.textContent = 'Your comment contains language that isn\'t allowed. Please revise it.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Posting...';
+
+    // ── Step 1: insert the comment ──
+    let insertOk = false;
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/clinic_comments', {
+        method: 'POST',
+        headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ clinic_id: clinicId, body: text })
+      });
+      // 201 Created or 204 No Content both mean success
+      insertOk = res.status === 201 || res.status === 204 || res.ok;
+    } catch (e) {
+      console.warn('Comment insert failed:', e);
+    }
+
+    if (!insertOk) {
+      errEl.textContent = 'Could not post your comment. Please try again.';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post';
+      return;
+    }
+
+    // ── Step 2: mark this clinic as commented in localStorage ──
+    try {
+      const commented = JSON.parse(localStorage.getItem('jhg_commented') || '{}');
+      commented[clinicId] = true;
+      localStorage.setItem('jhg_commented', JSON.stringify(commented));
+    } catch (e) { /* localStorage unavailable — non-fatal */ }
+
+    // ── Step 3: clear input and reload comments ──
+    input.value = '';
+    updateCharCount();
+
+    // Reload comments; if it fails that's non-fatal — comment was saved
+    try {
+      await loadComments(clinicId);
+    } catch (e) {
+      console.warn('Could not reload comments after post:', e);
+    }
+
+    // Hide input, show "already commented" notice
+    renderCommentInput(clinicId);
+  }
+
+  // Render the comment input area — shows input or "already commented" notice
+  function renderCommentInput(clinicId) {
+    const wrap = document.getElementById('commentInputWrap');
+    if (!wrap) return;
+
+    let hasCommented = false;
+    try {
+      const commented = JSON.parse(localStorage.getItem('jhg_commented') || '{}');
+      hasCommented = !!commented[clinicId];
+    } catch (e) {}
+
+    if (hasCommented) {
+      wrap.innerHTML =
+        '<div style="background:var(--green-light);border:1px solid #86efac;border-radius:8px;padding:12px 16px;font-size:0.825rem;color:var(--green);display:flex;align-items:center;gap:8px;">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+          'You\'ve already shared a tip for this clinic. Thanks for contributing!' +
+        '</div>';
+    } else {
+      wrap.innerHTML =
+        '<textarea class="comment-textarea" id="commentInput" maxlength="400" placeholder="Share a tip about this clinic — e.g. best time to visit, parking, what to bring..." oninput="updateCharCount()"></textarea>' +
+        '<div class="comment-submit-row">' +
+          '<span class="comment-char-count" id="charCount">0 / 400</span>' +
+          '<button class="btn-comment-submit" id="btnCommentSubmit" onclick="submitComment(\'' + clinicId + '\')">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
+            'Post' +
+          '</button>' +
+        '</div>' +
+        '<span class="comment-error" id="commentError"></span>';
+    }
+  }
+</script>
+</body>
+</html>
+
+  // ── HELPERS ───────────────────────────────────────────────────────────────
+  function getCoords(c) {
+    return clinicCoords[c.name] || locationCoords[c.location] || null;
+  }
+
+  // ── MAP STYLE ─────────────────────────────────────────────────────────────
+  function setMapStyle(name) {
+    if (name === currentStyle) return;
+    currentStyle = name;
+    map.setStyle(MAP_STYLES[name]);
+    ['Light','Streets','Dark','Satellite'].forEach(n =>
+      document.getElementById('style'+n).classList.toggle('active', n.toLowerCase() === name)
+    );
+    map.once('style.load', () => renderMarkers(filteredClinics));
+    // Fallback
+    setTimeout(() => { if (activeMarkers.length === 0) renderMarkers(filteredClinics); }, 2000);
+  }
+
+  // ── RENDER MARKERS ────────────────────────────────────────────────────────
+  function renderMarkers(list) {
+    activeMarkers.forEach(m => m.remove());
+    activeMarkers = [];
+    const savedNames = new Set(getSavedClinics().map(s => s.name));
+    list.forEach(c => {
+      const coords = getCoords(c);
+      if (!coords) return;
+      const [lat, lng] = coords;
+      const el = document.createElement('div');
+      el.className = 'map-marker';
+      if (savedNames.has(c.name)) el.classList.add('saved');
+      if (c.name === highlightedName) el.classList.add('highlighted');
+      el.dataset.name = c.name;
+      el.addEventListener('click', e => { e.stopPropagation(); highlightClinic(c.name); openClinicPopup(c); });
+      el.addEventListener('mouseenter', () => highlightSidebarItem(c.name));
+      el.addEventListener('mouseleave', () => unhighlightSidebarItem(c.name));
+      const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' }).setLngLat([lng, lat]).addTo(map);
+      activeMarkers.push(marker);
+    });
+  }
+
+  function highlightClinic(name) {
+    highlightedName = name;
+    activeMarkers.forEach(m => m.getElement().classList.toggle('highlighted', m.getElement().dataset.name === name));
+    const item = document.querySelector(`.sidebar-clinic-item[data-name="${name}"]`);
+    if (item) {
+      document.querySelectorAll('.sidebar-clinic-item').forEach(i => i.classList.remove('highlighted'));
+      item.classList.add('highlighted');
+      item.scrollIntoView({ block:'nearest', behavior:'smooth' });
+    }
+  }
+  function highlightSidebarItem(name) {
+    const el = document.querySelector(`.sidebar-clinic-item[data-name="${name}"]`);
+    if (el) el.classList.add('highlighted');
+  }
+  function unhighlightSidebarItem(name) {
+    const el = document.querySelector(`.sidebar-clinic-item[data-name="${name}"]`);
+    if (el && highlightedName !== name) el.classList.remove('highlighted');
+  }
+
+  // ── SIDEBAR LIST ──────────────────────────────────────────────────────────
+  function renderSidebarList(list) {
+    document.getElementById('mapResultsCount').textContent = list.length + ' clinic' + (list.length !== 1 ? 's' : '');
+    const sorted = userCoords
+      ? list.slice().sort((a,b) => {
+          const da = getDistanceFromUser(a.name, userCoords);
+          const db = getDistanceFromUser(b.name, userCoords);
+          if (da===null) return 1; if (db===null) return -1; return da-db;
+        })
+      : list;
+
+    const container = document.getElementById('sidebarResults');
+    container.innerHTML = '';
+    sorted.forEach(c => {
+      const status = getOpenStatus(c.name);
+      const dist   = userCoords ? getDistanceFromUser(c.name, userCoords) : null;
+      const isOpen = status.status === 'open';
+      const div = document.createElement('div');
+      div.className = 'sidebar-clinic-item';
+      div.dataset.name = c.name;
+      if (c.name === highlightedName) div.classList.add('highlighted');
+      div.innerHTML =
+        '<div class="sci-header">' +
+          '<div class="sci-name">' + c.name + '</div>' +
+          (status.status!=='unknown' ? '<div class="sci-open-dot ' + (isOpen?'open':'closed') + '"></div>' : '') +
+        '</div>' +
+        '<div class="sci-meta">' +
+          '<span>' + c.address + '</span>' +
+          (dist!==null ? '<span class="sci-dist">' + dist.toFixed(1) + ' km</span>' : '') +
+        '</div>' +
+        (status.status!=='unknown' ? '<div class="sci-meta" style="margin-top:1px;"><span style="font-size:0.7rem;color:' + (isOpen?'var(--green)':'var(--red)') + ';font-weight:500;">' + status.label + '</span></div>' : '') +
+        '<div class="sci-tags">' +
+          (c.specialty[0] ? '<span class="sci-tag">' + c.specialty[0] + '</span>' : '') +
+          (c.insurance ? '<span class="sci-tag insurance">Insurance</span>' : '') +
+        '</div>';
+      div.addEventListener('click', () => {
+        const coords = getCoords(c);
+        if (coords) map.flyTo({ center:[coords[1],coords[0]], zoom:15, duration:600 });
+        highlightClinic(c.name);
+        openClinicPopup(c);
+      });
+      div.addEventListener('mouseenter', () => activeMarkers.forEach(m => { if (m.getElement().dataset.name === c.name) m.getElement().classList.add('highlighted'); }));
+      div.addEventListener('mouseleave', () => { if (highlightedName !== c.name) activeMarkers.forEach(m => { if (m.getElement().dataset.name === c.name) m.getElement().classList.remove('highlighted'); }); });
+      container.appendChild(div);
+    });
+  }
+
+  // ── FILTERS ───────────────────────────────────────────────────────────────
+  function applyMapFilters() {
+    const spec    = document.getElementById('mapSpecialtyFilter').value;
+    const loc     = document.getElementById('mapLocationFilter').value;
+    const ins     = document.getElementById('mapInsuranceFilter').value;
+    const nameVal = document.getElementById('clinicNameSearch').value.trim().toLowerCase();
+
+    let result = clinics;
+    if (spec)    result = result.filter(c => c.specialty.includes(spec));
+    if (loc)     result = result.filter(c => c.location === loc);
+    if (ins)     result = result.filter(c => c.insurance);
+    if (nameVal) result = result.filter(c => c.name.toLowerCase().includes(nameVal));
+    if (savedFilterActive) {
+      const sn = new Set(getSavedClinics().map(s => s.name));
+      result = result.filter(c => sn.has(c.name));
+    }
+
+    filteredClinics = result;
+    renderMarkers(result);
+    renderSidebarList(result);
+
+    // Fly to filtered area
+    if (loc && locationCoords[loc]) {
+      const [lat, lng] = locationCoords[loc];
+      map.flyTo({ center:[lng,lat], zoom:13, duration:700 });
+    } else if (result.length > 0 && result.length < clinics.length) {
+      const bounds = new mapboxgl.LngLatBounds();
+      let n = 0;
+      result.forEach(c => { const co = getCoords(c); if (co) { bounds.extend([co[1],co[0]]); n++; } });
+      if (n) map.fitBounds(bounds, { padding:80, maxZoom:14, duration:700 });
+    }
+  }
+
+  function clearMapFilters() {
+    document.getElementById('mapSpecialtyFilter').value = '';
+    document.getElementById('mapLocationFilter').value = '';
+    document.getElementById('mapInsuranceFilter').value = '';
+    document.getElementById('clinicNameSearch').value = '';
+    document.getElementById('nameSuggestions').classList.remove('open');
+    savedFilterActive = false;
+    userCoords = null;
+    document.getElementById('btnMapNearMe').classList.remove('active');
+    document.getElementById('btnMapSaved').classList.remove('active');
+    document.getElementById('gpsErrorSidebar').classList.remove('show');
+    if (userMarker) { userMarker.remove(); userMarker = null; }
+    filteredClinics = [...clinics];
+    renderMarkers(clinics);
+    renderSidebarList(clinics);
+  }
+
+  // ── LIVE NAME SEARCH WITH DROPDOWN ────────────────────────────────────────
+  let suggestTimeout = null;
+
+  function handleNameSearch(val) {
+    clearTimeout(suggestTimeout);
+    const box = document.getElementById('nameSuggestions');
+    const q = val.trim().toLowerCase();
+
+    if (!q) {
+      box.innerHTML = '';
+      box.classList.remove('open');
+      // Reset to full list (or filtered by other active filters)
+      applyMapFilters();
+      return;
+    }
+
+    // Show dropdown instantly while typing
+    const matches = clinics
+      .filter(c => c.name.toLowerCase().includes(q) ||
+                   c.specialty.some(s => s.toLowerCase().includes(q)) ||
+                   c.address.toLowerCase().includes(q))
+      .slice(0, 8);
+
+    if (!matches.length) {
+      box.innerHTML = '<div class="suggestion-item"><span class="suggestion-sub">No clinics found</span></div>';
+      box.classList.add('open');
+      return;
+    }
+
+    box.innerHTML = matches.map(c => {
+      const status = getOpenStatus(c.name);
+      const dot = status.status !== 'unknown'
+        ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' +
+          (status.status==='open'?'#388e3c':'#dc2626') +
+          ';margin-right:4px;vertical-align:middle;"></span>'
+        : '';
+      return '<div class="suggestion-item" onmousedown="selectSuggestion('' +
+        c.name.replace(/\/g,'\\').replace(/'/g,"\'") + '')">' +
+        '<div class="suggestion-name">' + c.name + '</div>' +
+        '<div class="suggestion-sub">' + dot + c.specialty[0] + ' &middot; ' + c.address + '</div>' +
+        '</div>';
+    }).join('');
+    box.classList.add('open');
+
+    // Also update map with partial matches in real time
+    suggestTimeout = setTimeout(() => applyMapFilters(), 150);
+  }
+
+  function selectSuggestion(name) {
+    document.getElementById('clinicNameSearch').value = name;
+    document.getElementById('nameSuggestions').classList.remove('open');
+    const c = clinics.find(cl => cl.name === name);
+    if (!c) return;
+    // Show just this clinic
+    filteredClinics = [c];
+    renderMarkers([c]);
+    renderSidebarList([c]);
+    const coords = getCoords(c);
+    if (coords) map.flyTo({ center:[coords[1],coords[0]], zoom:16, duration:700 });
+    highlightClinic(c.name);
+    setTimeout(() => openClinicPopup(c), 500);
+  }
+
+  function hideSuggestions() {
+    setTimeout(() => document.getElementById('nameSuggestions').classList.remove('open'), 180);
+  }
+
+  // ── GPS NEAR ME ───────────────────────────────────────────────────────────
+  function mapNearMe() {
+    const btn = document.getElementById('btnMapNearMe');
+    const errEl = document.getElementById('gpsErrorSidebar');
+    errEl.classList.remove('show');
+    if (!navigator.geolocation) { errEl.textContent='GPS not supported.'; errEl.classList.add('show'); return; }
+    btn.classList.add('loading'); btn.textContent='Locating...';
+    navigator.geolocation.getCurrentPosition(pos => {
+      userCoords = [pos.coords.latitude, pos.coords.longitude];
+      btn.classList.remove('loading'); btn.classList.add('active');
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Near me';
+      if (userMarker) userMarker.remove();
+      const el = document.createElement('div'); el.className = 'user-pulse';
+      userMarker = new mapboxgl.Marker({element:el}).setLngLat([userCoords[1],userCoords[0]]).addTo(map);
+      map.flyTo({center:[userCoords[1],userCoords[0]], zoom:13, duration:700});
+      applyMapFilters();
+    }, err => {
+      btn.classList.remove('loading');
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Near me';
+      const msgs={1:'Location access denied.',2:'Location unavailable.',3:'Timed out.'};
+      errEl.textContent=msgs[err.code]||'Location unavailable.'; errEl.classList.add('show');
+    }, {timeout:10000});
+  }
+
+  function locateOnMap() {
+    if (userCoords) map.flyTo({center:[userCoords[1],userCoords[0]], zoom:14, duration:600});
+    else mapNearMe();
+  }
+
+  // ── SAVED FILTER ──────────────────────────────────────────────────────────
+  function toggleSavedFilter() {
+    savedFilterActive = !savedFilterActive;
+    document.getElementById('btnMapSaved').classList.toggle('active', savedFilterActive);
+    applyMapFilters();
+  }
+
+  // ── FIT ALL ───────────────────────────────────────────────────────────────
+  function fitAllMarkers() {
+    const list = filteredClinics.length ? filteredClinics : clinics;
+    const bounds = new mapboxgl.LngLatBounds();
+    let count = 0;
+    list.forEach(c => { const co = getCoords(c); if (co) { bounds.extend([co[1],co[0]]); count++; } });
+    if (count) map.fitBounds(bounds, {padding:60, maxZoom:14, duration:800});
+  }
+
+  // ── SIDEBAR COLLAPSE ──────────────────────────────────────────────────────
+  function toggleMapSidebar() {
+    document.getElementById('mapSidebar').classList.toggle('collapsed');
+    setTimeout(() => map.resize(), 260);
+  }
+  function openMobileFilterSidebar() {
+    document.getElementById('mapSidebar').classList.add('mobile-open');
+  }
+
+  // ── MOBILE NAV ────────────────────────────────────────────────────────────
+  function toggleMobileNav() {
+    document.getElementById('mobileSidebar').classList.toggle('open');
+    document.getElementById('mobileOverlay').classList.toggle('open');
+  }
+  function closeMobileNav() {
+    document.getElementById('mobileSidebar').classList.remove('open');
+    document.getElementById('mobileOverlay').classList.remove('open');
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  // Render sidebar immediately (no map dependency)
+  renderSidebarList(clinics);
+
+  // Render markers on map load, with fallback if load already fired
+  function initMarkers() {
+    renderMarkers(clinics);
+  }
+
+  if (map.loaded()) {
+    initMarkers();
+  } else {
+    map.on('load', initMarkers);
+    // Fallback: if load hasn't fired after 3s, try anyway
+    setTimeout(() => {
+      if (activeMarkers.length === 0) initMarkers();
+    }, 3000);
+  }
+
+  map.on('click', () => {
+    if (document.getElementById('clinicPopupOverlay').classList.contains('open')) {
+      closeClinicPopup();
+    }
+  });
+
+</script>
+</body>
+</html>
