@@ -1729,7 +1729,17 @@
     <li><a href="/about">About</a></li>
     <li><a href="/emergency" class="nav-cta">Emergency Info</a></li>
   </ul>
-    <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Open menu">
+    <div class="nav-view-toggle" style="display:flex;align-items:center;gap:4px;background:var(--teal-light);border-radius:8px;padding:3px;margin-right:8px;">
+    <button class="nav-view-btn active" style="display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:0.775rem;font-weight:600;cursor:pointer;background:#fff;color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,0.1);white-space:nowrap;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      List
+    </button>
+    <a href="/clinic-map" style="display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:0.775rem;font-weight:600;cursor:pointer;color:var(--gray);background:transparent;text-decoration:none;white-space:nowrap;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Map
+    </a>
+  </div>
+  <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Open menu">
       <span></span><span></span><span></span>
     </button>
   </nav>
@@ -1762,7 +1772,7 @@
           <h1>Find the right clinic,<br>near you.</h1>
           <p>Search English-friendly clinics across Tokyo by specialty and neighborhood. Results are ordered from closest to furthest based on your location.</p>
         </div>
-        <a href="/clinic-map/" style="display:inline-flex;align-items:center;gap:7px;background:#fff;color:var(--teal);border:1.5px solid var(--teal);padding:9px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.825rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background 0.15s;flex-shrink:0;margin-top:4px;" onmouseover="this.style.background='var(--teal-light)'" onmouseout="this.style.background='#fff'">
+        <a href="/clinic-map" style="display:inline-flex;align-items:center;gap:7px;background:#fff;color:var(--teal);border:1.5px solid var(--teal);padding:9px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.825rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background 0.15s;flex-shrink:0;margin-top:4px;" onmouseover="this.style.background='var(--teal-light)'" onmouseout="this.style.background='#fff'">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           Map View
         </a>
