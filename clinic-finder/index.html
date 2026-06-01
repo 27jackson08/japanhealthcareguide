@@ -3,9 +3,6 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png"/>
-<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
   <title>Clinic Finder — Japan Healthcare Guide</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet"/>
@@ -1686,6 +1683,7 @@
 
     @media (max-width: 900px) {
       .nav-links { display: none; }
+      .nav-view-toggle { display: none; }
       .hamburger { display: flex; }
     }
 
@@ -2836,14 +2834,14 @@
         btn.classList.remove("loading");
         btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" opacity="0.3"/></svg> Near me';
         const messages = {
-          1: "Location access was denied. Allow location in your browser settings, or type a neighborhood to search.",
+          1: "Location access was denied. Please allow location access in your browser, then try again. On Chrome, click the lock icon in the address bar.",
           2: "Your location couldn't be determined right now. Try again or type a neighborhood.",
           3: "Location request timed out. Try again or type a neighborhood."
         };
         errEl.textContent = messages[err.code] || "Location unavailable. Try typing a neighborhood instead.";
         errEl.classList.add("show");
       },
-      { timeout: 10000, maximumAge: 60000 }
+      { timeout: 10000, maximumAge: 60000, enableHighAccuracy: false }
     );
   }
 
