@@ -1127,6 +1127,47 @@
     .mnav-sidebar ul{list-style:none;display:flex;flex-direction:column;gap:18px;margin-top:40px;}
     .mnav-sidebar a{font-size:0.95rem;font-weight:600;color:var(--charcoal);text-decoration:none;}
     .mnav-close{position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;}
+
+    /* ── POPUP BADGES ── */
+    .clinic-popup-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      color: var(--charcoal);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      padding-right: 40px;
+    }
+
+    .clinic-popup-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .clinic-specialty-badge {
+      display: inline-block;
+      background: var(--teal-light);
+      color: var(--teal);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .clinic-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .tag-insurance { background: var(--amber-light); color: #b45309; }
+    .tag-english   { background: var(--green-light); color: var(--green); }
+    .tag-note      { background: #f3e8ff; color: #7c3aed; }
   </style>
 </head>
 <body>
