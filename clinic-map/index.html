@@ -2,49 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Clinic Map — Japan Healthcare Guide</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet"/>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    :root{
-      --teal:#2A7F7F;--teal-dark:#1f6060;--teal-light:#e8f4f4;
-      --amber:#E8A838;--amber-light:#fdf3e0;
-      --white:#F8F9FA;--charcoal:#2D2D2D;--gray:#6B7280;--gray-light:#e5e7eb;--border:#d1e8e8;
-      --red:#dc2626;--red-light:#fee2e2;--green:#388e3c;--green-light:#e8f5e9;
-    }
+    :root{--teal:#2A7F7F;--teal-dark:#1f6060;--teal-light:#e8f4f4;--amber:#E8A838;--amber-light:#fdf3e0;--charcoal:#2D2D2D;--gray:#6B7280;--gray-light:#e5e7eb;--border:#d1e8e8;--red:#dc2626;--red-light:#fee2e2;--green:#388e3c;--green-light:#e8f5e9;}
     html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:#fff;color:var(--charcoal);}
-
-    /* NAV */
-    nav{position:fixed;top:0;left:0;right:0;z-index:500;height:60px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px;}
-    .nav-logo{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--teal);text-decoration:none;white-space:nowrap;}
-    .nav-links{display:flex;align-items:center;gap:20px;list-style:none;}
-    .nav-links a{font-size:0.85rem;color:var(--charcoal);text-decoration:none;font-weight:500;transition:color 0.15s;white-space:nowrap;}
-    .nav-links a:hover,.nav-links a.active{color:var(--teal);}
-    .nav-cta{background:#dc2626!important;color:#fff!important;padding:7px 14px;border-radius:8px;}
-    .nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:500;height:64px;background:#fff;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 48px;}
+    .nav-logo{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--teal);text-decoration:none;letter-spacing:-0.01em;white-space:nowrap;justify-self:start;}
+    .nav-view-toggle-center{display:flex;align-items:center;gap:4px;background:var(--teal-light);border-radius:8px;padding:3px;justify-self:center;}
+    .nav-links{display:flex;gap:4px;list-style:none;justify-self:end;align-items:center;}
+    .nav-links a{text-decoration:none;color:var(--gray);font-size:0.875rem;font-weight:500;padding:6px 14px;border-radius:6px;transition:background 0.15s,color 0.15s;white-space:nowrap;}
+    .nav-links a:hover,.nav-links a.active{background:var(--teal-light);color:var(--teal);}
+    .nav-cta{background:var(--red)!important;color:#fff!important;border-radius:8px!important;padding:8px 18px!important;}
+    
     .nav-view-toggle{display:flex;align-items:center;gap:4px;background:var(--teal-light);border-radius:8px;padding:3px;}
-    .nav-view-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:0.775rem;font-weight:600;cursor:pointer;color:var(--gray);background:transparent;transition:all 0.15s;white-space:nowrap;}
+    .nav-view-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:0.775rem;font-weight:600;cursor:pointer;color:var(--gray);background:transparent;text-decoration:none;white-space:nowrap;transition:all 0.15s;}
     .nav-view-btn.active{background:#fff;color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,0.1);}
     .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:6px;}
     .hamburger span{display:block;width:22px;height:2px;background:var(--charcoal);border-radius:2px;}
-
-    /* LAYOUT */
-    .map-layout{position:fixed;top:60px;left:0;right:0;bottom:0;display:flex;}
-
-    /* SIDEBAR */
+    .map-layout{position:fixed;top:64px;left:0;right:0;bottom:0;display:flex;}
     .map-sidebar{width:300px;flex-shrink:0;background:#fff;border-right:1px solid var(--gray-light);display:flex;flex-direction:column;overflow:hidden;position:relative;transition:width 0.25s ease;z-index:10;}
     .map-sidebar.collapsed{width:0;overflow:hidden;}
     .sidebar-toggle{position:absolute;top:50%;right:-16px;transform:translateY(-50%);width:16px;height:48px;background:#fff;border:1px solid var(--gray-light);border-left:none;border-radius:0 8px 8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:20;box-shadow:2px 0 6px rgba(0,0,0,0.08);transition:background 0.15s;}
     .sidebar-toggle:hover{background:var(--teal-light);}
     .map-sidebar.collapsed .sidebar-toggle svg{transform:rotate(180deg);}
-
-    .sidebar-header{padding:14px 14px 10px;border-bottom:1px solid var(--gray-light);flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
+    .sidebar-header{padding:14px 14px 12px;border-bottom:1px solid var(--gray-light);flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
     .sidebar-title{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--charcoal);letter-spacing:-0.02em;}
-
-    /* Clinic name search */
     .map-search-box{position:relative;}
     .map-search-input{width:100%;padding:8px 32px 8px 10px;border:1.5px solid var(--gray-light);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--charcoal);outline:none;transition:border-color 0.15s;}
     .map-search-input:focus{border-color:var(--teal);}
@@ -56,8 +43,6 @@
     .suggestion-item:hover{background:var(--teal-light);}
     .suggestion-name{font-weight:700;font-size:0.82rem;color:var(--charcoal);}
     .suggestion-sub{font-size:0.72rem;color:var(--gray);margin-top:1px;}
-
-    /* Filter controls */
     .sidebar-filters{display:flex;flex-direction:column;gap:6px;}
     .filter-label{font-size:0.65rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--gray);margin-bottom:2px;}
     .filter-select{width:100%;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;border:1.5px solid var(--gray-light);border-radius:8px;padding:7px 30px 7px 10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--charcoal);cursor:pointer;transition:border-color 0.15s;}
@@ -73,19 +58,15 @@
     .btn-map-clear:hover{border-color:var(--teal);color:var(--teal);}
     .gps-error-sidebar{background:var(--red-light);border:1px solid #fca5a5;border-radius:8px;padding:7px 10px;font-size:0.75rem;color:var(--red);display:none;}
     .gps-error-sidebar.show{display:block;}
-
-    /* Style picker */
     .style-picker{display:flex;gap:4px;padding:8px 14px;border-bottom:1px solid var(--gray-light);flex-shrink:0;}
-    .style-btn{flex:1;padding:5px 2px;border-radius:6px;border:1.5px solid var(--gray-light);background:#fff;font-family:'DM Sans',sans-serif;font-size:0.65rem;font-weight:700;color:var(--gray);cursor:pointer;text-align:center;transition:all 0.15s;letter-spacing:0.02em;}
+    .style-btn{flex:1;padding:5px 2px;border-radius:6px;border:1.5px solid var(--gray-light);background:#fff;font-family:'DM Sans',sans-serif;font-size:0.65rem;font-weight:700;color:var(--gray);cursor:pointer;text-align:center;transition:all 0.15s;}
     .style-btn:hover{border-color:var(--teal);color:var(--teal);}
     .style-btn.active{background:var(--teal);color:#fff;border-color:var(--teal);}
-
-    /* Results list */
     .results-count{padding:7px 14px;font-size:0.68rem;color:var(--gray);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid var(--gray-light);flex-shrink:0;}
     .sidebar-results{flex:1;overflow-y:auto;}
     .sidebar-clinic-item{padding:10px 14px;border-bottom:1px solid var(--gray-light);cursor:pointer;transition:background 0.1s;}
     .sidebar-clinic-item:hover,.sidebar-clinic-item.highlighted{background:var(--teal-light);}
-    .sci-header{display:flex;align-items:flex-start;gap:5px;justify-content:space-between;}
+    .sci-header{display:flex;align-items:flex-start;gap:5px;}
     .sci-name{font-weight:700;font-size:0.83rem;color:var(--charcoal);line-height:1.3;flex:1;}
     .sci-open-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
     .sci-open-dot.open{background:var(--green);}
@@ -95,24 +76,18 @@
     .sci-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px;}
     .sci-tag{font-size:0.62rem;font-weight:700;padding:2px 6px;border-radius:100px;background:var(--teal-light);color:var(--teal);}
     .sci-tag.insurance{background:var(--amber-light);color:#b45309;}
-
-    /* MAP */
     .map-container{flex:1;position:relative;}
     #mapbox{width:100%;height:100%;}
     .map-overlay-top{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:8px;z-index:10;}
     .map-overlay-btn{width:36px;height:36px;background:#fff;border:1px solid var(--gray-light);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);transition:all 0.15s;color:var(--charcoal);}
     .map-overlay-btn:hover{background:var(--teal-light);color:var(--teal);}
     .mobile-open-btn{display:none;position:absolute;top:12px;left:12px;z-index:10;}
-
-    /* Markers */
-    .map-marker{width:26px;height:26px;background:var(--teal);border:2.5px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(42,127,127,0.4);cursor:pointer;transition:transform 0.15s,background 0.15s;position:relative;}
-    .map-marker::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg);width:7px;height:7px;background:#fff;border-radius:50%;}
-    .map-marker:hover{background:var(--teal-dark);transform:rotate(-45deg) scale(1.2);}
-    .map-marker.highlighted{background:var(--amber);transform:rotate(-45deg) scale(1.3);box-shadow:0 3px 14px rgba(232,168,56,0.55);}
+    .map-marker{width:20px;height:20px;cursor:pointer;background:var(--teal);border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:block;margin:0;padding:0;}
+    .map-marker:hover{background:var(--teal-dark);}
+    .map-marker.highlighted{background:var(--amber);box-shadow:0 2px 10px rgba(232,168,56,0.6);}
     .map-marker.saved{background:#8b5cf6;}
     .user-pulse{width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,0.2);animation:pulse 2s infinite;}
-    @keyframes pulse{0%,100%{box-shadow:0 0 0 6px rgba(59,130,246,0.2);}50%{box-shadow:0 0 0 12px rgba(59,130,246,0.04);}}
-
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 6px rgba(59,130,246,0.2);}50%{box-shadow:0 0 0 12px rgba(59,130,246,0.04);}
         .clinic-popup-overlay {
       position: fixed;
       inset: 0;
@@ -1141,9 +1116,8 @@
         justify-content: center;
       }
     }
-
-    /* MOBILE */
-    @media(max-width:768px){
+    @media(max-width:900px){
+      nav{padding:0 24px;}
       .nav-links{display:none;}
       .hamburger{display:flex;}
       .nav-view-toggle{display:none;}
@@ -1153,19 +1127,28 @@
       .sidebar-toggle{display:none;}
       .mobile-open-btn{display:flex!important;}
     }
-    .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:450;}
-    .mobile-overlay.open{display:block;}
-    .mobile-sidebar{position:fixed;top:0;right:0;bottom:0;width:260px;background:#fff;z-index:460;padding:24px 20px;transform:translateX(100%);transition:transform 0.25s;}
-    .mobile-sidebar.open{transform:translateX(0);}
-    .mobile-sidebar ul{list-style:none;display:flex;flex-direction:column;gap:18px;margin-top:40px;}
-    .mobile-sidebar a{font-size:0.95rem;font-weight:600;color:var(--charcoal);text-decoration:none;}
-    .mobile-sidebar-close{position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;}
+    .mnav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:450;}
+    .mnav-overlay.open{display:block;}
+    .mnav-sidebar{position:fixed;top:0;right:0;bottom:0;width:260px;background:#fff;z-index:460;padding:24px 20px;transform:translateX(100%);transition:transform 0.25s;}
+    .mnav-sidebar.open{transform:translateX(0);}
+    .mnav-sidebar ul{list-style:none;display:flex;flex-direction:column;gap:18px;margin-top:40px;}
+    .mnav-sidebar a{font-size:0.95rem;font-weight:600;color:var(--charcoal);text-decoration:none;}
+    .mnav-close{position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;}
   </style>
 </head>
 <body>
-
 <nav>
   <a href="/" class="nav-logo">Japan Healthcare Guide</a>
+  <div class="nav-view-toggle-center">
+    <a href="/clinic-finder" class="nav-view-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      List
+    </a>
+    <button class="nav-view-btn active">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Map
+    </button>
+  </div>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
     <li><a href="/clinic-finder" class="active">Clinic Finder</a></li>
@@ -1173,137 +1156,64 @@
     <li><a href="/healthcare-in-japan">Healthcare in Japan</a></li>
     <li><a href="/about">About</a></li>
     <li><a href="/emergency" class="nav-cta">Emergency Info</a></li>
+    <li><button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()" style="background:none;border:none;cursor:pointer;display:none;flex-direction:column;gap:5px;padding:4px;"><span style="display:block;width:22px;height:2px;background:var(--charcoal);border-radius:2px;"></span><span style="display:block;width:22px;height:2px;background:var(--charcoal);border-radius:2px;"></span><span style="display:block;width:22px;height:2px;background:var(--charcoal);border-radius:2px;"></span></button></li>
   </ul>
-  <div class="nav-right">
-    <div class="nav-view-toggle">
-      <button class="nav-view-btn" href="/clinic-finder">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        List
-      </a>
-      <button class="nav-view-btn active">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Map
-      </button>
-    </div>
-    <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
 </nav>
-
-<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileNav()"></div>
-<div class="mobile-sidebar" id="mobileSidebar">
-  <button class="mobile-sidebar-close" onclick="closeMobileNav()">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-  </button>
+<div class="mnav-overlay" id="mnavOverlay" onclick="closeMobileNav()"></div>
+<div class="mnav-sidebar" id="mnavSidebar">
+  <button class="mnav-close" onclick="closeMobileNav()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="/clinic-finder">Clinic Finder</a></li>
-    <li><a href="/navigating-care">Navigating Care</a></li>
-    <li><a href="/healthcare-in-japan">Healthcare in Japan</a></li>
-    <li><a href="/about">About</a></li>
-    <li><a href="/emergency">Emergency Info</a></li>
+    <li><a href="/">Home</a></li><li><a href="/clinic-finder">Clinic Finder</a></li>
+    <li><a href="/navigating-care">Navigating Care</a></li><li><a href="/healthcare-in-japan">Healthcare in Japan</a></li>
+    <li><a href="/about">About</a></li><li><a href="/emergency">Emergency Info</a></li>
   </ul>
 </div>
-
 <div class="map-layout">
   <div class="map-sidebar" id="mapSidebar">
-    <button class="sidebar-toggle" onclick="toggleMapSidebar()">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-
+    <button class="sidebar-toggle" onclick="toggleMapSidebar()"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="sidebar-header">
       <div class="sidebar-title">Find a Clinic</div>
-
-      <!-- Clinic name search with live dropdown -->
       <div class="map-search-box">
-        <input type="text" class="map-search-input" id="clinicNameSearch"
-          placeholder="Search clinic name..."
-          autocomplete="off"
-          oninput="handleNameSearch(this.value)"
-          onfocus="handleNameSearch(this.value)"
-          onblur="hideSuggestions()"/>
+        <input type="text" class="map-search-input" id="clinicNameSearch" placeholder="Search clinic name..." autocomplete="off" oninput="handleNameSearch(this.value)" onfocus="handleNameSearch(this.value)" onblur="hideSuggestions()"/>
         <svg class="map-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <div class="map-search-suggestions" id="nameSuggestions"></div>
       </div>
-
-      <!-- Filters -->
       <div class="sidebar-filters">
-        <div>
-          <div class="filter-label">Specialty</div>
-          <select class="filter-select" id="mapSpecialtyFilter">
-            <option value="">All specialties</option>
-          </select>
-        </div>
-        <div>
-          <div class="filter-label">Neighbourhood</div>
-          <select class="filter-select" id="mapLocationFilter">
-            <option value="">All areas</option>
-          </select>
-        </div>
-        <div>
-          <div class="filter-label">Insurance</div>
-          <select class="filter-select" id="mapInsuranceFilter">
-            <option value="">All clinics</option>
-            <option value="insurance">Insurance accepted</option>
-          </select>
-        </div>
-        <button class="btn-map-search" onclick="applyMapFilters()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Search
-        </button>
+        <div><div class="filter-label">Specialty</div><select class="filter-select" id="mapSpecialtyFilter"><option value="">All specialties</option></select></div>
+        <div><div class="filter-label">Neighbourhood</div><select class="filter-select" id="mapLocationFilter"><option value="">All areas</option></select></div>
+        <div><div class="filter-label">Insurance</div><select class="filter-select" id="mapInsuranceFilter"><option value="">All clinics</option><option value="insurance">Insurance accepted</option></select></div>
+        <button class="btn-map-search" onclick="applyMapFilters()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search</button>
         <div class="filter-row">
-          <button class="btn-map-action" id="btnMapNearMe" onclick="mapNearMe()">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-            Near me
-          </button>
-          <button class="btn-map-action" id="btnMapSaved" onclick="toggleSavedFilter()">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-            Saved
-          </button>
+          <button class="btn-map-action" id="btnMapNearMe" onclick="mapNearMe()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Near me</button>
+          <button class="btn-map-action" id="btnMapSaved" onclick="toggleSavedFilter()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Saved</button>
           <button class="btn-map-clear" onclick="clearMapFilters()">Clear</button>
         </div>
         <div class="gps-error-sidebar" id="gpsErrorSidebar"></div>
       </div>
     </div>
-
     <div class="style-picker">
-      <button class="style-btn active" id="styleLight"     onclick="setMapStyle('light')">Light</button>
-      <button class="style-btn"        id="styleStreets"   onclick="setMapStyle('streets')">Streets</button>
-      <button class="style-btn"        id="styleDark"      onclick="setMapStyle('dark')">Dark</button>
-      <button class="style-btn"        id="styleSatellite" onclick="setMapStyle('satellite')">Satellite</button>
+      <button class="style-btn active" id="styleLight" onclick="setMapStyle('light')">Light</button>
+      <button class="style-btn" id="styleStreets" onclick="setMapStyle('streets')">Streets</button>
+      <button class="style-btn" id="styleDark" onclick="setMapStyle('dark')">Dark</button>
+      <button class="style-btn" id="styleSatellite" onclick="setMapStyle('satellite')">Satellite</button>
     </div>
-
-    <div class="results-count" id="mapResultsCount">Loading...</div>
+    <div class="results-count" id="mapResultsCount">126 clinics</div>
     <div class="sidebar-results" id="sidebarResults"></div>
   </div>
-
   <div class="map-container">
-    <button class="map-overlay-btn mobile-open-btn" onclick="openMobileFilterSidebar()">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
+    <button class="map-overlay-btn mobile-open-btn" onclick="document.getElementById('mapSidebar').classList.add('mobile-open')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     <div class="map-overlay-top">
-      <button class="map-overlay-btn" onclick="locateOnMap()" title="My location">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-      </button>
-      <button class="map-overlay-btn" onclick="fitAllMarkers()" title="Show all clinics">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-      </button>
+      <button class="map-overlay-btn" onclick="locateOnMap()" title="My location"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+      <button class="map-overlay-btn" onclick="fitAllMarkers()" title="Show all clinics"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
     </div>
     <div id="mapbox"></div>
   </div>
 </div>
-
-<!-- POPUP -->
 <div class="clinic-popup-overlay" id="clinicPopupOverlay" onclick="handlePopupOverlayClick(event)">
   <div class="clinic-popup" id="clinicPopup">
     <div class="clinic-popup-header">
-      <button class="clinic-popup-close" onclick="closeClinicPopup()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-      <button class="btn-bookmark" id="btnBookmark" onclick="toggleBookmark()" title="Save clinic">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-      </button>
+      <button class="clinic-popup-close" onclick="closeClinicPopup()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <button class="btn-bookmark" id="btnBookmark" onclick="toggleBookmark()" title="Save clinic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
       <div class="clinic-popup-name" id="popupName"></div>
       <div class="clinic-popup-badges" id="popupBadges"></div>
     </div>
@@ -1311,25 +1221,17 @@
     <div class="popup-footer" id="popupFooter"></div>
   </div>
 </div>
-
 <div class="saved-overlay" id="savedOverlay" onclick="handleSavedOverlayClick(event)">
   <div class="saved-modal">
     <div class="saved-modal-header">
-      <div class="saved-modal-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--teal)" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        Saved Clinics
-      </div>
-      <button class="saved-modal-close" onclick="closeSavedModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+      <div class="saved-modal-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="var(--teal)" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Saved Clinics</div>
+      <button class="saved-modal-close" onclick="closeSavedModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="saved-modal-body" id="savedModalBody"></div>
   </div>
 </div>
-
 <script>
-  // ── DATA ─────────────────────────────────────────────────────────────────
-    const clinics = [
+  const clinics = [
     // General / Multi-Specialty
     { name: "Asahicho Clinic", specialty: ["General","Cardiology"], location: "Fuchu", address: "Fuchu, Tokyo", website: "http://www.asahichou-cl.com/", englishNote: "English support available", insurance: true },
     { name: "Ehara Clinic", specialty: ["General","Pediatric"], location: "Fuchu", address: "Fuchu, Tokyo", website: "https://eharaclinic.com/", englishNote: "English support available", insurance: true },
@@ -1483,7 +1385,9 @@
     { name: "Kitahara International Hospital", specialty: ["General"], location: "Hachioji", address: "Hachioji, Tokyo", website: "https://kokusai.kitaharahosp.com/", englishNote: "International hospital", insurance: true },
     { name: "Kitahara Life Support Clinic", specialty: ["General"], location: "Hachioji", address: "Hachioji, Tokyo", website: "https://kokusai.kitaharahosp.com/", englishNote: "English support available", insurance: true },
   ];
-    const locationCoords = {
+
+
+  const locationCoords = {
     "Fuchu": [35.6686, 139.4776],
     "Koganei": [35.6995, 139.5027],
     "Mitaka": [35.6837, 139.5597],
@@ -1546,7 +1450,9 @@
     "Ikebukuro": [35.7295, 139.7109],
     "Toshima": [35.7272, 139.7184]
   };
-    const clinicCoords = {
+
+
+  const clinicCoords = {
     "Asahicho Clinic":               [35.6686, 139.4776],
     "Ehara Clinic":                  [35.6686, 139.4776],
     "Medilocus":                     [35.6863, 139.7634],
@@ -1676,7 +1582,9 @@
     "Fuchu Aoba Clinic":          [35.6630, 139.4900],
 
   };
-    const clinicHours = {
+
+
+  const clinicHours = {
     "St. Luke's International Hospital": {
       Monday: "8:30–11:00", Tuesday: "8:30–11:00", Wednesday: "8:30–11:00",
       Thursday: "8:30–11:00", Friday: "8:30–11:00", Saturday: "8:30–11:00", Sunday: "Closed",
@@ -1940,45 +1848,19 @@
       note: "Outpatient hours. English support available."
     },
   };
+  // ── MODAL ──
 
-  // ── MAPBOX INIT ───────────────────────────────────────────────────────────
-  mapboxgl.accessToken = 'pk.eyJ1IjoiamJvMjAwMCIsImEiOiJjbXBxeGd3cDAwdnMyMnFxN2k2c2Q0NHAyIn0.ZGuPY2k5_FjUJF9KB-ibow';
-  const MAP_STYLES = {
-    light:     'mapbox://styles/mapbox/light-v11',
-    streets:   'mapbox://styles/mapbox/streets-v12',
-    dark:      'mapbox://styles/mapbox/dark-v11',
-    satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
-  };
-  const map = new mapboxgl.Map({
-    container: 'mapbox',
-    style: MAP_STYLES.light,
-    center: [139.7200, 35.6762],
-    zoom: 11,
-  });
-  map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
+  const SAVED_KEY = 'jhg_saved_clinics';
+  const SUPABASE_URL  = 'https://vthnhjcmjlyfgcutuvze.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG5oamNtamx5ZmdjdXR1dnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDc5NjIsImV4cCI6MjA5NTYyMzk2Mn0._nATkowjt3OyPgIKPU7LQ3qQXHSAHh4odQ-mr6p0bU4';
+  const SB_HEADERS    = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+  const BAD_WORDS = [
+    'fuck','shit','ass','bitch','cunt','dick','cock','pussy','bastard',
+    'asshole','motherfucker','faggot','nigger','nigga','retard','whore',
+    'slut','prick','twat','wanker','damn','crap','bullshit','jackass'
+  ];
 
-  // ── STATE ─────────────────────────────────────────────────────────────────
-  let activeMarkers    = [];
-  let userMarker       = null;
-  let userCoords       = null;
-  let currentStyle     = 'light';
-  let filteredClinics  = [...clinics];
-  let highlightedName  = null;
-  let savedFilterActive = false;
-
-  // ── POPULATE DROPDOWNS ────────────────────────────────────────────────────
-  const specSel = document.getElementById('mapSpecialtyFilter');
-  [...new Set(clinics.flatMap(c => c.specialty))].sort().forEach(s => {
-    const o = document.createElement('option'); o.value = s; o.textContent = s; specSel.appendChild(o);
-  });
-
-  const locSel = document.getElementById('mapLocationFilter');
-  Object.keys(locationCoords).sort().forEach(loc => {
-    const o = document.createElement('option'); o.value = loc; o.textContent = loc; locSel.appendChild(o);
-  });
-
-  // ── SHARED FUNCTIONS (popup, saved, supabase, reactions, comments) ────────
-    function haversine(lat1, lon1, lat2, lon2) {
+  function haversine(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -1987,13 +1869,11 @@
               Math.sin(dLon/2) * Math.sin(dLon/2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
-
   function getDistanceFromUser(clinicName, userCoords) {
     const cc = clinicCoords[clinicName];
     if (!cc || !userCoords) return 999;
     return haversine(userCoords[0], userCoords[1], cc[0], cc[1]);
   }
-
   function getOpenStatus(clinicName) {
     const hours = clinicHours[clinicName];
     if (!hours) return { status: 'unknown' };
@@ -2306,25 +2186,18 @@
       window._popupMap = null;
     }
   }
-
   function handlePopupOverlayClick(e) {
     if (e.target === document.getElementById("clinicPopupOverlay")) closeClinicPopup();
   }
-
-
-  const SAVED_KEY = 'jhg_saved_clinics';
-
   function getSavedClinics() {
     try {
       return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
     } catch { return []; }
   }
-
   function setSavedClinics(arr) {
     localStorage.setItem(SAVED_KEY, JSON.stringify(arr));
     updateSavedBadge();
   }
-
   function updateSavedBadge() {
     const count = getSavedClinics().length;
     const badge = document.getElementById('savedBadge');
@@ -2336,7 +2209,6 @@
       badge.style.display = 'none';
     }
   }
-
   function toggleBookmark() {
     const c = window._currentClinic;
     if (!c) return;
@@ -2370,22 +2242,18 @@
     btn.classList.add('pop');
     btn.addEventListener('animationend', () => btn.classList.remove('pop'), { once: true });
   }
-
   function openSavedModal() {
     renderSavedModal();
     document.getElementById('savedOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
-
   function closeSavedModal() {
     document.getElementById('savedOverlay').classList.remove('open');
     document.body.style.overflow = '';
   }
-
   function handleSavedOverlayClick(e) {
     if (e.target === document.getElementById('savedOverlay')) closeSavedModal();
   }
-
   function renderSavedModal() {
     const body = document.getElementById('savedModalBody');
     const saved = getSavedClinics();
@@ -2439,7 +2307,6 @@
       body.appendChild(row);
     });
   }
-
   function unsaveClinic(name, e) {
     e.stopPropagation();
     const saved = getSavedClinics().filter(s => s.name !== name);
@@ -2450,13 +2317,6 @@
       document.getElementById('btnBookmark').classList.remove('saved');
     }
   }
-
-  // Init badge on page load
-  updateSavedBadge();
-  const SUPABASE_URL  = 'https://vthnhjcmjlyfgcutuvze.supabase.co';
-  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG5oamNtamx5ZmdjdXR1dnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDc5NjIsImV4cCI6MjA5NTYyMzk2Mn0._nATkowjt3OyPgIKPU7LQ3qQXHSAHh4odQ-mr6p0bU4';
-  const SB_HEADERS    = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
-
   async function sbFetch(path, opts = {}) {
     const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
       headers: SB_HEADERS,
@@ -2467,22 +2327,11 @@
     if (res.status === 204) return null;
     return res.json();
   }
-
-  // ── BAD WORD FILTER ──
-  // Lightweight English profanity blocklist — not exhaustive but catches casual misuse
-  const BAD_WORDS = [
-    'fuck','shit','ass','bitch','cunt','dick','cock','pussy','bastard',
-    'asshole','motherfucker','faggot','nigger','nigga','retard','whore',
-    'slut','prick','twat','wanker','damn','crap','bullshit','jackass'
-  ];
-
   function containsBadWord(text) {
     const lower = text.toLowerCase().replace(/[^a-z\s]/g, ' ');
     const words = lower.split(/\s+/);
     return words.some(w => BAD_WORDS.includes(w));
   }
-
-  // ── REACTIONS ──
   async function loadReactions(clinicId) {
     try {
       const data = await sbFetch('clinic_reactions?clinic_id=eq.' + encodeURIComponent(clinicId) + '&select=helpful,neutral,unhelpful');
@@ -2505,7 +2354,6 @@
       });
     }
   }
-
   async function submitReaction(clinicId, type) {
     // One reaction per clinic per session — deselect if same button clicked again
     const prior = sessionStorage.getItem('reaction:' + clinicId);
@@ -2531,7 +2379,6 @@
     // Reload fresh counts
     loadReactions(clinicId);
   }
-
   async function upsertReaction(clinicId, addType, removeType) {
     try {
       // Try to get existing row
@@ -2562,8 +2409,6 @@
       console.warn('Reaction submit failed:', e);
     }
   }
-
-  // ── COMMENTS ──
   async function loadComments(clinicId) {
     const list = document.getElementById('commentsList');
     if (!list) return;
@@ -2603,7 +2448,6 @@
       list.innerHTML = '<p class="comments-empty">No comments yet — be the first to share a tip.</p>';
     }
   }
-
   function escapeHtml(str) {
     return str
       .replace(/&/g, '&amp;')
@@ -2612,7 +2456,6 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-
   function updateCharCount() {
     const input = document.getElementById('commentInput');
     const counter = document.getElementById('charCount');
@@ -2621,7 +2464,6 @@
     counter.textContent = len + ' / 400';
     counter.classList.toggle('over', len > 380);
   }
-
   async function submitComment(clinicId) {
     const input   = document.getElementById('commentInput');
     const errEl   = document.getElementById('commentError');
@@ -2696,8 +2538,6 @@
     // Hide input, show "already commented" notice
     renderCommentInput(clinicId);
   }
-
-  // Render the comment input area — shows input or "already commented" notice
   function renderCommentInput(clinicId) {
     const wrap = document.getElementById('commentInputWrap');
     if (!wrap) return;
@@ -2727,321 +2567,196 @@
         '<span class="comment-error" id="commentError"></span>';
     }
   }
-</script>
-</body>
-</html>
 
-  // ── HELPERS ───────────────────────────────────────────────────────────────
-  function getCoords(c) {
-    return clinicCoords[c.name] || locationCoords[c.location] || null;
+  mapboxgl.accessToken='pk.eyJ1IjoiamJvMjAwMCIsImEiOiJjbXBxeGd3cDAwdnMyMnFxN2k2c2Q0NHAyIn0.ZGuPY2k5_FjUJF9KB-ibow';
+  var MAP_STYLES={light:'mapbox://styles/mapbox/light-v11',streets:'mapbox://styles/mapbox/streets-v12',dark:'mapbox://styles/mapbox/dark-v11',satellite:'mapbox://styles/mapbox/satellite-streets-v12'};
+  var map=new mapboxgl.Map({container:'mapbox',style:MAP_STYLES.light,center:[139.7010,35.6895],zoom:12});
+  map.addControl(new mapboxgl.NavigationControl({showCompass:false}),'bottom-right');
+  var activeMarkers=[],userMarker=null,userCoords=null,currentStyle='light',filteredClinics=clinics.slice(),highlightedName=null,savedFilterActive=false;
+
+  // Populate dropdowns
+  (function(){
+    var specs=[];clinics.forEach(function(c){c.specialty.forEach(function(s){if(specs.indexOf(s)===-1)specs.push(s);});});specs.sort();
+    var ss=document.getElementById('mapSpecialtyFilter');specs.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;ss.appendChild(o);});
+    var ls=document.getElementById('mapLocationFilter');Object.keys(locationCoords).sort().forEach(function(l){var o=document.createElement('option');o.value=l;o.textContent=l;ls.appendChild(o);});
+  })();
+
+  function getCoords(c){return clinicCoords[c.name]||locationCoords[c.location]||null;}
+
+  function setMapStyle(n){
+    if(n===currentStyle)return;currentStyle=n;map.setStyle(MAP_STYLES[n]);
+    ['Light','Streets','Dark','Satellite'].forEach(function(x){document.getElementById('style'+x).classList.toggle('active',x.toLowerCase()===n);});
+    map.once('style.load',function(){renderMarkers(filteredClinics);});
   }
 
-  // ── MAP STYLE ─────────────────────────────────────────────────────────────
-  function setMapStyle(name) {
-    if (name === currentStyle) return;
-    currentStyle = name;
-    map.setStyle(MAP_STYLES[name]);
-    ['Light','Streets','Dark','Satellite'].forEach(n =>
-      document.getElementById('style'+n).classList.toggle('active', n.toLowerCase() === name)
-    );
-    map.once('style.load', () => renderMarkers(filteredClinics));
-    // Fallback
-    setTimeout(() => { if (activeMarkers.length === 0) renderMarkers(filteredClinics); }, 2000);
-  }
-
-  // ── RENDER MARKERS ────────────────────────────────────────────────────────
-  function renderMarkers(list) {
-    activeMarkers.forEach(m => m.remove());
-    activeMarkers = [];
-    const savedNames = new Set(getSavedClinics().map(s => s.name));
-    list.forEach(c => {
-      const coords = getCoords(c);
-      if (!coords) return;
-      const [lat, lng] = coords;
-      const el = document.createElement('div');
-      el.className = 'map-marker';
-      if (savedNames.has(c.name)) el.classList.add('saved');
-      if (c.name === highlightedName) el.classList.add('highlighted');
-      el.dataset.name = c.name;
-      el.addEventListener('click', e => { e.stopPropagation(); highlightClinic(c.name); openClinicPopup(c); });
-      el.addEventListener('mouseenter', () => highlightSidebarItem(c.name));
-      el.addEventListener('mouseleave', () => unhighlightSidebarItem(c.name));
-      const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' }).setLngLat([lng, lat]).addTo(map);
-      activeMarkers.push(marker);
+  function renderMarkers(list){
+    activeMarkers.forEach(function(m){m.remove();});activeMarkers=[];
+    var sv={};getSavedClinics().forEach(function(s){sv[s.name]=true;});
+    list.forEach(function(c){
+      var co=getCoords(c);if(!co)return;
+      var el=document.createElement('div');el.className='map-marker';
+      if(sv[c.name])el.classList.add('saved');
+      if(c.name===highlightedName)el.classList.add('highlighted');
+      el.dataset.name=c.name;
+      (function(x){
+        el.addEventListener('click',function(e){e.stopPropagation();highlightClinic(x.name);openClinicPopup(x);});
+        el.addEventListener('mouseenter',function(){hlSidebar(x.name);});
+        el.addEventListener('mouseleave',function(){unhlSidebar(x.name);});
+      })(c);
+      activeMarkers.push(new mapboxgl.Marker({element:el,anchor:'center'}).setLngLat([co[1],co[0]]).addTo(map));
     });
   }
 
-  function highlightClinic(name) {
-    highlightedName = name;
-    activeMarkers.forEach(m => m.getElement().classList.toggle('highlighted', m.getElement().dataset.name === name));
-    const item = document.querySelector(`.sidebar-clinic-item[data-name="${name}"]`);
-    if (item) {
-      document.querySelectorAll('.sidebar-clinic-item').forEach(i => i.classList.remove('highlighted'));
-      item.classList.add('highlighted');
-      item.scrollIntoView({ block:'nearest', behavior:'smooth' });
-    }
+  function highlightClinic(name){
+    highlightedName=name;
+    activeMarkers.forEach(function(m){
+      var el=m.getElement();
+      el.classList.toggle('highlighted',el.dataset.name===name);
+    });
+    var item=document.querySelector('.sidebar-clinic-item[data-name="'+name.replace(/"/g,'\\"')+'"]');
+    if(item){document.querySelectorAll('.sidebar-clinic-item').forEach(function(i){i.classList.remove('highlighted');});item.classList.add('highlighted');item.scrollIntoView({block:'nearest',behavior:'smooth'});}
   }
-  function highlightSidebarItem(name) {
-    const el = document.querySelector(`.sidebar-clinic-item[data-name="${name}"]`);
-    if (el) el.classList.add('highlighted');
-  }
-  function unhighlightSidebarItem(name) {
-    const el = document.querySelector(`.sidebar-clinic-item[data-name="${name}"]`);
-    if (el && highlightedName !== name) el.classList.remove('highlighted');
-  }
+  function hlSidebar(n){var e=document.querySelector('.sidebar-clinic-item[data-name="'+n.replace(/"/g,'\\"')+'"]');if(e)e.classList.add('highlighted');}
+  function unhlSidebar(n){var e=document.querySelector('.sidebar-clinic-item[data-name="'+n.replace(/"/g,'\\"')+'"]');if(e&&highlightedName!==n)e.classList.remove('highlighted');}
 
-  // ── SIDEBAR LIST ──────────────────────────────────────────────────────────
-  function renderSidebarList(list) {
-    document.getElementById('mapResultsCount').textContent = list.length + ' clinic' + (list.length !== 1 ? 's' : '');
-    const sorted = userCoords
-      ? list.slice().sort((a,b) => {
-          const da = getDistanceFromUser(a.name, userCoords);
-          const db = getDistanceFromUser(b.name, userCoords);
-          if (da===null) return 1; if (db===null) return -1; return da-db;
-        })
-      : list;
+  function renderSidebarList(list){
+    document.getElementById('mapResultsCount').textContent=list.length+' clinic'+(list.length!==1?'s':'');
+    var sorted=list.slice();
+    if(userCoords)sorted.sort(function(a,b){var da=getDistanceFromUser(a.name,userCoords),db=getDistanceFromUser(b.name,userCoords);if(da===null)return 1;if(db===null)return -1;return da-db;});
+    var ct=document.getElementById('sidebarResults');
+    ct.innerHTML='';
 
-    const container = document.getElementById('sidebarResults');
-    container.innerHTML = '';
-    sorted.forEach(c => {
-      const status = getOpenStatus(c.name);
-      const dist   = userCoords ? getDistanceFromUser(c.name, userCoords) : null;
-      const isOpen = status.status === 'open';
-      const div = document.createElement('div');
-      div.className = 'sidebar-clinic-item';
-      div.dataset.name = c.name;
-      if (c.name === highlightedName) div.classList.add('highlighted');
-      div.innerHTML =
-        '<div class="sci-header">' +
-          '<div class="sci-name">' + c.name + '</div>' +
-          (status.status!=='unknown' ? '<div class="sci-open-dot ' + (isOpen?'open':'closed') + '"></div>' : '') +
-        '</div>' +
-        '<div class="sci-meta">' +
-          '<span>' + c.address + '</span>' +
-          (dist!==null ? '<span class="sci-dist">' + dist.toFixed(1) + ' km</span>' : '') +
-        '</div>' +
-        (status.status!=='unknown' ? '<div class="sci-meta" style="margin-top:1px;"><span style="font-size:0.7rem;color:' + (isOpen?'var(--green)':'var(--red)') + ';font-weight:500;">' + status.label + '</span></div>' : '') +
-        '<div class="sci-tags">' +
-          (c.specialty[0] ? '<span class="sci-tag">' + c.specialty[0] + '</span>' : '') +
-          (c.insurance ? '<span class="sci-tag insurance">Insurance</span>' : '') +
+    // Build a lookup so event delegation can find the clinic object by name
+    window._sidebarClinics={};
+
+    sorted.forEach(function(c){
+      var st=getOpenStatus(c.name),dist=userCoords?getDistanceFromUser(c.name,userCoords):null,op=st.status==='open';
+      var d=document.createElement('div');
+      d.className='sidebar-clinic-item';
+      d.dataset.name=c.name;
+      if(c.name===highlightedName)d.classList.add('highlighted');
+      d.innerHTML=
+        '<div class="sci-header"><div class="sci-name">'+c.name+'</div>'+
+        (st.status!=='unknown'?'<div class="sci-open-dot '+(op?'open':'closed')+'"></div>':'')+
+        '</div>'+
+        '<div class="sci-meta"><span>'+c.address+'</span>'+
+        (dist!==null?'<span class="sci-dist">'+dist.toFixed(1)+' km</span>':'')+
+        '</div>'+
+        (st.status!=='unknown'?'<div class="sci-meta"><span style="font-size:0.7rem;color:'+(op?'var(--green)':'var(--red)')+';font-weight:500;">'+st.label+'</span></div>':'')+
+        '<div class="sci-tags">'+
+        (c.specialty[0]?'<span class="sci-tag">'+c.specialty[0]+'</span>':'')+
+        (c.insurance?'<span class="sci-tag insurance">Insurance</span>':'')+
         '</div>';
-      div.addEventListener('click', () => {
-        const coords = getCoords(c);
-        if (coords) map.flyTo({ center:[coords[1],coords[0]], zoom:15, duration:600 });
-        highlightClinic(c.name);
-        openClinicPopup(c);
-      });
-      div.addEventListener('mouseenter', () => activeMarkers.forEach(m => { if (m.getElement().dataset.name === c.name) m.getElement().classList.add('highlighted'); }));
-      div.addEventListener('mouseleave', () => { if (highlightedName !== c.name) activeMarkers.forEach(m => { if (m.getElement().dataset.name === c.name) m.getElement().classList.remove('highlighted'); }); });
-      container.appendChild(div);
+      window._sidebarClinics[c.name]=c;
+      ct.appendChild(d);
     });
+
+    // Single delegated listener on the container — catches clicks on any item or its children
+    ct.onclick=function(e){
+      var item=e.target.closest('.sidebar-clinic-item');
+      if(!item)return;
+      var name=item.dataset.name;
+      var clinic=window._sidebarClinics[name];
+      if(!clinic)return;
+      highlightClinic(name);
+      openClinicPopup(clinic);
+    };
+
+    // Hover highlight syncs with map markers
+    ct.onmouseover=function(e){
+      var item=e.target.closest('.sidebar-clinic-item');
+      if(item)activeMarkers.forEach(function(m){if(m.getElement().dataset.name===item.dataset.name)m.getElement().classList.add('highlighted');});
+    };
+    ct.onmouseout=function(e){
+      var item=e.target.closest('.sidebar-clinic-item');
+      if(item&&highlightedName!==item.dataset.name)activeMarkers.forEach(function(m){if(m.getElement().dataset.name===item.dataset.name)m.getElement().classList.remove('highlighted');});
+    };
   }
 
-  // ── FILTERS ───────────────────────────────────────────────────────────────
-  function applyMapFilters() {
-    const spec    = document.getElementById('mapSpecialtyFilter').value;
-    const loc     = document.getElementById('mapLocationFilter').value;
-    const ins     = document.getElementById('mapInsuranceFilter').value;
-    const nameVal = document.getElementById('clinicNameSearch').value.trim().toLowerCase();
-
-    let result = clinics;
-    if (spec)    result = result.filter(c => c.specialty.includes(spec));
-    if (loc)     result = result.filter(c => c.location === loc);
-    if (ins)     result = result.filter(c => c.insurance);
-    if (nameVal) result = result.filter(c => c.name.toLowerCase().includes(nameVal));
-    if (savedFilterActive) {
-      const sn = new Set(getSavedClinics().map(s => s.name));
-      result = result.filter(c => sn.has(c.name));
-    }
-
-    filteredClinics = result;
-    renderMarkers(result);
-    renderSidebarList(result);
-
-    // Fly to filtered area
-    if (loc && locationCoords[loc]) {
-      const [lat, lng] = locationCoords[loc];
-      map.flyTo({ center:[lng,lat], zoom:13, duration:700 });
-    } else if (result.length > 0 && result.length < clinics.length) {
-      const bounds = new mapboxgl.LngLatBounds();
-      let n = 0;
-      result.forEach(c => { const co = getCoords(c); if (co) { bounds.extend([co[1],co[0]]); n++; } });
-      if (n) map.fitBounds(bounds, { padding:80, maxZoom:14, duration:700 });
-    }
+  
+  function applyMapFilters(){
+    var sp=document.getElementById('mapSpecialtyFilter').value,lo=document.getElementById('mapLocationFilter').value,
+        ins=document.getElementById('mapInsuranceFilter').value,nv=document.getElementById('clinicNameSearch').value.trim().toLowerCase();
+    var r=clinics.slice();
+    if(sp)r=r.filter(function(c){return c.specialty.indexOf(sp)!==-1;});
+    if(lo)r=r.filter(function(c){return c.location===lo;});
+    if(ins)r=r.filter(function(c){return c.insurance;});
+    if(nv)r=r.filter(function(c){return c.name.toLowerCase().indexOf(nv)!==-1;});
+    if(savedFilterActive){var sn={};getSavedClinics().forEach(function(s){sn[s.name]=true;});r=r.filter(function(c){return sn[c.name];});}
+    filteredClinics=r;renderMarkers(r);renderSidebarList(r);
+    if(lo&&locationCoords[lo])map.flyTo({center:[locationCoords[lo][1],locationCoords[lo][0]],zoom:13,duration:700});
+    else if(r.length>0&&r.length<clinics.length){var b=new mapboxgl.LngLatBounds(),n=0;r.forEach(function(c){var co=getCoords(c);if(co){b.extend([co[1],co[0]]);n++;}});if(n)map.fitBounds(b,{padding:80,maxZoom:14,duration:700});}
   }
 
-  function clearMapFilters() {
-    document.getElementById('mapSpecialtyFilter').value = '';
-    document.getElementById('mapLocationFilter').value = '';
-    document.getElementById('mapInsuranceFilter').value = '';
-    document.getElementById('clinicNameSearch').value = '';
-    document.getElementById('nameSuggestions').classList.remove('open');
-    savedFilterActive = false;
-    userCoords = null;
-    document.getElementById('btnMapNearMe').classList.remove('active');
-    document.getElementById('btnMapSaved').classList.remove('active');
+  function clearMapFilters(){
+    ['mapSpecialtyFilter','mapLocationFilter','mapInsuranceFilter'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('clinicNameSearch').value='';document.getElementById('nameSuggestions').classList.remove('open');
+    savedFilterActive=false;userCoords=null;
+    ['btnMapNearMe','btnMapSaved'].forEach(function(id){document.getElementById(id).classList.remove('active');});
     document.getElementById('gpsErrorSidebar').classList.remove('show');
-    if (userMarker) { userMarker.remove(); userMarker = null; }
-    filteredClinics = [...clinics];
-    renderMarkers(clinics);
-    renderSidebarList(clinics);
+    if(userMarker){userMarker.remove();userMarker=null;}
+    filteredClinics=clinics.slice();renderMarkers(clinics);renderSidebarList(clinics);
   }
 
-  // ── LIVE NAME SEARCH WITH DROPDOWN ────────────────────────────────────────
-  let suggestTimeout = null;
-
-  function handleNameSearch(val) {
-    clearTimeout(suggestTimeout);
-    const box = document.getElementById('nameSuggestions');
-    const q = val.trim().toLowerCase();
-
-    if (!q) {
-      box.innerHTML = '';
-      box.classList.remove('open');
-      // Reset to full list (or filtered by other active filters)
-      applyMapFilters();
-      return;
-    }
-
-    // Show dropdown instantly while typing
-    const matches = clinics
-      .filter(c => c.name.toLowerCase().includes(q) ||
-                   c.specialty.some(s => s.toLowerCase().includes(q)) ||
-                   c.address.toLowerCase().includes(q))
-      .slice(0, 8);
-
-    if (!matches.length) {
-      box.innerHTML = '<div class="suggestion-item"><span class="suggestion-sub">No clinics found</span></div>';
-      box.classList.add('open');
-      return;
-    }
-
-    box.innerHTML = matches.map(c => {
-      const status = getOpenStatus(c.name);
-      const dot = status.status !== 'unknown'
-        ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' +
-          (status.status==='open'?'#388e3c':'#dc2626') +
-          ';margin-right:4px;vertical-align:middle;"></span>'
-        : '';
-      return '<div class="suggestion-item" onmousedown="selectSuggestion('' +
-        c.name.replace(/\/g,'\\').replace(/'/g,"\'") + '')">' +
-        '<div class="suggestion-name">' + c.name + '</div>' +
-        '<div class="suggestion-sub">' + dot + c.specialty[0] + ' &middot; ' + c.address + '</div>' +
-        '</div>';
+  var stout=null;
+  function handleNameSearch(val){
+    clearTimeout(stout);
+    var box=document.getElementById('nameSuggestions'),q=(val||'').trim().toLowerCase();
+    if(!q){box.innerHTML='';box.classList.remove('open');return;}
+    var m=clinics.filter(function(c){return c.name.toLowerCase().indexOf(q)!==-1||c.specialty.some(function(s){return s.toLowerCase().indexOf(q)!==-1;})||c.address.toLowerCase().indexOf(q)!==-1;}).slice(0,8);
+    if(!m.length){box.innerHTML='<div class="suggestion-item"><span class="suggestion-sub">No clinics found</span></div>';box.classList.add('open');return;}
+    box.innerHTML=m.map(function(c){
+      var st=getOpenStatus(c.name),dot=st.status!=='unknown'?'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+(st.status==='open'?'#388e3c':'#dc2626')+';margin-right:4px;vertical-align:middle;"></span>':'';
+      var esc=c.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+      return '<div class="suggestion-item" data-clinic-name="'+esc+'"><div class="suggestion-name">'+c.name+'</div><div class="suggestion-sub">'+dot+c.specialty[0]+' &middot; '+c.address+'</div></div>';
     }).join('');
+    box.querySelectorAll('.suggestion-item').forEach(function(el){
+      el.addEventListener('mousedown',function(e){e.preventDefault();pickSuggestion(this.getAttribute('data-clinic-name'));});
+    });
     box.classList.add('open');
-
-    // Also update map with partial matches in real time
-    suggestTimeout = setTimeout(() => applyMapFilters(), 150);
+    stout=setTimeout(function(){var nv=document.getElementById('clinicNameSearch').value.trim().toLowerCase();if(nv){var r=clinics.filter(function(c){return c.name.toLowerCase().indexOf(nv)!==-1;});renderMarkers(r);renderSidebarList(r);}},200);
   }
 
-  function selectSuggestion(name) {
-    document.getElementById('clinicNameSearch').value = name;
-    document.getElementById('nameSuggestions').classList.remove('open');
-    const c = clinics.find(cl => cl.name === name);
-    if (!c) return;
-    // Show just this clinic
-    filteredClinics = [c];
-    renderMarkers([c]);
-    renderSidebarList([c]);
-    const coords = getCoords(c);
-    if (coords) map.flyTo({ center:[coords[1],coords[0]], zoom:16, duration:700 });
-    highlightClinic(c.name);
-    setTimeout(() => openClinicPopup(c), 500);
+  function pickSuggestion(name){
+    document.getElementById('clinicNameSearch').value=name;document.getElementById('nameSuggestions').classList.remove('open');
+    var c=null;for(var i=0;i<clinics.length;i++){if(clinics[i].name===name){c=clinics[i];break;}}
+    if(!c)return;filteredClinics=[c];renderMarkers([c]);renderSidebarList([c]);
+    var co=getCoords(c);if(co)map.flyTo({center:[co[1],co[0]],zoom:16,duration:700});
+    highlightClinic(c.name);setTimeout(function(){openClinicPopup(c);},500);
   }
+  function hideSuggestions(){setTimeout(function(){document.getElementById('nameSuggestions').classList.remove('open');},180);}
 
-  function hideSuggestions() {
-    setTimeout(() => document.getElementById('nameSuggestions').classList.remove('open'), 180);
+  function mapNearMe(){
+    var btn=document.getElementById('btnMapNearMe'),err=document.getElementById('gpsErrorSidebar');err.classList.remove('show');
+    if(!navigator.geolocation){err.textContent='GPS not supported.';err.classList.add('show');return;}
+    btn.classList.add('loading');btn.textContent='Locating...';
+    navigator.geolocation.getCurrentPosition(function(pos){
+      userCoords=[pos.coords.latitude,pos.coords.longitude];
+      btn.classList.remove('loading');btn.classList.add('active');
+      btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Near me';
+      if(userMarker)userMarker.remove();var el=document.createElement('div');el.className='user-pulse';
+      userMarker=new mapboxgl.Marker({element:el}).setLngLat([userCoords[1],userCoords[0]]).addTo(map);
+      map.flyTo({center:[userCoords[1],userCoords[0]],zoom:13,duration:700});applyMapFilters();
+    },function(e){
+      btn.classList.remove('loading');btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Near me';
+      err.textContent=({1:'Location access denied.',2:'Location unavailable.',3:'Timed out.'})[e.code]||'Location unavailable.';err.classList.add('show');
+    },{timeout:10000});
   }
+  function locateOnMap(){if(userCoords)map.flyTo({center:[userCoords[1],userCoords[0]],zoom:14,duration:600});else mapNearMe();}
+  function toggleSavedFilter(){savedFilterActive=!savedFilterActive;document.getElementById('btnMapSaved').classList.toggle('active',savedFilterActive);applyMapFilters();}
+  function fitAllMarkers(){
+    var list=filteredClinics.length?filteredClinics:clinics,b=new mapboxgl.LngLatBounds(),n=0;
+    list.forEach(function(c){var co=getCoords(c);if(co){b.extend([co[1],co[0]]);n++;}});
+    if(n)map.fitBounds(b,{padding:60,maxZoom:14,duration:800});
+  }
+  function toggleMapSidebar(){document.getElementById('mapSidebar').classList.toggle('collapsed');setTimeout(function(){map.resize();},260);}
+  function toggleMobileNav(){document.getElementById('mnavSidebar').classList.toggle('open');document.getElementById('mnavOverlay').classList.toggle('open');}
+  function closeMobileNav(){document.getElementById('mnavSidebar').classList.remove('open');document.getElementById('mnavOverlay').classList.remove('open');}
 
-  // ── GPS NEAR ME ───────────────────────────────────────────────────────────
-  function mapNearMe() {
-    const btn = document.getElementById('btnMapNearMe');
-    const errEl = document.getElementById('gpsErrorSidebar');
-    errEl.classList.remove('show');
-    if (!navigator.geolocation) { errEl.textContent='GPS not supported.'; errEl.classList.add('show'); return; }
-    btn.classList.add('loading'); btn.textContent='Locating...';
-    navigator.geolocation.getCurrentPosition(pos => {
-      userCoords = [pos.coords.latitude, pos.coords.longitude];
-      btn.classList.remove('loading'); btn.classList.add('active');
-      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Near me';
-      if (userMarker) userMarker.remove();
-      const el = document.createElement('div'); el.className = 'user-pulse';
-      userMarker = new mapboxgl.Marker({element:el}).setLngLat([userCoords[1],userCoords[0]]).addTo(map);
-      map.flyTo({center:[userCoords[1],userCoords[0]], zoom:13, duration:700});
-      applyMapFilters();
-    }, err => {
-      btn.classList.remove('loading');
-      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Near me';
-      const msgs={1:'Location access denied.',2:'Location unavailable.',3:'Timed out.'};
-      errEl.textContent=msgs[err.code]||'Location unavailable.'; errEl.classList.add('show');
-    }, {timeout:10000});
-  }
-
-  function locateOnMap() {
-    if (userCoords) map.flyTo({center:[userCoords[1],userCoords[0]], zoom:14, duration:600});
-    else mapNearMe();
-  }
-
-  // ── SAVED FILTER ──────────────────────────────────────────────────────────
-  function toggleSavedFilter() {
-    savedFilterActive = !savedFilterActive;
-    document.getElementById('btnMapSaved').classList.toggle('active', savedFilterActive);
-    applyMapFilters();
-  }
-
-  // ── FIT ALL ───────────────────────────────────────────────────────────────
-  function fitAllMarkers() {
-    const list = filteredClinics.length ? filteredClinics : clinics;
-    const bounds = new mapboxgl.LngLatBounds();
-    let count = 0;
-    list.forEach(c => { const co = getCoords(c); if (co) { bounds.extend([co[1],co[0]]); count++; } });
-    if (count) map.fitBounds(bounds, {padding:60, maxZoom:14, duration:800});
-  }
-
-  // ── SIDEBAR COLLAPSE ──────────────────────────────────────────────────────
-  function toggleMapSidebar() {
-    document.getElementById('mapSidebar').classList.toggle('collapsed');
-    setTimeout(() => map.resize(), 260);
-  }
-  function openMobileFilterSidebar() {
-    document.getElementById('mapSidebar').classList.add('mobile-open');
-  }
-
-  // ── MOBILE NAV ────────────────────────────────────────────────────────────
-  function toggleMobileNav() {
-    document.getElementById('mobileSidebar').classList.toggle('open');
-    document.getElementById('mobileOverlay').classList.toggle('open');
-  }
-  function closeMobileNav() {
-    document.getElementById('mobileSidebar').classList.remove('open');
-    document.getElementById('mobileOverlay').classList.remove('open');
-  }
-
-  // ── INIT ──────────────────────────────────────────────────────────────────
-  // Render sidebar immediately (no map dependency)
   renderSidebarList(clinics);
-
-  // Render markers on map load, with fallback if load already fired
-  function initMarkers() {
-    renderMarkers(clinics);
-  }
-
-  if (map.loaded()) {
-    initMarkers();
-  } else {
-    map.on('load', initMarkers);
-    // Fallback: if load hasn't fired after 3s, try anyway
-    setTimeout(() => {
-      if (activeMarkers.length === 0) initMarkers();
-    }, 3000);
-  }
-
-  map.on('click', () => {
-    if (document.getElementById('clinicPopupOverlay').classList.contains('open')) {
-      closeClinicPopup();
-    }
-  });
+  function doMarkers(){renderMarkers(clinics);}
+  if(map.loaded()){doMarkers();}else{map.on('load',doMarkers);setTimeout(function(){if(activeMarkers.length===0)doMarkers();},3000);}
+  // Popup closes via overlay onclick (handlePopupOverlayClick) — no map.on('click') needed
 
 </script>
 </body>
