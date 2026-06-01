@@ -1922,23 +1922,204 @@
     // All ranges passed for today
     return { status: 'closed', label: 'Closed now' };
   }
-  function openClinicPopup(clinic) {
-    console.log('openClinicPopup called for:', clinic.name);
-    var overlay = document.getElementById('clinicPopupOverlay');
-    if (!overlay) { console.error('overlay not found'); return; }
-    document.getElementById('popupName').textContent = clinic.name;
-    overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    console.log('overlay open class added, display should be flex');
+  function openClinicPopup(c) {
+    window._currentClinic = c; // track for bookmark toggle
+
+    document.getElementById("popupName").textContent = c.name;
+
+    // Set bookmark button state
+    const saved = getSavedClinics();
+    const isSaved = saved.some(s => s.name === c.name);
+    const bookmarkBtn = document.getElementById("btnBookmark");
+    bookmarkBtn.classList.toggle("saved", isSaved);
+
+    // badges
+    const badges = document.getElementById("popupBadges");
+    badges.innerHTML = c.specialty.map(s =>
+      '<span class="clinic-specialty-badge">' + s + '</span>'
+    ).join("") + (c.insurance ? '<span class="clinic-tag tag-insurance" style="margin-left:4px;">Insurance accepted</span>' : "");
+
+    // get coordinates for map
+    const coords = clinicCoords[c.name] || locationCoords[c.location] || null;
+    const lat = coords ? coords[0] : null;
+    const lng = coords ? coords[1] : null;
+
+    // Stable ID for Supabase — lowercase slug of clinic name
+    const clinicId = c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+    // map — Mapbox interactive map with marker, or fallback Google Maps link
+    const mapsSearchURL = 'https://www.google.com/maps/search/' + encodeURIComponent(c.name + ' ' + c.address);
+    const mapHTML =
+      '<div class="popup-map-section">' +
+        '<p class="popup-section-label">Location</p>' +
+        '<div class="popup-info-row">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+          '<a href="' + mapsSearchURL + '" target="_blank" style="color:var(--teal);font-weight:500;">Open in Google Maps for directions</a>' +
+        '</div>' +
+      '</div>';
+
+    // hours — check clinic data, fall back to honest placeholder
+    const hoursData = clinicHours[c.name] || null;
+    const hoursHTML = '<div class="popup-section">' +
+      '<p class="popup-section-label">Opening hours</p>' +
+      (hoursData ? (
+        '<table class="popup-hours-table">' +
+        ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(day => {
+          const h = hoursData[day] || 'Closed';
+          const closed = h === 'Closed';
+          const englishDay = hoursData.englishDays && hoursData.englishDays.includes(day);
+          return '<tr>' +
+            '<td>' + day.slice(0,3) + '</td>' +
+            '<td class="' + (closed ? 'popup-hours-closed' : '') + (englishDay ? ' popup-hours-english' : '') + '">' +
+              h + (englishDay ? ' ✓ English' : '') +
+            '</td>' +
+          '</tr>';
+        }).join('') +
+        '</table>' +
+        (hoursData.note ? '<p class="popup-hours-note">' + hoursData.note + '</p>' : '')
+      ) : (
+        '<div class="popup-info-row">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+          '<span class="popup-placeholder">Hours not confirmed — please check the clinic\'s website or call ahead before visiting</span>' +
+        '</div>'
+      )) +
+    '</div>';
+
+    // body
+    const body = document.getElementById("popupBody");
+    body.innerHTML =
+
+      // English support
+      '<div class="popup-english-box">' +
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+        c.englishNote +
+      '</div>' +
+
+      // special note if any
+      (c.note ? '<div class="popup-note-box">' + c.note + '</div>' : '') +
+
+      '<hr class="popup-divider"/>' +
+
+      // Map
+      mapHTML +
+
+      '<hr class="popup-divider"/>' +
+
+      // Address
+      '<div class="popup-section">' +
+        '<p class="popup-section-label">Address</p>' +
+        '<div class="popup-info-row">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+          c.address +
+        '</div>' +
+      '</div>' +
+
+      '<hr class="popup-divider"/>' +
+
+      // Hours
+      hoursHTML +
+
+      '<hr class="popup-divider"/>' +
+
+      // Contact
+      '<div class="popup-section">' +
+        '<p class="popup-section-label">Contact</p>' +
+        '<div class="popup-info-row">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.61 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.09 6.09l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' +
+          (hoursData && hoursData.phone
+            ? '<a href="tel:' + hoursData.phone + '" style="color:var(--teal);font-weight:500;">' + hoursData.phone + '</a>'
+            : '<span class="popup-placeholder">Phone — check clinic website for contact details</span>') +
+        '</div>' +
+        '<div class="popup-info-row">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+          '<a href="' + c.website + '" target="_blank">' + c.website.replace('https://','').replace('http://','').split('/')[0] + '</a>' +
+        '</div>' +
+      '</div>' +
+
+      '<hr class="popup-divider"/>' +
+
+      // Community section
+      '<div class="community-section">' +
+        '<p class="popup-section-label">Community</p>' +
+
+        // Reactions
+        '<div>' +
+          '<p style="font-size:0.8rem;color:var(--gray);margin-bottom:10px;">Was this clinic information helpful?</p>' +
+          '<div class="reaction-row">' +
+            '<button class="reaction-btn" id="btn-helpful" onclick="submitReaction(\'' + clinicId + '\', \'helpful\')" title="Helpful">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
+              '<span class="reaction-count" id="count-helpful">–</span>' +
+              '<span class="reaction-label">Helpful</span>' +
+            '</button>' +
+            '<button class="reaction-btn" id="btn-neutral" onclick="submitReaction(\'' + clinicId + '\', \'neutral\')" title="Neutral">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
+              '<span class="reaction-count" id="count-neutral">–</span>' +
+              '<span class="reaction-label">Neutral</span>' +
+            '</button>' +
+            '<button class="reaction-btn" id="btn-unhelpful" onclick="submitReaction(\'' + clinicId + '\', \'unhelpful\')" title="Not helpful">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
+              '<span class="reaction-count" id="count-unhelpful">–</span>' +
+              '<span class="reaction-label">Not helpful</span>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<hr class="popup-divider"/>' +
+
+        // Comments list
+        '<div>' +
+          '<p style="font-size:0.8rem;color:var(--gray);margin-bottom:10px;">Community tips &amp; experiences</p>' +
+          '<div class="comments-list" id="commentsList">' +
+            '<p class="comments-loading">Loading comments...</p>' +
+          '</div>' +
+        '</div>' +
+
+        // Comment input
+        '<div class="comment-input-wrap" id="commentInputWrap">' +
+          '<textarea class="comment-textarea" id="commentInput" maxlength="400" placeholder="Share a tip about this clinic — e.g. best time to visit, parking, what to bring..." oninput="updateCharCount()"></textarea>' +
+          '<div class="comment-submit-row">' +
+            '<span class="comment-char-count" id="charCount">0 / 400</span>' +
+            '<button class="btn-comment-submit" id="btnCommentSubmit" onclick="submitComment(\'' + clinicId + '\')">' +
+              '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
+              'Post' +
+            '</button>' +
+          '</div>' +
+          '<span class="comment-error" id="commentError"></span>' +
+        '</div>' +
+
+      '</div>';
+
+    // footer
+    const footer = document.getElementById("popupFooter");
+    footer.innerHTML =
+      '<span class="popup-verified">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+        'Last verified: 2025' +
+      '</span>' +
+      '<div style="display:flex;gap:8px;align-items:center;">' +
+        '<button class="btn-popup-correction" onclick="closeClinicPopup(); openModalForClinic(\'' + c.name.replace(/'/g, "\\'") + '\')">Report an issue</button>' +
+        '<a href="' + c.website + '" target="_blank" class="btn-popup-website">' +
+          'Visit website ' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+        '</a>' +
+      '</div>';
+
+    document.getElementById("clinicPopupOverlay").classList.add("open");
+    document.body.style.overflow = "hidden";
+    // scroll popup back to top on each open
+    document.getElementById("clinicPopup").scrollTop = 0;
+
+    // Load reactions and comments from Supabase
+    loadReactions(clinicId);
+    loadComments(clinicId);
+    // Render correct comment input state (fresh or already-commented notice)
+    renderCommentInput(clinicId);
+
   }
+
   function closeClinicPopup() {
     document.getElementById("clinicPopupOverlay").classList.remove("open");
     document.body.style.overflow = "";
-    // Clean up Mapbox instance to free memory
-    if (window._popupMap) {
-      window._popupMap.remove();
-      window._popupMap = null;
-    }
   }
   function handlePopupOverlayClick(e) {
     if (e.target === document.getElementById("clinicPopupOverlay")) closeClinicPopup();
