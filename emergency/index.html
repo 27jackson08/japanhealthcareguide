@@ -3,9 +3,6 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png"/>
-<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
   <title>Emergency Info — Japan Healthcare Guide</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
   <style>
@@ -184,47 +181,13 @@
     .phrase-ro { color: var(--gray); font-style: italic; font-size: 0.78rem; }
 
     /* PRINTABLE CARD */
-    .print-section {
-      background: var(--charcoal);
-      border-radius: 16px;
-      padding: 40px;
-      display: flex;
-      gap: 40px;
-      align-items: flex-start;
-      margin-top: 40px;
-    }
 
-    .print-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 22px;
-      width: 300px;
-      flex-shrink: 0;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    }
 
-    .print-card-header { border-bottom: 2px solid var(--red); padding-bottom: 10px; margin-bottom: 14px; }
-    .print-card-title { font-family: 'DM Serif Display', serif; font-size: 0.95rem; color: var(--red); margin-bottom: 2px; }
-    .print-card-sub { font-size: 0.65rem; color: var(--gray); }
 
-    .print-block { margin-bottom: 12px; }
-    .print-block-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); margin-bottom: 6px; }
 
-    .print-numbers-row { display: flex; gap: 14px; }
-    .print-number { display: flex; flex-direction: column; }
-    .print-num-val { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--charcoal); line-height: 1; }
-    .print-num-label { font-size: 0.58rem; color: var(--gray); }
 
-    .print-phrase-row { display: flex; justify-content: space-between; font-size: 0.68rem; padding: 3px 0; border-bottom: 1px solid var(--gray-light); }
-    .print-phrase-row:last-child { border-bottom: none; }
-    .print-phrase-en { color: var(--charcoal); font-weight: 500; }
-    .print-phrase-ja { color: var(--red); font-weight: 600; }
 
-    .print-card-footer { border-top: 1px solid var(--gray-light); padding-top: 8px; font-size: 0.58rem; color: var(--gray); text-align: center; }
 
-    .print-cta { flex: 1; color: #fff; }
-    .print-cta h3 { font-family: 'DM Serif Display', serif; font-size: 1.5rem; margin-bottom: 10px; letter-spacing: -0.02em; }
-    .print-cta p { font-size: 0.875rem; opacity: 0.75; margin-bottom: 24px; line-height: 1.7; }
 
     .btn-print {
       display: inline-flex; align-items: center; gap: 8px;
@@ -619,53 +582,6 @@
       <div class="tip-item"><div class="tip-dot"></div><p class="tip-text">If the 119 operator does not speak English, say slowly: <strong>"Eigo wo hanasemasu ka?"</strong> They will try to connect you to an interpreter.</p></div>
       <div class="tip-item"><div class="tip-dot"></div><p class="tip-text">Take a photo of this page and the emergency card below. Screenshots are accessible even without internet.</p></div>
       <div class="tip-item"><div class="tip-dot"></div><p class="tip-text">If you have chronic conditions or take regular medication, carry a written summary in Japanese to give to emergency staff.</p></div>
-    </div>
-  </div>
-
-  <!-- PRINTABLE CARD -->
-  <div class="print-section">
-    <div class="print-card" id="printCard">
-      <div class="print-card-header">
-        <div class="print-card-title">Japan Emergency Card</div>
-        <div class="print-card-sub">Japan Healthcare Guide</div>
-      </div>
-
-      <div class="print-block">
-        <div class="print-block-label">Emergency Numbers</div>
-        <div class="print-numbers-row">
-          <div class="print-number"><span class="print-num-val">119</span><span class="print-num-label">Ambulance</span></div>
-          <div class="print-number"><span class="print-num-val">110</span><span class="print-num-label">Police</span></div>
-          <div class="print-number"><span class="print-num-val" style="font-size:0.9rem;line-height:1.3;">03-6233<br/>-9266</span><span class="print-num-label">AMDA (interpreter)</span></div>
-        </div>
-      </div>
-
-      <div class="print-block">
-        <div class="print-block-label">Key Phrases</div>
-        <div class="print-phrase-row"><span class="print-phrase-en">Call an ambulance</span><span class="print-phrase-ja">救急車を呼んで</span></div>
-        <div class="print-phrase-row"><span class="print-phrase-en">Emergency</span><span class="print-phrase-ja">救急です</span></div>
-        <div class="print-phrase-row"><span class="print-phrase-en">I feel unwell</span><span class="print-phrase-ja">体の調子が悪い</span></div>
-        <div class="print-phrase-row"><span class="print-phrase-en">Chest pain</span><span class="print-phrase-ja">胸が痛い</span></div>
-        <div class="print-phrase-row"><span class="print-phrase-en">Can't breathe</span><span class="print-phrase-ja">息が苦しい</span></div>
-        <div class="print-phrase-row"><span class="print-phrase-en">Do you speak English?</span><span class="print-phrase-ja">英語を話せますか？</span></div>
-        <div class="print-phrase-row"><span class="print-phrase-en">I am allergic to __</span><span class="print-phrase-ja">__にアレルギーが</span></div>
-      </div>
-
-      <div class="print-block">
-        <div class="print-block-label">Nearest English ERs</div>
-        <div class="print-phrase-row"><span class="print-phrase-en">St. Luke's Hospital</span><span class="print-phrase-ja" style="font-size:0.65rem;">Chuo — 03-5550-7166</span></div>
-        <div class="print-phrase-row"><span class="print-phrase-en">Higashi Fuchu Hospital</span><span class="print-phrase-ja" style="font-size:0.65rem;">Fuchu — 042-363-2371</span></div>
-      </div>
-
-      <div class="print-card-footer">Screenshot this card and save it to your phone.</div>
-    </div>
-
-    <div class="print-cta">
-      <h3>Keep it with you at all times.</h3>
-      <p>Print this card and keep it in your wallet, or screenshot it and save it to your phone's camera roll so it is accessible without internet. It takes 10 seconds and could make a critical difference.</p>
-      <button class="btn-print" onclick="window.print()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Print Emergency Card
-      </button>
     </div>
   </div>
 
