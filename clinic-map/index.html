@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
+  <!-- v202606030501 -->
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Clinic Map — Japan Healthcare Guide</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
@@ -2758,7 +2759,7 @@
 
   mapboxgl.accessToken='pk.eyJ1IjoiamJvMjAwMCIsImEiOiJjbXBxeGd3cDAwdnMyMnFxN2k2c2Q0NHAyIn0.ZGuPY2k5_FjUJF9KB-ibow';
   var MAP_STYLES={light:'mapbox://styles/mapbox/light-v11',streets:'mapbox://styles/mapbox/streets-v12',dark:'mapbox://styles/mapbox/dark-v11',satellite:'mapbox://styles/mapbox/satellite-streets-v12'};
-  var map=new mapboxgl.Map({container:'mapbox',style:MAP_STYLES.light,center:[139.7010,35.6895],zoom:12});
+  var map=new mapboxgl.Map({container:'mapbox',style:MAP_STYLES.light,center:[139.7010,35.6895],zoom:12,trackResize:true});
   map.addControl(new mapboxgl.NavigationControl({showCompass:false}),'bottom-right');
   var activeMarkers=[],userMarker=null,userCoords=null,currentStyle='light',filteredClinics=clinics.slice(),highlightedName=null,savedFilterActive=false;
 
@@ -2954,9 +2955,19 @@
   function toggleMobileNav(){document.getElementById('mnavSidebar').classList.toggle('open');document.getElementById('mnavOverlay').classList.toggle('open');}
   function closeMobileNav(){document.getElementById('mnavSidebar').classList.remove('open');document.getElementById('mnavOverlay').classList.remove('open');}
 
-  renderSidebarList(clinics);
-  function doMarkers(){renderMarkers(clinics);}
-  if(map.loaded()){doMarkers();}else{map.on('load',doMarkers);setTimeout(function(){if(activeMarkers.length===0)doMarkers();},3000);}
+  // Init — run after full page load to ensure all DOM + Mapbox are ready
+  function initMap(){
+    renderSidebarList(clinics);
+    if(map.loaded()){renderMarkers(clinics);}
+    else{
+      map.on('load',function(){renderMarkers(clinics);});
+      setTimeout(function(){if(activeMarkers.length===0)renderMarkers(clinics);},3000);
+    }
+    // Force map resize to fix frozen/zero-size map issue
+    setTimeout(function(){map.resize();},100);
+  }
+  if(document.readyState==='complete'){initMap();}
+  else{window.addEventListener('load',initMap);}
   // Popup closes via overlay onclick (handlePopupOverlayClick) — no map.on('click') needed
 
   function openModalForClinic(clinicName) {
