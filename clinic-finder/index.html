@@ -1703,29 +1703,24 @@
 
     /* ── MOBILE POPUP ── */
     @media (max-width: 600px) {
-      /* Remove overlay padding so the popup fills the screen edge to edge */
+      /* Centered card overlay */
       .clinic-popup-overlay {
-        padding: 0;
-        align-items: flex-end;
+        padding: 20px 16px;
+        align-items: center;
+        justify-content: center;
       }
 
-      /* Bottom sheet — sizes to content, capped at 75vh so it never fills the screen */
+      /* Centered card: 92% wide, capped at 420px and 80vh, all rounded corners */
       .clinic-popup {
-        max-height: 75vh;
+        width: 92%;
+        max-width: 420px;
+        max-height: 80vh;
         height: auto;
-        border-radius: 20px 20px 0 0;
-        width: 100%;
-        max-width: 100%;
-        /* Slide up animation on mobile */
-        animation: popupSlideUp 0.25s ease;
+        border-radius: 20px;
+        animation: popupIn 0.2s ease;
       }
 
-      @keyframes popupSlideUp {
-        from { transform: translateY(40px); opacity: 0; }
-        to   { transform: translateY(0);   opacity: 1; }
-      }
-
-      /* Header: tighter padding, close button always visible */
+      /* Header: tighter padding */
       .clinic-popup-header {
         padding: 16px 16px 14px;
         position: sticky;
@@ -1735,32 +1730,27 @@
         border-radius: 20px 20px 0 0;
       }
 
-      /* Drag pill at top of sheet for affordance */
+      /* No drag pill for centered card */
       .clinic-popup-header::before {
-        content: '';
-        display: block;
-        width: 40px;
-        height: 4px;
-        background: #d1d5db;
-        border-radius: 2px;
-        margin: 0 auto 12px;
+        display: none;
       }
 
       .clinic-popup-close {
-        top: 28px;
+        top: 16px;
         right: 16px;
       }
 
       .btn-bookmark {
-        top: 28px;
-        right: 56px;
+        top: 16px;
+        right: 52px;
       }
 
-      /* Body: tighter padding, scrolls within the 75vh cap */
+      /* Body: scrollable within the 80vh cap */
       .clinic-popup-body {
-        padding: 16px 16px 32px;
-        overflow-y: auto;
+        padding: 16px 16px 24px;
+        overflow-y: scroll;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
         flex: 1;
         min-height: 0;
       }
