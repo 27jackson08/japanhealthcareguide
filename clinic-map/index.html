@@ -86,10 +86,31 @@
     .map-overlay-btn{width:36px;height:36px;background:#fff;border:1px solid var(--gray-light);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);transition:all 0.15s;color:var(--charcoal);}
     .map-overlay-btn:hover{background:var(--teal-light);color:var(--teal);}
     .mobile-open-btn{display:none;position:absolute;top:12px;left:12px;z-index:10;}
-    .map-marker{width:20px;height:20px;cursor:pointer;background:var(--teal);border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:block;margin:0;padding:0;}
-    .map-marker:hover{background:var(--teal-dark);}
-    .map-marker.highlighted{background:var(--amber);box-shadow:0 2px 10px rgba(232,168,56,0.6);}
-    .map-marker.saved{background:#8b5cf6;}
+    .map-marker{width:20px;height:20px;cursor:pointer;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:block;margin:0;padding:0;background:var(--teal);}
+    .map-marker:hover{filter:brightness(1.15);transform:scale(1.15);}
+    .map-marker.highlighted{box-shadow:0 2px 10px rgba(232,168,56,0.8);transform:scale(1.3);border-color:#fff;outline:2px solid var(--amber);}
+    .map-marker.saved{outline:2px solid #8b5cf6;outline-offset:1px;}
+    /* specialty colors */
+    .map-marker.sp-general{background:#2A7F7F;}
+    .map-marker.sp-dentist{background:#3b82f6;}
+    .map-marker.sp-pediatric{background:#f97316;}
+    .map-marker.sp-gynecology{background:#ec4899;}
+    .map-marker.sp-dermatology{background:#a855f7;}
+    .map-marker.sp-mental-health{background:#6366f1;}
+    .map-marker.sp-orthopedic{background:#ef4444;}
+    .map-marker.sp-physiotherapy{background:#14b8a6;}
+    .map-marker.sp-ophthalmology{background:#0ea5e9;}
+    .map-marker.sp-ent{background:#84cc16;}
+    .map-marker.sp-oncology{background:#dc2626;}
+    .map-marker.sp-cardiology{background:#f43f5e;}
+    .map-marker.sp-other{background:#6B7280;}
+    /* legend */
+    .map-legend{position:absolute;bottom:24px;left:12px;background:rgba(255,255,255,0.96);border:1px solid var(--gray-light);border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:0.68rem;z-index:10;box-shadow:0 2px 12px rgba(0,0,0,0.1);max-width:160px;display:none;}
+    .map-legend.open{display:block;}
+    .map-legend-title{font-weight:700;color:var(--charcoal);margin-bottom:8px;font-size:0.7rem;letter-spacing:0.04em;text-transform:uppercase;}
+    .map-legend-item{display:flex;align-items:center;gap:6px;padding:2px 0;color:var(--gray);font-weight:500;}
+    .map-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+    .btn-legend{position:absolute;bottom:24px;left:12px;z-index:10;background:#fff;border:1px solid var(--gray-light);border-radius:8px;padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:600;color:var(--charcoal);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:flex;align-items:center;gap:5px;}
     .user-pulse{width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,0.2);animation:pulse 2s infinite;}
     @keyframes pulse{0%,100%{box-shadow:0 0 0 6px rgba(59,130,246,0.2);}50%{box-shadow:0 0 0 12px rgba(59,130,246,0.04);}}
     .clinic-popup-overlay {
@@ -1250,6 +1271,27 @@
       <button class="map-overlay-btn" onclick="locateOnMap()" title="My location"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
       <button class="map-overlay-btn" onclick="fitAllMarkers()" title="Show all clinics"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
     </div>
+    <!-- Legend toggle button -->
+    <button class="btn-legend" id="legendToggleBtn" onclick="toggleLegend()" title="Show legend">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Legend
+    </button>
+    <!-- Legend panel -->
+    <div class="map-legend" id="mapLegend">
+      <div class="map-legend-title">Specialty</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#2A7F7F;"></span>General / Hospital</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#3b82f6;"></span>Dentist / Ortho</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#f97316;"></span>Pediatric</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#ec4899;"></span>Gynecology</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#a855f7;"></span>Dermatology</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#6366f1;"></span>Mental Health</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#ef4444;"></span>Orthopedic</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#14b8a6;"></span>Physio / Chiro</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#0ea5e9;"></span>Ophthalmology</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#84cc16;"></span>ENT</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#dc2626;"></span>Oncology</div>
+      <div class="map-legend-item"><span class="map-legend-dot" style="background:#6B7280;"></span>Other</div>
+    </div>
     <div id="mapbox"></div>
   </div>
 </div>
@@ -1622,214 +1664,214 @@
   };
 
   const clinicCoords = {
-    "Asahicho Clinic": [35.6689, 139.4776],
-    "Ehara Clinic": [35.6686927, 139.4778853],
-    "Nakajima Orthopedic": [35.6683573, 139.4777763],
-    "Tokyo Metropolitan Children's Medical Center": [35.6683573, 139.4774237],
-    "Tama Medical Center": [35.6686927, 139.4773147],
-    "Medilocus": [35.6863, 139.7634],
-    "Shimazu Medical": [35.6617, 139.6677],
-    "Yamate Clinic": [35.6614, 139.668],
-    "Hira Dermatology": [35.6611, 139.6677],
-    "Primary Care Tokyo": [35.6614, 139.6674],
-    "Musashinooka Family Clinic": [35.7074, 139.5596],
-    "Numata Medical Clinic": [35.70695, 139.5598598],
-    "Musashino Red Cross Hospital": [35.70695, 139.5593402],
-    "Koganei Family Clinic": [35.6995, 139.5027],
-    "Fujimoto Kodomo Clinic": [35.684, 139.5597],
-    "Kaede Clinic": [35.683887, 139.5599345],
-    "Hanafusa Dermatology": [35.6836332, 139.5599925],
-    "Kirin Women's Clinic": [35.6834297, 139.5598302],
-    "Ohori International Hospital": [35.6834297, 139.5595698],
-    "Kyorin University Hospital": [35.6836332, 139.5594075],
-    "Tokyo International Ohori Hospital": [35.683887, 139.5594655],
-    "Akiyama Kodomo Clinic": [35.6765, 139.6503],
-    "Nishiwaseda Ortho Knee Specialist": [35.6762, 139.6506],
-    "TAO Clinic": [35.6759, 139.6503],
-    "Therapy Garden": [35.6762, 139.65],
-    "Higashikoganei Ekimae Dental Clinic": [35.6998, 139.518],
-    "Kondo Dermatology": [35.69935, 139.5182598],
-    "Okamura Dermatology": [35.69935, 139.5177402],
-    "Narumi Dental Clinic": [35.703, 139.5795],
-    "Aspen Clinic": [35.7027, 139.5798],
-    "Kichijoji Ladies Clinic": [35.7024, 139.5795],
-    "Kichijoji Medical Clinic": [35.7027, 139.5792],
-    "Orion Dental": [35.665, 139.758],
-    "Takadanobaba Dermatology Clinic": [35.7129, 139.7034],
-    "Takadanobaba Dermatology Plastic Surgery": [35.7123, 139.7034],
-    "Mammaria": [35.6657, 139.7707],
-    "St. Luke's International Hospital": [35.6654, 139.771],
-    "Fujimoto International Dental Clinic": [35.6651, 139.7707],
-    "Tokyo Mental Health": [35.6654, 139.7704],
-    "Azuma-Motomachi Clinic": [35.7104, 139.4626],
-    "Shimodaira Clinic": [35.703, 139.657],
-    "Higashi Fuchu Hospital": [35.6633, 139.49],
-    "Fuchu Aoba Clinic": [35.6627, 139.49],
-    "Shimodaira Ladies Clinic": [35.7057, 139.6494],
-    "Sayaka Women's Health": [35.6494, 139.7196],
-    "IUHW Mita Hospital": [35.6493524, 139.7197622],
-    "Hiroo International Clinic": [35.6492246, 139.7198729],
-    "National Medical Clinic": [35.6490573, 139.7198969],
-    "Azabudai United Dental Office Tokyo": [35.6489035, 139.7198267],
-    "Azabujuban Cler Dental Clinic": [35.6488122, 139.7196845],
-    "Dr. Kaku's Office": [35.6488122, 139.7195155],
-    "Aiiku Clinic International Unit": [35.6489035, 139.7193733],
-    "Tokyo Physio": [35.6490573, 139.7193031],
-    "Plaza Plastic Surgery": [35.6492246, 139.7193271],
-    "Suwa Pediatric Clinic": [35.6493524, 139.7194378],
-    "Toranomon Clinic": [35.6668, 139.7494],
-    "Toranomon Hospital": [35.66635, 139.7496598],
-    "Clinic Tokyo Toranomon COR": [35.66635, 139.7491402],
-    "Think Park Internal Medical Clinic": [35.6287, 139.7387],
-    "NTT Medical Center Tokyo": [35.628587, 139.7389345],
-    "Shinagawa East Clinic": [35.6283332, 139.7389925],
-    "Nishiya ENT Clinic": [35.6281297, 139.7388302],
-    "Izumi Chiropractic": [35.6281297, 139.7385698],
-    "JCHO Tokyo Takanawa Hospital": [35.6283332, 139.7384075],
-    "Shinagawa Gotenyama Dermatology Clinic": [35.628587, 139.7384655],
-    "Seventh Day Adventist Hospital": [35.705, 139.6197],
-    "Musashisakai ENT": [35.712, 139.553],
-    "Kumada ENT": [35.6566, 139.7258],
-    "The Cardiovascular Institute": [35.656, 139.7258],
-    "Japanese Red Cross Medical Center": [35.6494, 139.7016],
-    "Tokyo Metropolitan Hiroo Hospital": [35.64895, 139.7018598],
-    "Garden Clinic Hiroo": [35.64895, 139.7013402],
-    "Sanno Hospital": [35.6697, 139.7193],
-    "Maiko Skin Surgery Clinic Minami Aoyama": [35.6694, 139.7196],
-    "Shin Aoyama Clinic": [35.6691, 139.7193],
-    "Sleep Clinic Aoyama": [35.6694, 139.719],
-    "Tokyo Medical University Hospital": [35.6899, 139.6917],
-    "National Center for Global Health and Medicine": [35.6896927, 139.6919853],
-    "Sendagaya International Clinic": [35.6893573, 139.6918763],
-    "Inaba Dental Office": [35.6893573, 139.6915237],
-    "Pride Clinic": [35.6896927, 139.6914147],
-    "Kameda Kyobashi Clinic": [35.6765, 139.7709],
-    "Eye Rose Clinic": [35.67605, 139.7711598],
-    "Tokyo Cancer Clinic": [35.67605, 139.7706402],
-    "Tokyo Midtown Clinic": [35.663, 139.7318],
-    "Ambassador Dental Office Tokyo": [35.6629427, 139.7319763],
-    "Tokyo Skin Clinic": [35.6627927, 139.7320853],
-    "Tokyo Women's Clinic": [35.6626073, 139.7320853],
-    "Roppongi Clinic: Psychiatric and Psychological Therapy": [35.6624573, 139.7319763],
-    "Club360 – Physiotherapy & Sports Massage": [35.6624, 139.7318],
-    "Kamoshita Eye Clinic": [35.6624573, 139.7316237],
-    "Roppongi Hills Clinic": [35.6626073, 139.7315147],
-    "Imaizumi Skin Clinic": [35.6627927, 139.7315147],
-    "Sophia Orthodontic Clinic": [35.6629427, 139.7316237],
-    "International Health Care Clinic": [35.666, 139.7588],
-    "Tokyo Podiatry Clinic": [35.6654, 139.7588],
-    "American Clinic Tokyo": [35.6745, 139.7366],
-    "Tameike Eye Clinic": [35.6742927, 139.7368853],
-    "Akasaka Family Clinic": [35.6739573, 139.7367763],
-    "Star's Eye Clinic": [35.6739573, 139.7364237],
-    "Akasaka Hiro Dental": [35.6742927, 139.7363147],
-    "Hibiya Clinic": [35.6745, 139.7581],
-    "Orito Clinic": [35.67405, 139.7583598],
-    "Amano Dental Clinic": [35.67405, 139.7578402],
-    "Tokyo Station International Clinic": [35.6792, 139.7701],
-    "The English Speaking Dentist Tokyo": [35.6789, 139.7704],
-    "NOBU Restorative Dental Office": [35.6786, 139.7701],
-    "Tokyo Business Clinic": [35.6789, 139.7698],
-    "Tokyo Medical and Surgical Clinic": [35.6514, 139.7473],
-    "Biotope Clinic": [35.6511927, 139.7475853],
-    "Tokyo Clinic Dental Office": [35.6508573, 139.7474763],
-    "Shiba Coloproctological Clinic": [35.6508573, 139.7471237],
-    "Tokyo Saiseikai Central Hospital": [35.6511927, 139.7470147],
-    "Trust Dental Clinic": [35.6705, 139.7027],
-    "Jingumae E.N.T. Clinic": [35.6702927, 139.7029853],
-    "Tokyo Chiropractic": [35.6699573, 139.7028763],
-    "The King Clinic": [35.6699573, 139.7025237],
-    "Tokyo Therapy and Wellness Center": [35.6702927, 139.7024147],
-    "Takasu Clinic Ginza": [35.672, 139.765],
-    "KISHI CLINICA FEMINA Ginza": [35.6714, 139.765],
-    "Fertility Clinic Tokyo": [35.6583, 139.7016],
-    "Jinai Naika Clinic": [35.658187, 139.7018345],
-    "Shibuya International Dermatology Clinic": [35.6579332, 139.7018925],
-    "CS Orthodontic Clinic": [35.6577297, 139.7017302],
-    "Kato Eye Clinic": [35.6577297, 139.7014698],
-    "1st STEP Kokoro no Clinic": [35.6579332, 139.7013075],
-    "K-Ladies Clinic": [35.658187, 139.7013655],
-    "Yoga Ladies Clinic": [35.6467, 139.6532],
-    "Active-Ageing Chiropractic Tokyo": [35.646587, 139.6534345],
-    "Setagaya Medical Center": [35.6463332, 139.6534925],
-    "Setagaya Dental Office": [35.6461297, 139.6533302],
-    "Daizawa Dental Clinic": [35.6461297, 139.6530698],
-    "National Center for Child Health and Development": [35.6463332, 139.6529075],
-    "Rhein International Clinic": [35.646587, 139.6529655],
-    "Toritsudai Physio Care & Conditioning": [35.6342, 139.7153],
-    "Meguro Dermatology Clinic": [35.63405, 139.7155598],
-    "Ro Dental Office": [35.63375, 139.7155598],
-    "Miyagishi Lady's Clinic": [35.6336, 139.7153],
-    "Meguro Counseling Center": [35.63375, 139.7150402],
-    "Ladies Clinic Naminami": [35.63405, 139.7150402],
-    "The Cancer Institute Hospital of JFCR": [35.6725, 139.8169],
-    "Yokoi Eye Clinic": [35.67205, 139.8171598],
-    "Ojima Pediatric Clinic": [35.67205, 139.8166402],
-    "Kitahara International Hospital": [35.6667, 139.316],
-    "Kitahara Life Support Clinic": [35.66625, 139.3162598],
-    "Tokyo Medical University Hachioji Medical Center": [35.66625, 139.3157402],
-    "Jikei University Hospital Kokuryo": [35.6452, 139.5648],
-    "Tachikawa Hospital": [35.6988, 139.4086],
-    "Aozora International Clinic": [35.69835, 139.4088598],
-    "Tokyo Metropolitan Tama-Nanbu Chiiki Hospital": [35.69835, 139.4083402],
-    "Jikei University Hospital": [35.6657, 139.7558],
-    "Keio University Hospital": [35.6826, 139.7195],
-    "Juntendo University Hospital": [35.7081, 139.752],
-    "Bunkyo Medical Clinic": [35.70765, 139.7522598],
-    "Personal Health Clinic": [35.70765, 139.7517402],
-    "University of Tokyo Hospital": [35.713, 139.7622],
-    "Institute of Science Tokyo Hospital": [35.704, 139.766],
-    "Ebara Hospital": [35.58, 139.6934],
-    "Tokyo Metropolitan Komagome Hospital": [35.7322, 139.7464],
-    "Okubo Hospital": [35.6943, 139.702],
-    "Sumida Hospital": [35.7104, 139.8018],
-    "Tokyo Metropolitan Bokutoh Hospital": [35.7098, 139.8018],
-    "Seibo International Catholic Hospital": [35.7072, 139.6951],
-    "Suginami International Clinic": [35.736, 139.6516],
-    "Shimizu Dental Clinic Nerima": [35.73555, 139.6518598],
-    "Juntendo Nerima Hospital": [35.73555, 139.6513402],
-    "Muraki Orthopedic Clinic": [35.7298, 139.7109],
-    "Heiwa International Medical Clinic": [35.7295, 139.7112],
-    "Ikebukuro Sunshine Street Eye Clinic": [35.7292, 139.7109],
-    "Hayashi Clinic": [35.7295, 139.7106],
-    "Musashi Eye Clinic": [35.6195, 139.6232],
-    "Tokyo Harmony Counseling and Psychotherapy": [35.6583, 139.7514],
-    "Tokyo International Chiropractic": [35.6577, 139.7514],
-    "Comodo Chiropractic": [35.7426, 139.603],
-    "Daimon Medical Clinic": [35.6558, 139.7589],
-    "Nakamura Azabujuban Clinic": [35.6554, 139.737],
-    "Azabu Clinic": [35.65495, 139.7372598],
-    "Azabujuban Eye Clinic": [35.65495, 139.7367402],
-    "Goryokai Clinic": [35.6377, 139.7321],
-    "Ebine Women's Clinic": [35.6371, 139.7321],
-    "Kitasato Institute Hospital": [35.6477, 139.7234],
-    "NAG Orthopaedic Clinic": [35.6471, 139.7234],
-    "Matsumi Ladies Clinic Mita": [35.6471, 139.7446],
-    "Tokyo Business Person's Clinic": [35.6941, 139.7535],
-    "Kojimachi Dermatology & Plastic Surgery": [35.6935, 139.7535],
-    "Kayaba-cho Mental Health Care Clinic": [35.683, 139.7742],
-    "Nihonbashi Midtown Clinic": [35.6827, 139.7745],
-    "Yaesugai Medical Clinic": [35.6824, 139.7742],
-    "Igarashi Endocrine Clinic": [35.6827, 139.7739],
+    "Asahicho Clinic": [35.6676, 139.4755],
+    "Ehara Clinic": [35.6693, 139.4803],
+    "Nakajima Orthopedic": [35.6714, 139.4896],
+    "Tokyo Metropolitan Children's Medical Center": [35.6614, 139.4776],
+    "Tama Medical Center": [35.6614, 139.478],
+    "Higashi Fuchu Hospital": [35.6693, 139.4803],
+    "Fuchu Aoba Clinic": [35.663, 139.49],
+    "Fujimoto Kodomo Clinic": [35.6834, 139.5589],
+    "Akiyama Kodomo Clinic": [35.6935, 139.559],
+    "Kaede Clinic": [35.691, 139.5558],
+    "Musashinooka Family Clinic": [35.684, 139.5595],
+    "Kyorin University Hospital": [35.6838, 139.5575],
+    "Tokyo International Ohori Hospital": [35.6882, 139.5611],
+    "Kirin Women's Clinic": [35.7061, 139.5597],
+    "Numata Medical Clinic": [35.7061, 139.5597],
+    "Musashisakai ENT": [35.7116, 139.5559],
+    "Musashino Red Cross Hospital": [35.706, 139.577],
+    "Kichijoji Ladies Clinic": [35.6998, 139.574],
+    "Kichijoji Medical Clinic": [35.7029, 139.5786],
+    "Narumi Dental Clinic": [35.7029, 139.5786],
+    "Aspen Clinic": [35.7033, 139.5791],
+    "Koganei Family Clinic": [35.6997, 139.5027],
+    "Kondo Dermatology": [35.7012, 139.5025],
+    "Okamura Dermatology": [35.7052, 139.51],
+    "Higashikoganei Ekimae Dental Clinic": [35.6997, 139.5108],
+    "TAO Clinic": [35.6594, 139.5362],
+    "Jikei University Hospital Kokuryo": [35.637, 139.5574],
+    "Hamadayama Implant Dental": [35.6858, 139.6335],
+    "Seventh Day Adventist Hospital": [35.7008, 139.6383],
+    "Hanafusa Dermatology": [35.6779, 139.6257],
+    "Ro Dental Office": [35.7025, 139.6257],
+    "Suginami International Clinic": [35.7001, 139.642],
+    "Shimodaira Clinic": [35.7008, 139.642],
+    "Shimodaira Ladies Clinic": [35.701, 139.6418],
+    "Tokyo Medical University Hospital": [35.6938, 139.693],
+    "National Center for Global Health and Medicine": [35.7011, 139.7172],
+    "Sendagaya International Clinic": [35.6831, 139.709],
+    "Inaba Dental Office": [35.7034, 139.7268],
+    "K-Ladies Clinic": [35.6933, 139.6904],
+    "Takadanobaba Dermatology Clinic": [35.7126, 139.7034],
+    "Takadanobaba Dermatology Plastic Surgery": [35.7127, 139.7034],
+    "Seibo International Catholic Hospital": [35.7198, 139.7126],
+    "Okubo Hospital": [35.6947, 139.7046],
+    "Ohori International Hospital": [35.6947, 139.705],
+    "Pride Clinic": [35.69, 139.705],
+    "Mejiro SOLA Clinic": [35.7253, 139.7191],
+    "Nishiwaseda Ortho Knee Specialist": [35.7075, 139.7034],
+    "Medilocus": [35.6867, 139.7636],
+    "Hibiya Clinic": [35.6748, 139.7605],
+    "Tokyo Station International Clinic": [35.6813, 139.7671],
+    "Eye Rose Clinic": [35.6741, 139.75],
+    "Amano Dental Clinic": [35.6741, 139.75],
+    "Orito Clinic": [35.6745, 139.7605],
+    "Tokyo Business Person's Clinic": [35.6938, 139.7665],
+    "Kojimachi Dermatology & Plastic Surgery": [35.6878, 139.7394],
+    "Tokyo Cancer Clinic": [35.7016, 139.7447],
+    "Tokyo Business Clinic": [35.6813, 139.7671],
+    "St. Luke's International Hospital": [35.6699, 139.7758],
+    "Kameda Kyobashi Clinic": [35.6773, 139.7738],
+    "The English Speaking Dentist Tokyo": [35.6764, 139.7759],
+    "NOBU Restorative Dental Office": [35.6823, 139.771],
+    "Fujimoto International Dental Clinic": [35.672, 139.7654],
+    "Takasu Clinic Ginza": [35.6703, 139.7654],
+    "Mammaria": [35.6671, 139.776],
+    "Nihonbashi Midtown Clinic": [35.6849, 139.7741],
+    "Yaesugai Medical Clinic": [35.6823, 139.7741],
+    "KISHI CLINICA FEMINA Ginza": [35.6692, 139.7663],
+    "Igarashi Endocrine Clinic": [35.6858, 139.7741],
+    "Kayaba-cho Mental Health Care Clinic": [35.6827, 139.7852],
+    "Tokyo Mental Health": [35.6722, 139.7752],
+    "Sanno Hospital": [35.6695, 139.7368],
+    "Tokyo Midtown Clinic": [35.6655, 139.7302],
+    "American Clinic Tokyo": [35.6742, 139.7387],
+    "Akasaka Family Clinic": [35.6742, 139.739],
+    "Toranomon Hospital": [35.6678, 139.7488],
+    "Jikei University Hospital": [35.6652, 139.7485],
+    "International Health Care Clinic": [35.6673, 139.7581],
+    "Tokyo Saiseikai Central Hospital": [35.6487, 139.7453],
+    "IUHW Mita Hospital": [35.648, 139.7453],
+    "Tameike Eye Clinic": [35.6742, 139.7387],
+    "Star's Eye Clinic": [35.6744, 139.7388],
+    "Akasaka Hiro Dental": [35.6745, 139.739],
+    "Clinic Tokyo Toranomon COR": [35.6655, 139.7488],
+    "Toranomon Clinic": [35.6726, 139.7492],
+    "Tokyo Medical and Surgical Clinic": [35.6556, 139.7503],
+    "Tokyo Clinic Dental Office": [35.6556, 139.7505],
+    "Shiba Coloproctological Clinic": [35.6504, 139.7453],
+    "Tokyo Podiatry Clinic": [35.6644, 139.7581],
+    "Daimon Medical Clinic": [35.6541, 139.757],
+    "Orion Dental": [35.6627, 139.7663],
+    "Roppongi Hills Clinic": [35.6601, 139.729],
+    "Tokyo Women's Clinic": [35.6617, 139.729],
+    "Sophia Orthodontic Clinic": [35.6608, 139.7348],
+    "Kamoshita Eye Clinic": [35.6617, 139.7293],
+    "Imaizumi Skin Clinic": [35.6617, 139.7295],
+    "Tokyo Skin Clinic": [35.6617, 139.7348],
+    "Ambassador Dental Office Tokyo": [35.6742, 139.739],
+    "Roppongi Clinic: Psychiatric and Psychological Therapy": [35.6641, 139.7316],
+    "Hiroo International Clinic": [35.651, 139.7192],
+    "National Medical Clinic": [35.651, 139.7164],
+    "Sayaka Women's Health": [35.6495, 139.7172],
+    "Aiiku Clinic International Unit": [35.6488, 139.7188],
+    "Azabujuban Cler Dental Clinic": [35.6551, 139.737],
+    "Azabu Clinic": [35.6553, 139.7373],
+    "Nakamura Azabujuban Clinic": [35.6551, 139.7372],
+    "Azabujuban Eye Clinic": [35.6539, 139.7356],
+    "Azabujuban United Dental Office Tokyo": [35.6622, 139.7468],
+    "Kumada ENT": [35.6563, 139.7258],
+    "The Cardiovascular Institute": [35.6563, 139.726],
+    "Club360 – Physiotherapy & Sports Massage": [35.6564, 139.7277],
+    "Tokyo Chiropractic": [35.658, 139.7148],
+    "Tokyo International Chiropractic": [35.6582, 139.715],
+    "Maiko Skin Surgery Clinic Minami Aoyama": [35.667, 139.7148],
+    "Garden Clinic Hiroo": [35.6559, 139.7101],
+    "Shin Aoyama Clinic": [35.6693, 139.7193],
+    "Sleep Clinic Aoyama": [35.6693, 139.7148],
+    "NAG Orthopaedic Clinic": [35.6453, 139.7196],
+    "Goryokai Clinic": [35.6373, 139.732],
+    "Ebine Women's Clinic": [35.6376, 139.7322],
+    "Matsumi Ladies Clinic Mita": [35.6504, 139.7455],
+    "Kitasato Institute Hospital": [35.6453, 139.7196],
+    "JCHO Tokyo Takanawa Hospital": [35.6373, 139.7367],
+    "Biotope Clinic": [35.6391, 139.7273],
+    "Shinagawa East Clinic": [35.6245, 139.7393],
+    "Nishiya ENT Clinic": [35.6245, 139.7395],
+    "Japanese Red Cross Medical Center": [35.6491, 139.7196],
+    "Tokyo Metropolitan Hiroo Hospital": [35.6467, 139.7145],
+    "Trust Dental Clinic": [35.6702, 139.7028],
+    "The King Clinic": [35.667, 139.7028],
+    "Jingumae E.N.T. Clinic": [35.6718, 139.7028],
+    "Dr. Kaku's Office": [35.658, 139.6989],
+    "Jinai Naika Clinic": [35.6603, 139.7016],
+    "Shibuya International Dermatology Clinic": [35.6581, 139.7016],
+    "CS Orthodontic Clinic": [35.6617, 139.6993],
+    "Kato Eye Clinic": [35.6583, 139.7018],
+    "1st STEP Kokoro no Clinic": [35.6718, 139.7028],
+    "Tokyo Therapy and Wellness Center": [35.6693, 139.7028],
     "Medical Clinic Ebisu": [35.6467, 139.7101],
-    "Mejiro SOLA Clinic": [35.7275, 139.7184],
-    "Tokyo Metropolitan Ohtsuka Hospital": [35.7269, 139.7184],
-    "Yamate Dental Clinic Meguro": [35.649, 139.7034],
-    "Jiyugaoka Miki Breast Clinic": [35.622, 139.6936],
+    "Suwa Pediatric Clinic": [35.6491, 139.7196],
+    "Fertility Clinic Tokyo": [35.6467, 139.7101],
+    "Shimazu Medical": [35.6614, 139.6677],
+    "Yamate Clinic": [35.6464, 139.6532],
+    "Hira Dermatology": [35.6614, 139.6677],
+    "Primary Care Tokyo": [35.6614, 139.668],
+    "Setagaya Dental Office": [35.632, 139.6493],
+    "Daizawa Dental Clinic": [35.6464, 139.6532],
     "California Orthodontics Sangenjaya": [35.643, 139.6686],
-    "Hamadayama Implant Dental": [35.6994, 139.6367],
+    "National Center for Child Health and Development": [35.6334, 139.6366],
+    "Rhein International Clinic": [35.6335, 139.6686],
+    "Yoga Ladies Clinic": [35.6148, 139.6553],
+    "Active-Ageing Chiropractic Tokyo": [35.6191, 139.6569],
+    "Meguro Counseling Center": [35.6464, 139.6535],
+    "Toritsudai Physio Care & Conditioning": [35.6339, 139.7153],
+    "Meguro Dermatology Clinic": [35.6339, 139.7153],
+    "Yamate Dental Clinic Meguro": [35.649, 139.7034],
+    "Miyagishi Lady's Clinic": [35.6339, 139.7155],
+    "Ladies Clinic Naminami": [35.6451, 139.7015],
+    "Jiyugaoka Miki Breast Clinic": [35.622, 139.6936],
+    "Think Park Internal Medical Clinic": [35.619, 139.728],
+    "Izumi Chiropractic": [35.6286, 139.7234],
+    "Shinagawa Gotenyama Dermatology Clinic": [35.6197, 139.7387],
+    "NTT Medical Center Tokyo": [35.6339, 139.7275],
+    "Toho University Omori Medical Center": [35.5614, 139.716],
+    "Fujimi Clinic Omori": [35.5639, 139.7165],
+    "Ebara Hospital": [35.584, 139.7069],
+    "Juntendo University Hospital": [35.7078, 139.752],
+    "University of Tokyo Hospital": [35.7078, 139.759],
+    "Institute of Science Tokyo Hospital": [35.7046, 139.7626],
+    "Tokyo Metropolitan Komagome Hospital": [35.7291, 139.7495],
+    "Bunkyo Medical Clinic": [35.7253, 139.7618],
+    "Personal Health Clinic": [35.7046, 139.7626],
+    "Keio University Hospital": [35.6831, 139.723],
+    "Heiwa International Medical Clinic": [35.7295, 139.7109],
+    "Ikebukuro Sunshine Street Eye Clinic": [35.7288, 139.7197],
+    "Hayashi Clinic": [35.7291, 139.72],
+    "Tokyo Metropolitan Ohtsuka Hospital": [35.7253, 139.728],
+    "Muraki Orthopedic Clinic": [35.7288, 139.7197],
     "Ito Oji Kamiya Clinic": [35.7523, 139.7338],
-    "Tokyo Metropolitan Toshima Hospital": [35.7513, 139.7086],
-    "Tokyo Metropolitan Geriatric Hospital": [35.7507, 139.7086],
-    "Moriyama Memorial Hospital": [35.7068, 139.8685],
+    "Tokyo Metropolitan Toshima Hospital": [35.751, 139.7086],
+    "Tokyo Metropolitan Geriatric Hospital": [35.751, 139.709],
+    "Shimizu Dental Clinic Nerima": [35.7357, 139.6516],
+    "Juntendo Nerima Hospital": [35.7471, 139.6516],
+    "Comodo Chiropractic": [35.7528, 139.603],
+    "The Cancer Institute Hospital of JFCR": [35.6433, 139.7954],
+    "Yokoi Eye Clinic": [35.6722, 139.8169],
+    "Ojima Pediatric Clinic": [35.6895, 139.8197],
+    "Tokyo Metropolitan Bokutoh Hospital": [35.7101, 139.8018],
+    "Sumida Hospital": [35.7101, 139.802],
+    "Moriyama Memorial Hospital": [35.6674, 139.8876],
+    "Tokyo Metropolitan Tobu Hospital": [35.7527, 139.8506],
     "Kusunoki Ladies' Clinic Kitasenju": [35.775, 139.8044],
-    "Toho University Omori Medical Center": [35.5617, 139.716],
-    "Fujimi Clinic Omori": [35.5611, 139.716],
-    "Machida Municipal Hospital": [35.5426, 139.4467],
-    "Mimuro Women's Clinic": [35.542, 139.4467],
-    "Tokyo Metropolitan Tobu Hospital": [35.7345, 139.8473],
+    "Kitahara International Hospital": [35.6668, 139.329],
+    "Kitahara Life Support Clinic": [35.6672, 139.3292],
+    "Tokyo Medical University Hachioji Medical Center": [35.6413, 139.2949],
+    "Tachikawa Hospital": [35.6935, 139.4131],
     "Tokyo Metropolitan Tama-Hokubu Medical Center": [35.7547, 139.4687],
-    "Tokyo Nishi Tokushukai Hospital": [35.7068, 139.3538],
+    "Tokyo Metropolitan Tama-Nanbu Chiiki Hospital": [35.6279, 139.4417],
+    "Tokyo Nishi Tokushukai Hospital": [35.6864, 139.354],
+    "Machida Municipal Hospital": [35.5423, 139.4467],
+    "Mimuro Women's Clinic": [35.5472, 139.4443],
+    "Azuma-Motomachi Clinic": [35.7021, 139.4706],
+    "Aozora International Clinic": [35.456, 139.6316],
+    "Setagaya Medical Center": [35.584, 139.7069],
+    "Therapy Garden": [35.6693, 139.7148],
+    "Tokyo Harmony Counseling and Psychotherapy": [35.6742, 139.7368],
+    "Musashi Eye Clinic": [35.6191, 139.6553],
+    "Plaza Plastic Surgery": [35.6491, 139.72],
+    "Dr. Kaku's Office (Super Smile International Orthodontics)": [35.658, 139.6989],
   };
 
   const clinicHours = {
@@ -2201,16 +2243,27 @@
     // Stable ID for Supabase — lowercase slug of clinic name
     const clinicId = c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-    // map — Mapbox interactive map with marker, or fallback Google Maps link
-    const mapsSearchURL = 'https://www.google.com/maps/search/' + encodeURIComponent(c.name + ' ' + c.address);
-    const mapHTML =
+    // map — Mapbox interactive mini-map with marker, or fallback Google Maps link
+    // Use coordinate-based Google Maps URL when we have coords (precise pin, not a search)
+    const mapsURL = 'https://www.google.com/maps/search/' + encodeURIComponent(c.name + ' Tokyo Japan');
+    const mapHTML = lat ? (
+      '<div class="popup-map-section">' +
+        '<p class="popup-section-label">Location on map</p>' +
+        '<div id="popup-mapbox-container" style="width:100%;height:200px;border-radius:10px;overflow:hidden;border:1px solid var(--gray-light);"></div>' +
+        '<a href="' + mapsURL + '" target="_blank" style="font-size:0.775rem;color:var(--teal);font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">' +
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+          'Open in Google Maps for directions' +
+        '</a>' +
+      '</div>'
+    ) : (
       '<div class="popup-map-section">' +
         '<p class="popup-section-label">Location</p>' +
         '<div class="popup-info-row">' +
-          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
-          '<a href="' + mapsSearchURL + '" target="_blank" style="color:var(--teal);font-weight:500;">Open in Google Maps for directions</a>' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+          '<a href="' + mapsURL + '" target="_blank" style="color:var(--teal);font-weight:500;">Open in Google Maps for directions</a>' +
         '</div>' +
-      '</div>';
+      '</div>'
+    );
 
     // hours — check clinic data, fall back to honest placeholder
     const hoursData = clinicHours[c.name] || null;
@@ -2369,11 +2422,59 @@
     // Render correct comment input state (fresh or already-commented notice)
     renderCommentInput(clinicId);
 
+    // ── MAPBOX MINI-MAP INIT ──
+    // Destroy any previous instance before creating a new one
+    if (window._popupMap) {
+      window._popupMap.remove();
+      window._popupMap = null;
+    }
+
+    if (lat && lng) {
+      requestAnimationFrame(() => {
+        const container = document.getElementById("popup-mapbox-container");
+        if (!container) return;
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiamJvMjAwMCIsImEiOiJjbXBxeGd3cDAwdnMyMnFxN2k2c2Q0NHAyIn0.ZGuPY2k5_FjUJF9KB-ibow';
+
+        const miniMap = new mapboxgl.Map({
+          container: 'popup-mapbox-container',
+          style: 'mapbox://styles/mapbox/light-v11',
+          center: [lng, lat],
+          zoom: 15,
+          scrollZoom: false,
+          attributionControl: true
+        });
+
+        // Custom teal marker
+        const markerEl = document.createElement('div');
+        markerEl.className = 'mapbox-clinic-marker';
+
+        new mapboxgl.Marker({ element: markerEl, anchor: 'bottom' })
+          .setLngLat([lng, lat])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 25, closeButton: false })
+              .setHTML(
+                '<strong style="font-size:0.8rem;color:#2D2D2D;">' + c.name + '</strong>' +
+                '<br><span style="font-size:0.72rem;color:#6B7280;">' + c.address + '</span>'
+              )
+          )
+          .addTo(miniMap);
+
+        miniMap.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
+        window._popupMap = miniMap;
+      });
+    }
+
   }
 
   function closeClinicPopup() {
     document.getElementById("clinicPopupOverlay").classList.remove("open");
     document.body.style.overflow = "";
+    // Clean up Mapbox popup-map instance to free memory
+    if (window._popupMap) {
+      window._popupMap.remove();
+      window._popupMap = null;
+    }
   }
   function handlePopupOverlayClick(e) {
     if (e.target === document.getElementById("clinicPopupOverlay")) closeClinicPopup();
@@ -2772,10 +2873,50 @@
 
   function getCoords(c){return clinicCoords[c.name]||locationCoords[c.location]||null;}
 
+  function toggleLegend(){
+    var leg=document.getElementById('mapLegend');
+    var btn=document.getElementById('legendToggleBtn');
+    var isOpen=leg.classList.toggle('open');
+    // reposition: hide button when panel is open, show it when closed
+    btn.style.display = isOpen ? 'none' : 'flex';
+    // add a close X inside the legend on first open
+    if(isOpen && !document.getElementById('legendCloseBtn')){
+      var closeBtn=document.createElement('button');
+      closeBtn.id='legendCloseBtn';
+      closeBtn.style.cssText='position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;color:#6B7280;padding:2px;font-size:14px;line-height:1;';
+      closeBtn.innerHTML='&times;';
+      closeBtn.onclick=function(){leg.classList.remove('open');btn.style.display='flex';};
+      leg.style.position='absolute';
+      leg.appendChild(closeBtn);
+    }
+  }
+
   function setMapStyle(n){
     if(n===currentStyle)return;currentStyle=n;map.setStyle(MAP_STYLES[n]);
     ['Light','Streets','Dark','Satellite'].forEach(function(x){document.getElementById('style'+x).classList.toggle('active',x.toLowerCase()===n);});
     map.once('style.load',function(){renderMarkers(filteredClinics);});
+  }
+
+  // Map specialty → CSS class
+  const SPECIALTY_CLASS = {
+    'General':                      'sp-general',
+    'Dentist':                      'sp-dentist',
+    'Orthodontist':                 'sp-dentist',
+    'Pediatric':                    'sp-pediatric',
+    'Gynecology':                   'sp-gynecology',
+    'Mammogram':                    'sp-gynecology',
+    'Dermatology':                  'sp-dermatology',
+    'Mental Health':                'sp-mental-health',
+    'Orthopedic':                   'sp-orthopedic',
+    'Physiotherapy & Chiropractic': 'sp-physiotherapy',
+    'Ophthalmology':                'sp-ophthalmology',
+    'ENT (Ear, Nose & Throat)':     'sp-ent',
+    'Oncology':                     'sp-oncology',
+    'Cardiology':                   'sp-cardiology',
+  };
+  function getSpecialtyClass(c) {
+    if (!c.specialty || !c.specialty[0]) return 'sp-other';
+    return SPECIALTY_CLASS[c.specialty[0]] || 'sp-other';
   }
 
   function renderMarkers(list){
@@ -2783,7 +2924,8 @@
     var sv={};getSavedClinics().forEach(function(s){sv[s.name]=true;});
     list.forEach(function(c){
       var co=getCoords(c);if(!co)return;
-      var el=document.createElement('div');el.className='map-marker';
+      var el=document.createElement('div');
+      el.className='map-marker ' + getSpecialtyClass(c);
       if(sv[c.name])el.classList.add('saved');
       if(c.name===highlightedName)el.classList.add('highlighted');
       el.dataset.name=c.name;
