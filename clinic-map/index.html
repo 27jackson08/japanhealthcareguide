@@ -1040,28 +1040,24 @@
 
     /* ── MOBILE POPUP ── */
     @media (max-width: 600px) {
+      /* Centered card overlay — not a bottom sheet */
       .clinic-popup-overlay {
-        padding: 0;
-        align-items: flex-end;
+        padding: 20px 16px;
+        align-items: center;
+        justify-content: center;
       }
 
-      /* Bottom sheet — sizes to content, capped at 75vh so it never fills the screen */
+      /* Centered card: 92% wide, max 420px, capped at 80vh, all rounded corners */
       .clinic-popup {
-        max-height: 75vh;
+        width: 92%;
+        max-width: 420px;
+        max-height: 80vh;
         height: auto;
-        border-radius: 20px 20px 0 0;
-        width: 100%;
-        max-width: 100%;
-        /* Slide up animation on mobile */
-        animation: popupSlideUp 0.25s ease;
+        border-radius: 20px;
+        animation: popupIn 0.2s ease;
       }
 
-      @keyframes popupSlideUp {
-        from { transform: translateY(40px); opacity: 0; }
-        to   { transform: translateY(0);   opacity: 1; }
-      }
-
-      /* Header: tighter padding, close button always visible */
+      /* Header: tighter padding */
       .clinic-popup-header {
         padding: 16px 16px 14px;
         position: sticky;
@@ -1071,30 +1067,24 @@
         border-radius: 20px 20px 0 0;
       }
 
-      /* Drag pill at top of sheet for affordance */
+      /* No drag pill needed for centered card */
       .clinic-popup-header::before {
-        content: '';
-        display: block;
-        width: 40px;
-        height: 4px;
-        background: #d1d5db;
-        border-radius: 2px;
-        margin: 0 auto 12px;
+        display: none;
       }
 
       .clinic-popup-close {
-        top: 28px;
+        top: 16px;
         right: 16px;
       }
 
       .btn-bookmark {
-        top: 28px;
-        right: 56px;
+        top: 16px;
+        right: 52px;
       }
 
-      /* Body: scrollable within the 75vh cap */
+      /* Body: scrollable within the 80vh cap */
       .clinic-popup-body {
-        padding: 16px 16px 32px;
+        padding: 16px 16px 24px;
         overflow-y: scroll;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
@@ -1267,8 +1257,20 @@
     .map-sidebar {
       display: flex !important;
       flex-direction: column !important;
-      /* NOTE: do NOT set overflow:hidden here - it kills touch events on iOS */
-      overflow: visible !important;
+      overflow: hidden !important;
+      touch-action: pan-y !important;
+    }
+    /* Ensure all interactive children receive touch events */
+    .map-sidebar input,
+    .map-sidebar select,
+    .map-sidebar button,
+    .map-sidebar .sidebar-results,
+    .map-sidebar .sidebar-clinic-item {
+      touch-action: manipulation !important;
+      -webkit-user-select: auto !important;
+      pointer-events: auto !important;
+      position: relative !important;
+      z-index: 1 !important;
     }
     /* Allow the results list to scroll inside the fixed-height bottom sheet */
     .sidebar-results {
@@ -3181,12 +3183,26 @@
     document.getElementById('mapSidebar').classList.add('mobile-open');
     document.getElementById('mapSidebar').classList.remove('collapsed');
     document.getElementById('mobileMapBackdrop').classList.add('open');
+    // Disable Mapbox touch/drag handlers so they don't steal taps from the sidebar
+    if(map){
+      map.dragPan.disable();
+      map.touchZoomRotate.disable();
+      map.touchPitch.disable();
+      map.scrollZoom.disable();
+    }
     setTimeout(function(){map.resize();},320);
   }
   function closeMobileSheet(){
     document.getElementById('mapSidebar').classList.remove('mobile-open');
     document.getElementById('mapSidebar').classList.add('collapsed');
     document.getElementById('mobileMapBackdrop').classList.remove('open');
+    // Re-enable Mapbox interaction handlers
+    if(map){
+      map.dragPan.enable();
+      map.touchZoomRotate.enable();
+      map.touchPitch.enable();
+      map.scrollZoom.enable();
+    }
     setTimeout(function(){map.resize();},320);
   }
   function toggleMobileNav(){document.getElementById('mnavSidebar').classList.toggle('open');document.getElementById('mnavOverlay').classList.toggle('open');}
@@ -3253,6 +3269,14 @@
     }
   }
 
+
+  // Prevent Mapbox document-level touch handler from stealing touches on the sidebar
+  document.getElementById('mapSidebar').addEventListener('touchstart', function(e){
+    e.stopPropagation();
+  }, {passive: true});
+  document.getElementById('mapSidebar').addEventListener('touchmove', function(e){
+    e.stopPropagation();
+  }, {passive: true});
 </script>
 
 <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
