@@ -1126,7 +1126,7 @@
         border-radius:18px 18px 0 0;border-right:none;
         border-top:1px solid var(--gray-light);
         box-shadow:0 -4px 24px rgba(0,0,0,0.12);
-        z-index:9000;transform:translateY(100%);
+        z-index:400;transform:translateY(100%);
         transition:transform 0.3s ease;
       }
       .map-sidebar::before{content:'';display:block;width:40px;height:4px;background:#d1d5db;border-radius:2px;margin:10px auto 0;flex-shrink:0;}
@@ -1135,7 +1135,7 @@
       .mobile-sheet-close{display:flex!important;}
       .sidebar-toggle{display:none;}
       .mobile-open-btn{display:flex!important;}
-      .mobile-map-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:8999;}
+      .mobile-map-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:399;}
       .mobile-map-backdrop.open{display:block;}
     }
     .mnav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:450;}
@@ -1253,15 +1253,13 @@
      ===================================================== */
   @media (max-width: 900px) {
 
-    /* Make the bottom sheet a proper flex column so results can scroll */
+    /* Sidebar is now outside map-layout stacking context — simple z-index works */
     .map-sidebar {
       display: flex !important;
       flex-direction: column !important;
       overflow: hidden !important;
       touch-action: pan-y !important;
-      /* Isolate from Mapbox stacking context completely */
-      isolation: isolate !important;
-      z-index: 9000 !important;
+      z-index: 400 !important;
       position: fixed !important;
     }
     /* Ensure all interactive children receive touch events */
@@ -1331,8 +1329,7 @@
   </ul>
 </div>
 <div class="mobile-map-backdrop" id="mobileMapBackdrop" onclick="closeMobileSheet()"></div>
-<div class="map-layout">
-  <div class="map-sidebar" id="mapSidebar">
+<div class="map-sidebar" id="mapSidebar">
     <button class="mobile-sheet-close" onclick="closeMobileSheet()" style="display:none;position:absolute;top:18px;right:14px;width:28px;height:28px;border-radius:50%;background:var(--gray-light);border:none;cursor:pointer;align-items:center;justify-content:center;z-index:10;">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
@@ -1366,6 +1363,7 @@
     <div class="results-count" id="mapResultsCount">208 clinics</div>
     <div class="sidebar-results" id="sidebarResults"></div>
   </div>
+<div class="map-layout">
   <div class="map-container">
     <div id="mapEventBlocker" style="display:none;position:absolute;inset:0;z-index:1;background:transparent;"></div>
     <button class="map-overlay-btn mobile-open-btn" onclick="openMobileSheet()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
