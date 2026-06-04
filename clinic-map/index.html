@@ -1126,7 +1126,7 @@
         border-radius:18px 18px 0 0;border-right:none;
         border-top:1px solid var(--gray-light);
         box-shadow:0 -4px 24px rgba(0,0,0,0.12);
-        z-index:300;transform:translateY(100%);
+        z-index:9000;transform:translateY(100%);
         transition:transform 0.3s ease;
       }
       .map-sidebar::before{content:'';display:block;width:40px;height:4px;background:#d1d5db;border-radius:2px;margin:10px auto 0;flex-shrink:0;}
@@ -1135,7 +1135,7 @@
       .mobile-sheet-close{display:flex!important;}
       .sidebar-toggle{display:none;}
       .mobile-open-btn{display:flex!important;}
-      .mobile-map-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:299;}
+      .mobile-map-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:8999;}
       .mobile-map-backdrop.open{display:block;}
     }
     .mnav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:450;}
@@ -1259,6 +1259,10 @@
       flex-direction: column !important;
       overflow: hidden !important;
       touch-action: pan-y !important;
+      /* Isolate from Mapbox stacking context completely */
+      isolation: isolate !important;
+      z-index: 9000 !important;
+      position: fixed !important;
     }
     /* Ensure all interactive children receive touch events */
     .map-sidebar input,
@@ -1363,6 +1367,7 @@
     <div class="sidebar-results" id="sidebarResults"></div>
   </div>
   <div class="map-container">
+    <div id="mapEventBlocker" style="display:none;position:absolute;inset:0;z-index:1;background:transparent;"></div>
     <button class="map-overlay-btn mobile-open-btn" onclick="openMobileSheet()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     <div class="map-overlay-top">
       <button class="map-overlay-btn" onclick="locateOnMap()" title="My location"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
@@ -3183,7 +3188,10 @@
     document.getElementById('mapSidebar').classList.add('mobile-open');
     document.getElementById('mapSidebar').classList.remove('collapsed');
     document.getElementById('mobileMapBackdrop').classList.add('open');
-    // Disable Mapbox touch/drag handlers so they don't steal taps from the sidebar
+    // Block ALL map events by covering the canvas with a transparent div
+    var blocker = document.getElementById('mapEventBlocker');
+    if(blocker) blocker.style.display = 'block';
+    // Also disable Mapbox handlers as belt-and-suspenders
     if(map){
       map.dragPan.disable();
       map.touchZoomRotate.disable();
@@ -3196,6 +3204,9 @@
     document.getElementById('mapSidebar').classList.remove('mobile-open');
     document.getElementById('mapSidebar').classList.add('collapsed');
     document.getElementById('mobileMapBackdrop').classList.remove('open');
+    // Remove the event blocker
+    var blocker = document.getElementById('mapEventBlocker');
+    if(blocker) blocker.style.display = 'none';
     // Re-enable Mapbox interaction handlers
     if(map){
       map.dragPan.enable();
