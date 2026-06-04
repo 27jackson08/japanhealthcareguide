@@ -1045,10 +1045,10 @@
         align-items: flex-end;
       }
 
-      /* Bottom sheet: sits in the lower ~92% of the screen, rounded top corners only */
+      /* Bottom sheet — sizes to content, capped at 75vh so it never fills the screen */
       .clinic-popup {
-        max-height: 92vh;
-        height: 92vh;
+        max-height: 75vh;
+        height: auto;
         border-radius: 20px 20px 0 0;
         width: 100%;
         max-width: 100%;
@@ -1092,11 +1092,13 @@
         right: 56px;
       }
 
-      /* Body: tighter padding */
+      /* Body: tighter padding, scrolls within the 75vh cap */
       .clinic-popup-body {
         padding: 16px 16px 32px;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         flex: 1;
+        min-height: 0;
       }
 
 
@@ -1284,18 +1286,6 @@
   }
 
 
-    /* Mobile nav Emergency button */
-    .mobile-nav-emergency { display: none; }
-    @media (max-width: 900px) {
-      .mobile-nav-emergency {
-        display: inline-flex; align-items: center; gap: 4px;
-        background: var(--red, #dc2626); color: #fff !important;
-        font-size: 0.78rem; font-weight: 700;
-        padding: 7px 12px; border-radius: 8px;
-        text-decoration: none; white-space: nowrap;
-      }
-    }
-
   </style>
 </head>
 <body>
@@ -1319,8 +1309,7 @@
     <li><a href="/about">About</a></li>
     <li><a href="/emergency" class="nav-cta">Emergency Info</a></li>
   </ul>
-  <a href="/emergency" class="mobile-nav-emergency" aria-label="Emergency Info">🚨 Emergency</a>
-    <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()">
+  <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()">
     <span></span><span></span><span></span>
   </button>
 </nav>
