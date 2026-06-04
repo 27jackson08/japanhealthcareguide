@@ -1092,11 +1092,12 @@
         right: 56px;
       }
 
-      /* Body: tighter padding, scrolls within the 75vh cap */
+      /* Body: scrollable within the 75vh cap */
       .clinic-popup-body {
         padding: 16px 16px 32px;
-        overflow-y: auto;
+        overflow-y: scroll;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
         flex: 1;
         min-height: 0;
       }
@@ -1266,7 +1267,8 @@
     .map-sidebar {
       display: flex !important;
       flex-direction: column !important;
-      overflow: hidden !important;
+      /* NOTE: do NOT set overflow:hidden here - it kills touch events on iOS */
+      overflow: visible !important;
     }
     /* Allow the results list to scroll inside the fixed-height bottom sheet */
     .sidebar-results {
