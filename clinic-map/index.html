@@ -1193,6 +1193,109 @@
     .tag-insurance { background: var(--amber-light); color: #b45309; }
     .tag-english   { background: var(--green-light); color: var(--green); }
     .tag-note      { background: #f3e8ff; color: #7c3aed; }
+  
+  /* =====================================================
+     MOBILE-ONLY FIXES  (max-width: 900px)
+     Zero effect on desktop — all rules inside media query
+     ===================================================== */
+  @media (max-width: 900px) {
+
+    /* 1. Emergency Info button in mobile nav hamburger sidebar */
+    .mobile-sidebar-links .sidebar-cta {
+      display: block !important;
+      background: var(--red, #dc2626) !important;
+      color: #fff !important;
+      border-radius: 8px !important;
+      padding: 12px 16px !important;
+      margin-top: 12px !important;
+      text-align: center !important;
+      font-weight: 600 !important;
+    }
+
+    /* 2. Footer — full width, stacked, no side padding bleed */
+    footer {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 24px 20px !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 12px !important;
+    }
+
+    /* 3. Submit-a-correction bar — full width, no overflow */
+    .correction-bar {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 16px 20px !important;
+    }
+    .correction-bar-inner {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+    }
+    .btn-correction {
+      width: 100% !important;
+      text-align: center !important;
+    }
+
+    /* 4. Submit-a-correction MODAL — constrained, scrollable, not full-screen */
+    .modal-overlay {
+      padding: 16px !important;
+      align-items: flex-end !important;
+    }
+    .modal {
+      width: 100% !important;
+      max-width: 100% !important;
+      max-height: 88vh !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      border-radius: 20px 20px 0 0 !important;
+      padding: 24px 20px !important;
+    }
+
+  }
+
+  /* =====================================================
+     CLINIC MAP — MOBILE SIDEBAR SCROLL FIX
+     ===================================================== */
+  @media (max-width: 900px) {
+
+    /* Make the bottom sheet a proper flex column so results can scroll */
+    .map-sidebar {
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+    /* Allow the results list to scroll inside the fixed-height bottom sheet */
+    .sidebar-results {
+      flex: 1 1 auto !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      overscroll-behavior: contain !important;
+      /* Ensure it's not pointer-events:none or grayed out */
+      pointer-events: auto !important;
+      opacity: 1 !important;
+    }
+    /* Prevent header/filters from growing and squashing the list */
+    .sidebar-header {
+      flex-shrink: 0 !important;
+    }
+
+  }
+
+
+    /* Mobile nav Emergency button */
+    .mobile-nav-emergency { display: none; }
+    @media (max-width: 900px) {
+      .mobile-nav-emergency {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: var(--red, #dc2626); color: #fff !important;
+        font-size: 0.78rem; font-weight: 700;
+        padding: 7px 12px; border-radius: 8px;
+        text-decoration: none; white-space: nowrap;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1216,7 +1319,8 @@
     <li><a href="/about">About</a></li>
     <li><a href="/emergency" class="nav-cta">Emergency Info</a></li>
   </ul>
-  <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()">
+  <a href="/emergency" class="mobile-nav-emergency" aria-label="Emergency Info">🚨 Emergency</a>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()">
     <span></span><span></span><span></span>
   </button>
 </nav>
