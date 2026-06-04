@@ -1783,6 +1783,85 @@
     }
   
   /* =====================================================
+     CLINIC FINDER — MOBILE BOTTOM LAYOUT FIXES
+     ===================================================== */
+  @media (max-width: 900px) {
+
+    /* Specialty pills default state — remove excess bottom padding on mobile */
+    .default-state {
+      padding: 24px 16px !important;
+    }
+
+    /* Specialty pills — tighter spacing */
+    .specialty-pills {
+      gap: 6px !important;
+    }
+
+    /* Kill white gap below footer — body background matches footer */
+    body {
+      background: var(--charcoal) !important;
+      padding-bottom: 0 !important;
+      margin-bottom: 0 !important;
+    }
+    /* Keep the actual page content white */
+    nav, .search-panel, .results-wrapper,
+    #defaultState, #resultsSection, .correction-bar {
+      background: var(--white, #fff);
+    }
+
+    /* Prevent the page from being scrollable past the footer */
+    html, body {
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+    .results-wrapper {
+      padding: 20px 16px 40px !important;
+    }
+
+    /* Clinic grid: single column on mobile */
+    .clinic-grid {
+      grid-template-columns: 1fr !important;
+      gap: 12px !important;
+    }
+
+    /* Correction bar: true full viewport width, escaping any parent max-width */
+    .correction-bar {
+      width: 100vw !important;
+      margin-left: calc(-50vw + 50%) !important;
+      padding: 20px 20px !important;
+      box-sizing: border-box !important;
+    }
+    .correction-bar-inner {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+      max-width: 100% !important;
+    }
+    .btn-correction {
+      width: 100% !important;
+      text-align: center !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Footer: true full viewport width */
+    footer {
+      width: 100vw !important;
+      margin-left: calc(-50vw + 50%) !important;
+      padding: 24px 20px !important;
+      box-sizing: border-box !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 12px !important;
+    }
+
+    /* Search panel on mobile */
+    .search-section {
+      padding: 20px 16px !important;
+    }
+
+  }
+
+  /* =====================================================
      MOBILE-ONLY FIXES  (max-width: 900px)
      Zero effect on desktop — all rules inside media query
      ===================================================== */
@@ -1800,31 +1879,9 @@
       font-weight: 600 !important;
     }
 
-    /* 2. Footer — full width, stacked, no side padding bleed */
-    footer {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 24px 20px !important;
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      gap: 12px !important;
-    }
+    /* 2. Footer — handled above in clinic-finder mobile layout fixes */
 
-    /* 3. Submit-a-correction bar — full width, no overflow */
-    .correction-bar {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 16px 20px !important;
-    }
-    .correction-bar-inner {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      gap: 10px !important;
-    }
-    .btn-correction {
-      width: 100% !important;
-      text-align: center !important;
-    }
+    /* 3. Submit-a-correction bar — handled above in clinic-finder mobile layout fixes */
 
     /* 4. Submit-a-correction MODAL — constrained, scrollable, not full-screen */
     .modal-overlay {
