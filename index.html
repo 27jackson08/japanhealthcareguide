@@ -1006,6 +1006,68 @@
     .shc-body { padding: 16px 18px 32px; }
     .shc-conditions-grid { grid-template-columns: 1fr; }
   }
+
+  /* =====================================================
+     MOBILE-ONLY FIXES  (max-width: 900px)
+     Zero effect on desktop — all rules inside media query
+     ===================================================== */
+  @media (max-width: 900px) {
+
+    /* 1. Emergency Info button in mobile nav hamburger sidebar */
+    .mobile-sidebar-links .sidebar-cta {
+      display: block !important;
+      background: var(--red, #dc2626) !important;
+      color: #fff !important;
+      border-radius: 8px !important;
+      padding: 12px 16px !important;
+      margin-top: 12px !important;
+      text-align: center !important;
+      font-weight: 600 !important;
+    }
+
+    /* 2. Footer — full width, stacked, no side padding bleed */
+    footer {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 24px 20px !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 12px !important;
+    }
+
+    /* 3. Submit-a-correction bar — full width, no overflow */
+    .correction-bar {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 16px 20px !important;
+    }
+    .correction-bar-inner {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+    }
+    .btn-correction {
+      width: 100% !important;
+      text-align: center !important;
+    }
+
+    /* 4. Submit-a-correction MODAL — constrained, scrollable, not full-screen */
+    .modal-overlay {
+      padding: 16px !important;
+      align-items: flex-end !important;
+    }
+    .modal {
+      width: 100% !important;
+      max-width: 100% !important;
+      max-height: 88vh !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      border-radius: 20px 20px 0 0 !important;
+      padding: 24px 20px !important;
+    }
+
+  }
+
 </style>
 
 <button class="shc-fab" id="shcFab" onclick="openSHC()" aria-label="Seasonal Health Calendar">
