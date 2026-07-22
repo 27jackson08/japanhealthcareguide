@@ -2389,6 +2389,20 @@
     { name: "Tokyo Metropolitan Tama-Hokubu Medical Center", specialty: ["General"], location: "Higashimurayama", address: "Higashimurayama, Tokyo", website: "https://www.tmhp.jp/tamahoku/en/", englishNote: "English website available — large regional hospital", insurance: true },
     { name: "Tokyo Metropolitan Tama-Nanbu Chiiki Hospital", specialty: ["General"], location: "Tachikawa", address: "Tama City, Tokyo", website: "https://www.tmhp.jp/tamanan/en/", englishNote: "English website available — large regional hospital", insurance: true },
     { name: "Tokyo Nishi Tokushukai Hospital", specialty: ["General"], location: "Akishima", address: "Akishima, Tokyo", website: "http://www.tokyonishi-hp.or.jp/en/", englishNote: "English and Chinese website", insurance: true },
+    // ── THERAPY / MENTAL HEALTH / REHAB (English-speaking therapists) ──
+    { name: "TELL Counseling", specialty: ["Mental Health"], location: "Aoyama", address: "Minami-Aoyama, Minato, Tokyo", website: "https://telljp.com/counseling/", englishNote: "Fully English-speaking — nonprofit counseling & crisis Lifeline", insurance: false, note: "Self-pay — TRICARE/Cigna & income-based sliding scale" },
+    { name: "Stress Care Tokyo Ueno Ekimae Clinic", specialty: ["Mental Health"], location: "Ueno", address: "Ueno (Iriya Exit), Taito, Tokyo", website: "https://tokyoueno.com/english_psychiatric_service/", englishNote: "English-speaking psychiatry — teens & young adults", insurance: true, note: "Adolescents 12–22 only" },
+    { name: "BONDS Tokyo Counseling Services", specialty: ["Mental Health"], location: "Shimokitazawa", address: "Daizawa, Setagaya, Tokyo", website: "https://www.bondstcs.com/en", englishNote: "Fully English-speaking — individual, couples & family therapy", insurance: false, note: "Self-pay — multilingual counselors" },
+    { name: "Sky Counseling & Consultation Tokyo", specialty: ["Mental Health"], location: "Meguro", address: "Online — based in Meguro, Tokyo", website: "https://skycounselingtokyo.com", englishNote: "Fully English-speaking — EFT couples & individual therapy", insurance: false, note: "Online only (video sessions)" },
+    { name: "Refugium Tokyo", specialty: ["Mental Health"], location: "Aoyama", address: "Aoyama (Gaienmae), Minato, Tokyo", website: "https://refugiumtokyo.com", englishNote: "English, German & Japanese — EU-certified psychotherapists", insurance: false, note: "Self-pay — verify insurance coverage" },
+    { name: "North Tokyo Mental Health", specialty: ["Mental Health"], location: "Tokyo", address: "Tokyo — contact to confirm location", website: "https://ntokyocounseling.com", englishNote: "English-speaking counseling — sliding scale available", insurance: false, note: "Online/in-person — TRICARE accepted" },
+    { name: "Zendo Health Consultation", specialty: ["Mental Health"], location: "Tokyo", address: "Online (tele-psychiatry)", website: "https://cliniczhc.info/index_e.html", englishNote: "English & Japanese — US/Japan-licensed psychiatrist", insurance: false, note: "Online — foreign insurers, not NHI" },
+    { name: "O'Sullivan Counseling", specialty: ["Mental Health"], location: "Tokyo", address: "Online — serves Tokyo residents", website: "https://osullivancounseling.com", englishNote: "Fully English-speaking — anxiety, OCD, CBT & ERP", insurance: false, note: "Online only — TRICARE provider" },
+    { name: "Tokyo Physical Therapy", specialty: ["Physiotherapy & Chiropractic"], location: "Shirokane", address: "Shirokane, Minato, Tokyo", website: "https://tokyophysicaltherapy.com", englishNote: "Fully English-speaking — US/Japan-licensed physical therapists", insurance: false, note: "Self-pay — women's & pelvic-floor rehab" },
+    { name: "ROOT Occupational Therapy", specialty: ["Occupational Therapy"], location: "Tokyo", address: "Tokyo & Yokohama", website: "https://roototjp.com", englishNote: "English & Japanese — pediatric OT, sensory integration", insurance: false, note: "Pediatric — self-pay" },
+    { name: "Koi Wellness", specialty: ["Occupational Therapy"], location: "Tokyo", address: "In-home across Tokyo", website: "https://www.koiwellness.org", englishNote: "Fully English-speaking — pediatric OT & yoga", insurance: false, note: "In-home pediatric OT — self-pay" },
+    { name: "Therapy In Japan", specialty: ["Speech Therapy"], location: "Tokyo", address: "Online (Japan & Asia)", website: "https://therapyinjapan.com", englishNote: "Fully English-speaking — speech-language pathology, all ages", insurance: false, note: "Online only — self-pay" },
+    { name: "LUCREA", specialty: ["Speech Therapy"], location: "Tokyo", address: "Tokyo", website: "https://lucrea.co.jp", englishNote: "English, Japanese & French — speech, OT & ABA for children", insurance: false, note: "Pediatric — self-pay" },
   ];
 
   const specialties = [...new Set(clinics.flatMap(c => c.specialty))].sort();
@@ -2716,6 +2730,11 @@
     "Musashi Eye Clinic": [35.6191, 139.6553],
     "Plaza Plastic Surgery": [35.6491, 139.72],
     "Dr. Kaku's Office (Super Smile International Orthodontics)": [35.658, 139.6989],
+    "TELL Counseling": [35.6640, 139.7160],
+    "Stress Care Tokyo Ueno Ekimae Clinic": [35.7150, 139.7795],
+    "BONDS Tokyo Counseling Services": [35.6577, 139.6665],
+    "Refugium Tokyo": [35.6706, 139.7178],
+    "Tokyo Physical Therapy": [35.6420, 139.7290],
   };
 
   function haversine(lat1, lon1, lat2, lon2) {
@@ -3525,6 +3544,13 @@
       Thursday: "8:00–14:30", Friday: "8:00–14:30", Saturday: "Closed", Sunday: "Closed",
       phone: "03-3342-6111",
       note: "Outpatient hours. English support available."
+    },
+    "TELL Counseling": {
+      Monday: "10:00–17:00", Tuesday: "10:00–17:00", Wednesday: "10:00–17:00",
+      Thursday: "10:00–17:00", Friday: "10:00–17:00", Saturday: "Closed", Sunday: "Closed",
+      phone: "03-4550-1191",
+      note: "Counseling office Mon–Fri. Free TELL Lifeline daily 9:00–23:00: 0800-300-8355.",
+      englishDays: ["Monday","Tuesday","Wednesday","Thursday","Friday"]
     },
   };
   // ── MODAL ──
