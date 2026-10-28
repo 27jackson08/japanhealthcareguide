@@ -1,0 +1,12 @@
+/* Design tokens shared by every page. Page-specific tokens live in assets/css/pages/. */
+:root {
+  --teal: #2A7F7F;
+  --teal-dark: #1f6060;
+  --teal-light: #e8f4f4;
+  --amber: #E8A838;
+  --amber-light: #fdf3e0;
+  --charcoal: #2D2D2D;
+  --gray: #6B7280;
+  --gray-light: #e5e7eb;
+  --border: #d1e8e8;
+}
